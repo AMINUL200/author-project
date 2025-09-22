@@ -12,7 +12,9 @@ import {
   Bell,
   User,
   Search,
-  LogOut
+  LogOut,
+  CardSim,
+  SubscriptIcon
 } from 'lucide-react';
 import { Link, useLocation } from "react-router-dom";
 
@@ -49,6 +51,11 @@ const AdminSidebar = ({
 
       ]
     },
+    {
+      icon: SubscriptIcon,
+      label: "Subscriptions",
+      path: "/admin/subscriptions",
+    }
    
   ];
 

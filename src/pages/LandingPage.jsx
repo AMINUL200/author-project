@@ -18,17 +18,23 @@ const LandingPage = () => {
   const [mostViewedArticles, setMostViewedArticles] = useState([]);
   const [latestArticles, setLatestArticles] = useState([]);
   const [authorInfo, setAuthorInfo] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [pricingPlans, setPricingPlans] = useState([]);
 
   const [loading, setLoading] = useState({
     mostViewed: true,
     latest: true,
     author: true,
+    categories: true,
+    pricing: true,
   });
 
   const [error, setError] = useState({
     mostViewed: null,
     latest: null,
     author: null,
+    categories: null,
+    pricing: null,
   });
 
   // 🔹 Fetch all APIs in parallel
@@ -38,6 +44,8 @@ const LandingPage = () => {
         mostViewed: axios.get(`${apiUrl}most_view_article`),
         latest: axios.get(`${apiUrl}latest_articale`),
         author: axios.get(`${apiUrl}authors`),
+        categories: axios.get(`${apiUrl}categories`),
+        pricing: axios.get(`${apiUrl}all-subscription`), // 🔹 new pricing API
       };
 
       Object.entries(requests).forEach(async ([key, req]) => {
@@ -47,6 +55,8 @@ const LandingPage = () => {
             if (key === "mostViewed") setMostViewedArticles(res.data.data || []);
             if (key === "latest") setLatestArticles(res.data.data || []);
             if (key === "author") setAuthorInfo(res.data.data[0] || null);
+            if (key === "categories") setCategories(res.data.data || []);
+            if (key === "pricing") setPricingPlans(res.data.data || []);
           } else {
             throw new Error(res.data.message || `Failed to fetch ${key}`);
           }
@@ -76,13 +86,21 @@ const LandingPage = () => {
         loading={loading.latest} 
         error={error.latest} 
       />
-      <CategoriesSection />
+      <CategoriesSection 
+        categories={categories} 
+        loading={loading.categories} 
+        error={error.categories} 
+      />
       <AuthorHighlight 
         authorInfo={authorInfo} 
         loading={loading.author} 
         error={error.author} 
       />
-      <PricingSection />
+      <PricingSection 
+        plans={pricingPlans} 
+        loading={loading.pricing} 
+        error={error.pricing} 
+      />
       <TestimonialsSection />
       <NewsletterSection />
       <CTABanner />

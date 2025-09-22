@@ -17,6 +17,7 @@ import { useAuth } from "./context/AuthContext";
 // Wrappers for protected routes
 import { GuestRoute, UserRoute, AdminRoute } from "./routes/ProtectedRoutes";
 import AdminViewArticles from "./pages/admin/AdminViewArticles";
+import Subscriptions from "./pages/admin/Subscriptions";
 
 function App() {
   const { userData, token } = useAuth();
@@ -72,6 +73,7 @@ function App() {
           <Route path="articles/categories" element={<ArticleCategories />} />
           <Route path="articles" element={<AdminViewArticles />} />
           <Route path="articles/new" element={<AddNewArticle />} />
+          <Route path="subscriptions" element={<Subscriptions/>} />
         </Route>
       </Routes>
     </Router>
