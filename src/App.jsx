@@ -1,4 +1,4 @@
-import React, { use } from "react";
+import React, { use, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AppLayout from "./layout/AppLayout";
 import LandingPage from "./pages/LandingPage";
@@ -21,13 +21,32 @@ import Subscriptions from "./pages/admin/Subscriptions";
 import SubscriptionDetails from "./pages/SubscriptionDetails";
 import PaymentReturnPage from "./pages/PaymentReturnPage";
 import EventsPageTemplate from "./pages/EventsPageTemplate";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const { userData, token } = useAuth();
+
+  useEffect(() => {
+    toast.info("Toastify test message!", { autoClose: 2000 });
+  }, []);
   // console.log("User Data:", userData);
   // console.log("Token:", token);
   return (
     <Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        zIndex={9999}
+      />
       <Routes>
         {/* Guest routes */}
         <Route
@@ -60,8 +79,11 @@ function App() {
           <Route path="events/:id" element={<EventsPageTemplate />} />
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
-           <Route path="/payment-success" element={<PaymentReturnPage />} />
-          <Route path="subscription-details" element={<SubscriptionDetails />} />
+          <Route path="/payment-success" element={<PaymentReturnPage />} />
+          <Route
+            path="subscription-details"
+            element={<SubscriptionDetails />}
+          />
         </Route>
 
         {/* Admin route */}
@@ -79,7 +101,7 @@ function App() {
           <Route path="articles/categories" element={<ArticleCategories />} />
           <Route path="articles" element={<AdminViewArticles />} />
           <Route path="articles/new" element={<AddNewArticle />} />
-          <Route path="subscriptions" element={<Subscriptions/>} />
+          <Route path="subscriptions" element={<Subscriptions />} />
         </Route>
       </Routes>
     </Router>

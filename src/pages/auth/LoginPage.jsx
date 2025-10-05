@@ -58,7 +58,6 @@ const LoginPage = () => {
 
     console.log(formData);
 
-    // Simulate API call
     try {
       const response = await axios.post(`${apiUrl}login`, formData, {
         headers: {
@@ -74,6 +73,7 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
+
       toast.error(
         error.response?.data?.message || "Login failed. Please try again."
       );
