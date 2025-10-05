@@ -118,30 +118,63 @@ const Navbar = () => {
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
 
               {token ? (
-                <button
-                  onClick={() => {
-                    logout();
-                    toast.info("logout Success Full");
-                  }}
-                  className="relative px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => {
+                      logout();
+                      toast.info("logout Success Full");
+                    }}
+                    className="relative px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 
       bg-gradient-to-r from-red-600 to-pink-600 text-white hover:shadow-lg hover:shadow-red-500/25 
       transform hover:scale-105 cursor-pointer"
-                >
-                  <span className="relative z-10 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3 4a1 1 0 011-1h6a1 1 0 110 2H5v10h5a1 1 0 110 2H4a1 1 0 01-1-1V4zm9.707 5.293a1 1 0 010 1.414L10.414 13H17a1 1 0 110 2h-6.586l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Logout
-                  </span>
-                </button>
+                  >
+                    <span className="relative z-10 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M3 4a1 1 0 011-1h6a1 1 0 110 2H5v10h5a1 1 0 110 2H4a1 1 0 01-1-1V4zm9.707 5.293a1 1 0 010 1.414L10.414 13H17a1 1 0 110 2h-6.586l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Logout
+                    </span>
+                  </button>
+                  <Link
+                    to="/subscription-details"
+                    className="relative px-6 py-2.5 font-semibold rounded-xl transition-all duration-300
+    bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white 
+    hover:shadow-lg hover:shadow-pink-500/25 transform hover:scale-105 cursor-pointer
+    flex items-center justify-center overflow-hidden group"
+                  >
+                    <span className="relative z-10 flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 8c-1.657 0-3 1.343-3 3v5h6v-5c0-1.657-1.343-3-3-3z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 20h14a2 2 0 002-2v-2H3v2a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Subscription
+                    </span>
+                    <span className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-xl"></span>
+                  </Link>
+                </div>
               ) : (
                 <Link
                   to="/login"
@@ -264,7 +297,7 @@ const Navbar = () => {
                 <button
                   onClick={() => {
                     logout();
-                    toast.info("Logout Success full")
+                    toast.info("Logout Success full");
                     setIsMenuOpen(false);
                   }}
                   className="flex items-center justify-center w-full px-4 py-3 

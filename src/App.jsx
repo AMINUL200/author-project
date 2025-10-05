@@ -18,6 +18,9 @@ import { useAuth } from "./context/AuthContext";
 import { GuestRoute, UserRoute, AdminRoute } from "./routes/ProtectedRoutes";
 import AdminViewArticles from "./pages/admin/AdminViewArticles";
 import Subscriptions from "./pages/admin/Subscriptions";
+import SubscriptionDetails from "./pages/SubscriptionDetails";
+import PaymentReturnPage from "./pages/PaymentReturnPage";
+import EventsPageTemplate from "./pages/EventsPageTemplate";
 
 function App() {
   const { userData, token } = useAuth();
@@ -54,8 +57,11 @@ function App() {
           }
         >
           <Route index element={<LandingPage />} />
+          <Route path="events/:id" element={<EventsPageTemplate />} />
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
+           <Route path="/payment-success" element={<PaymentReturnPage />} />
+          <Route path="subscription-details" element={<SubscriptionDetails />} />
         </Route>
 
         {/* Admin route */}

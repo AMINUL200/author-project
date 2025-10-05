@@ -11,6 +11,8 @@ import CTABanner from '../cmponent/landing page/CTABanner';
 import Footer from '../cmponent/common/Footer';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import NewsAndEvent from '../cmponent/landing page/NewsAndEvent';
+import EventGallery from '../cmponent/landing page/EventGallery';
 
 const LandingPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -86,11 +88,13 @@ const LandingPage = () => {
         loading={loading.latest} 
         error={error.latest} 
       />
-      <CategoriesSection 
+      {/* <CategoriesSection 
         categories={categories} 
         loading={loading.categories} 
         error={error.categories} 
-      />
+      /> */}
+      {/* <NewsAndEvent /> */}
+      <EventGallery/>
       <AuthorHighlight 
         authorInfo={authorInfo} 
         loading={loading.author} 

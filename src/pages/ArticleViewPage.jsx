@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Eye,
-  Clock,
-  User,
-  Calendar,
-  Lock,
   ChevronLeft,
   ChevronRight,
   ZoomIn,
   ZoomOut,
+  View,
+  Tag,
+  Calendar,
+  Check,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -34,6 +33,7 @@ const ArticleViewPage = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
 
   const [containerWidth, setContainerWidth] = useState(null);
   const containerRef = useRef();
@@ -50,50 +50,11 @@ const ArticleViewPage = () => {
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
-  // Dummy article data (you can replace this with actual data from fetchArticle)
-  const article = {
-    id: 1,
-    title: "The Future of Sustainable Technology: Innovations Shaping Tomorrow",
-    subtitle:
-      "Exploring breakthrough technologies that promise to revolutionize how we interact with our environment",
-    author: {
-      name: "Dr. Sarah Chen",
-      avatar:
-        "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      bio: "Senior Research Scientist at MIT, specializing in sustainable technology and renewable energy systems.",
-    },
-    publishDate: "March 15, 2024",
-    readTime: "8 min read",
-    views: "12.4K",
-    category: "Technology",
-    tags: ["Sustainability", "Innovation", "Green Tech", "Future"],
-    content: `
-      <p>In an era where environmental consciousness meets technological advancement, we stand at the precipice of a revolutionary shift in how we approach sustainable innovation. The convergence of artificial intelligence, renewable energy, and biotechnology is creating unprecedented opportunities to address some of humanity's most pressing challenges.</p>
-      
-      <h2>The Dawn of Intelligent Sustainability</h2>
-      <p>Artificial intelligence is no longer just a tool for automation; it has become the backbone of sustainable decision-making. Smart grid systems powered by machine learning algorithms can predict energy demand with 95% accuracy, optimizing renewable energy distribution in real-time. These systems learn from weather patterns, consumption habits, and grid performance to minimize waste and maximize efficiency.</p>
-      
-      <p>Consider the case of Copenhagen, where AI-driven traffic management systems have reduced carbon emissions by 30% while improving commute times. The city's intelligent infrastructure communicates with electric vehicles, public transportation, and even pedestrian traffic to create a harmonious, low-emission urban environment.</p>
-      
-      <h2>Biotechnology Meets Environmental Science</h2>
-      <p>Perhaps one of the most fascinating developments is the emergence of bioengineered solutions to environmental problems. Researchers have successfully developed algae that can absorb carbon dioxide at rates 400 times faster than traditional trees. These microscopic organisms are being integrated into urban buildings as living walls that purify air while generating biomass for renewable energy.</p>
-      
-      <p>The implications extend beyond air purification. Genetically modified bacteria are being used to break down plastic waste in oceans, while specially designed fungi networks can remediate contaminated soil in a fraction of the time required by conventional methods.</p>
-      
-      <h2>The Circular Economy Revolution</h2>
-      <p>Technology is enabling a fundamental shift from linear "take-make-dispose" models to circular systems where waste becomes input for new processes. Blockchain technology ensures transparency in supply chains, making it possible to track materials from origin to end-of-life, facilitating perfect recycling loops.</p>
-      
-      <p>3D printing with recycled materials has reached industrial scale, with some manufacturers achieving 90% waste reduction. These printers can create everything from building materials to consumer electronics, all while maintaining quality standards that rival traditional manufacturing.</p>
-    `,
-    isPremium: true,
-  };
-
   const fetchArticle = async (id) => {
     try {
       const response = await axios.get(`${apiUrl}article/${id}`);
 
       if (response.status === 200) {
-        console.log(response.data.data);
         setArticleData(response.data.data);
       } else {
         toast.error(response.data.message || "Failed to fetch article.");
@@ -101,6 +62,24 @@ const ArticleViewPage = () => {
     } catch (error) {
       console.error("Error fetching article:", error);
       toast.error(error.message || "Failed to fetch article.");
+    }
+  };
+
+  const fetchSubscriptionInfo = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}all-subscription`, {
+        withCredentials: true,
+      });
+      if (response.status === 200) {
+        // console.log("Subscription info:", response.data.data);
+        setSubscriptionInfo(response.data.data);
+      } else {
+        toast.error(
+          response.data.message || "Failed to fetch subscription info."
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching subscription info:", error);
     }
   };
 
@@ -116,7 +95,6 @@ const ArticleViewPage = () => {
         const file = new Blob([response.data], { type: "application/pdf" });
         const fileUrl = URL.createObjectURL(file);
         setPdfUrl(fileUrl);
-        console.log("PDF URL created:", fileUrl);
       } else {
         toast.error(response.data.message || "Failed to fetch PDF.");
       }
@@ -129,28 +107,23 @@ const ArticleViewPage = () => {
     }
   };
 
-  // Handle PDF load success
   const onDocumentLoadSuccess = ({ numPages }) => {
     setTotalPages(numPages);
-    console.log(`PDF loaded successfully. Total pages: ${numPages}`);
   };
 
-  // Handle PDF load error
   const onDocumentLoadError = (error) => {
     console.error("Error loading PDF:", error);
     toast.error("Failed to load PDF document.");
   };
 
-  // Disable right-click and common keyboard shortcuts
   useEffect(() => {
     const disableRightClick = (e) => e.preventDefault();
     const disableKeyShortcuts = (e) => {
-      // Disable F12, Ctrl+Shift+I/J, Ctrl+U, Ctrl+S, Ctrl+C
       if (
-        e.keyCode === 123 || // F12
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+        e.keyCode === 123 ||
+        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
         (e.ctrlKey &&
-          (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67)) // Ctrl+U, Ctrl+S, Ctrl+C
+          (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67))
       ) {
         e.preventDefault();
         return false;
@@ -193,7 +166,6 @@ const ArticleViewPage = () => {
     }
   };
 
-  // Jump to specific page
   const handlePageJump = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
@@ -205,9 +177,9 @@ const ArticleViewPage = () => {
       fetchArticle(id);
       fetchPDF(id);
     }
+    fetchSubscriptionInfo();
   }, [id]);
 
-  // Cleanup PDF URL when component unmounts
   useEffect(() => {
     return () => {
       if (pdfUrl) {
@@ -215,6 +187,66 @@ const ArticleViewPage = () => {
       }
     };
   }, [pdfUrl]);
+
+  // Helper function to get billing badge color
+  const getBillingBadgeColor = (interval) => {
+    switch (interval) {
+      case "day":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "week":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "month":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "year":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  // Format billing interval for display
+  const formatBillingInterval = (cycle, interval) => {
+    return `${cycle} ${interval}${cycle > 1 ? "s" : ""}`;
+  };
+
+  // handle subscription logic here
+  const handleSubscribe = async (plan, articleId, userId) => {
+    try {
+      const payload = {
+        amount: plan.price,
+        currency: "USD", // or INR if needed
+        user_id: userId,
+        item_name: articleData?.title,
+        article_id: articleId,
+        subscription_plan_id: plan.id,
+      };
+
+      console.log("Subscription payload:", payload);
+
+      const response = await axios.post(
+        `${apiUrl}paypal/create-order`,
+        payload,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.success) {
+        // console.log("PayPal order response:", response.data);
+        
+        // Redirect to PayPal checkout
+        window.location.href = response.data.approval_url;
+      } else {
+        toast.error("Failed to create PayPal order");
+      }
+    } catch (error) {
+      console.error("PayPal order error:", error);
+      toast.error("Something went wrong with PayPal checkout");
+    }
+  };
 
   if (loading) {
     return <Loader />;
@@ -225,51 +257,19 @@ const ArticleViewPage = () => {
       <div className="max-w-6xl mx-auto px-2 md:px-6 py-8">
         {/* Article Header */}
         <div className="mb-8">
-          <div className="flex items-center flex-wrap space-x-3 mb-4">
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-2 md:mb-0">
-              {article.category}
-            </span>
-            <div className="flex flex-wrap gap-4 space-x-2">
-              {article.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
           <h1 className="text-4xl font-bold text-slate-900 mb-3 leading-tight">
-            {articleData?.title || article.title}
+            {articleData?.title}
           </h1>
 
-          <p className="text-xl text-slate-600 mb-6 leading-relaxed">
-            {articleData?.subtitle || article.subtitle}
-          </p>
+          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 flex-wrap">
+            <span className="flex items-center space-x-1 gap-2">
+              <View />
+              {articleData?.view_count}
+            </span>
+          </div>
 
-          {/* Author Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <img
-                src={articleData?.author?.avatar || article.author.avatar}
-                alt={articleData?.author?.name || article.author.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-slate-900">
-                    {articleData?.author?.name || article.author.name}
-                  </h3>
-                  <User className="w-4 h-4 text-slate-500" />
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-slate-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>{articleData?.publishDate || article.publishDate}</span>
-                </div>
-              </div>
-            </div>
+          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 flex-wrap">
+            <img src={articleData?.image} alt="" />
           </div>
         </div>
 
@@ -278,13 +278,13 @@ const ArticleViewPage = () => {
           <div
             className="text-slate-700 leading-relaxed"
             dangerouslySetInnerHTML={{
-              __html: articleData?.content || article.content,
+              __html: articleData?.description,
             }}
           />
         </div>
 
         {/* PDF Viewer Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-slate-800 to-slate-700 p-4">
             <div className="flex flex-col md:flex-row gap-5 md:gap-0 items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -394,8 +394,8 @@ const ArticleViewPage = () => {
                     }
                   />
                 </Document>
-                {/* ✅ Add watermark overlay here */}
-                <div className="absolute bottom-[50%] right-[30%]  pointer-events-none inline-flex items-center justify-center opacity-20 text-4xl font-bold text-red-600 rotate-45">
+                {/* Watermark overlay */}
+                <div className="absolute bottom-[50%] right-[30%] pointer-events-none inline-flex items-center justify-center opacity-20 text-4xl font-bold text-red-600 rotate-45">
                   Confidential • User: {articleData?.author?.name || "Guest"}
                 </div>
               </div>
@@ -453,24 +453,128 @@ const ArticleViewPage = () => {
             </div>
           )}
         </div>
-        {/* Subscription CTA */}
-        <div className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center text-white">
-          <h3 className="text-2xl font-bold mb-3">Want to Read More?</h3>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Get access to the complete article with {article.totalPages - 2}{" "}
-            additional pages, downloadable resources, and exclusive insights
-            from industry experts.
-          </p>
-          <button className="bg-white text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors shadow-lg">
-            Subscribe Now - $9.99/month
-          </button>
-          <p className="text-blue-200 text-sm mt-3">
-            Cancel anytime • 7-day free trial • Access to 1000+ premium articles
-          </p>
+
+        {/* New Subscription CTA Section */}
+        <div className="mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              Unlock Full Access
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Subscribe to access complete research documents, downloadable
+              resources, and exclusive insights from industry experts.
+            </p>
+          </div>
+
+          {subscriptionInfo && subscriptionInfo.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {subscriptionInfo.map((plan) => (
+                <div
+                  key={plan.id}
+                  className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        {plan.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {plan.description}
+                      </p>
+                    </div>
+                    {plan.price === "0.00" && (
+                      <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
+                        Free Trial
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-3xl font-bold text-gray-900">
+                        ₹{parseFloat(plan.price).toLocaleString()}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getBillingBadgeColor(
+                          plan.billing_interval
+                        )}`}
+                      >
+                        {formatBillingInterval(
+                          parseInt(plan.billing_cycle),
+                          plan.billing_interval
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span>
+                          Full PDF access with {totalPages || "all"} pages
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span>Downloadable resources</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span>Exclusive expert insights</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Check className="w-4 h-4 text-green-500" />
+                        <span>Access to 1000+ premium articles</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                        <Tag size={14} />
+                        <span>Plan ID: {plan.plan_id}</span>
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleSubscribe(plan, articleData?.id, 2)
+                        }
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                      >
+                        {plan.price === "0.00"
+                          ? "Start Free Trial"
+                          : "Subscribe Now"}
+                      </button>
+                      {plan.price === "0.00" && (
+                        <p className="text-center text-xs text-gray-500 mt-2">
+                          7-day trial • Cancel anytime
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Tag className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No subscription plans available
+              </h3>
+              <p className="text-gray-500">
+                Please check back later for subscription options.
+              </p>
+            </div>
+          )}
+
+          <div className="text-center mt-6">
+            <p className="text-gray-500 text-sm">
+              All plans include full access to our research library • Cancel
+              anytime • Secure payment
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* CSS to disable text selection and other interactions */}
       <style jsx>{`
         .no-select {
           -webkit-user-select: none;
