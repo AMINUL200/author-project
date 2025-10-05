@@ -27,9 +27,9 @@ import "react-toastify/dist/ReactToastify.css";
 function App() {
   const { userData, token } = useAuth();
 
-  useEffect(() => {
-    toast.info("Toastify test message!", { autoClose: 2000 });
-  }, []);
+  // useEffect(() => {
+  //   toast.info("Toastify test message!", { autoClose: 2000 });
+  // }, []);
   // console.log("User Data:", userData);
   // console.log("Token:", token);
   return (
