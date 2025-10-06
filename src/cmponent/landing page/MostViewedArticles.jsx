@@ -80,7 +80,7 @@ const MostViewedArticles = ({ mostView, loading, error }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Most Viewed Articles
+            Current Published Books
           </h2>
           <p className="text-xl text-gray-600">
             Discover what's trending among our readers
@@ -123,7 +123,7 @@ const MostViewedArticles = ({ mostView, loading, error }) => {
                 </div>
               ))}
             </div>
-            <div className="text-center mt-12">
+            {/* <div className="text-center mt-12">
               <Link
                 to="/articles"
                 className="group text-purple-600 hover:text-purple-700 font-semibold inline-flex items-center cursor-pointer"
@@ -134,7 +134,7 @@ const MostViewedArticles = ({ mostView, loading, error }) => {
                   className="ml-2 transform transition-transform duration-300 group-hover:translate-x-1"
                 />
               </Link>
-            </div>
+            </div> */}
           </>
         ) : (
           <div className="text-center py-12">

@@ -4,22 +4,41 @@ import {
   BookOpen,
   Users,
   TrendingUp,
-  X,
   Check,
   Sparkles,
   Star,
   Award,
 } from "lucide-react";
+import Skeleton from "../common/Skeleton";
+import HeroSectionSkeleton from "../skeliton section/HeroSectionSkeleton";
 
-const HeroSection = () => {
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
+const HeroSection = ({ data, loading = false, error = null }) => {
+  if (loading) {
+    return <HeroSectionSkeleton />;
+  }
 
-  const stats = [
-    { icon: BookOpen, value: "10K+", label: "Articles Published" },
-    { icon: Users, value: "50K+", label: "Active Readers" },
-    { icon: TrendingUp, value: "1M+", label: "Monthly Views" },
-  ];
+  // --- Error & normal UI remain same ---
+  if (error || !data) {
+    return (
+      <section className="min-h-screen flex items-center justify-center bg-white">
+        <p className="text-red-500 text-xl">
+          {error ? error : "No banner data available"}
+        </p>
+      </section>
+    );
+  }
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-rotate images
+  React.useEffect(() => {
+    if (!data?.images || data.images.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % data?.images.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -49,19 +68,17 @@ const HeroSection = () => {
               {/* Main Heading */}
               <h1 className="text-5xl md:text-5xl font-extrabold leading-tight">
                 <span className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 bg-clip-text text-transparent">
-                  Read Stories That
+                  {data?.heading1}
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Inspire & Transform
+                  {data?.heading2}
                 </span>
               </h1>
 
               {/* Description */}
               <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-2xl">
-                Discover thought-provoking articles from world-class writers.
-                Join our community and unlock unlimited access to premium
-                content.
+                {data?.description}
               </p>
 
               {/* CTA Buttons */}
@@ -75,13 +92,9 @@ const HeroSection = () => {
                   }}
                   className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl flex items-center justify-center gap-2"
                 >
-                  Start Reading Now
+                  {data?.button_name}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-
-                {/* <button className="border-2 border-slate-300 text-slate-700 hover:border-purple-600 hover:text-purple-600 hover:bg-purple-50 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300">
-                  Browse Articles
-                </button> */}
               </div>
             </div>
 
@@ -90,13 +103,38 @@ const HeroSection = () => {
               <div className="relative">
                 {/* Main Card */}
                 <div className="bg-white rounded-3xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=800&fit=crop"
-                      alt="Reading"
-                      style={{ height: "350px" }}
-                      className="w-full object-cover"
-                    />
+                  <div
+                    className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl overflow-hidden relative"
+                    style={{ height: "350px" }}
+                  >
+                    {/* Image Stack with Transitions */}
+                    {data?.images?.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Reading ${index + 1}`}
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
+                          index === currentImageIndex
+                            ? "opacity-100 scale-100"
+                            : "opacity-0 scale-110"
+                        }`}
+                      />
+                    ))}
+
+                    {/* Image Indicators */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+                      {data?.images?.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            index === currentImageIndex
+                              ? "bg-white w-8"
+                              : "bg-white/50 hover:bg-white/75"
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between">
@@ -104,15 +142,17 @@ const HeroSection = () => {
                         <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full"></div>
                         <div>
                           <p className="font-semibold text-slate-900">
-                            Featured Article
+                            {data?.image_title}
                           </p>
-                          <p className="text-sm text-gray-600">5 min read</p>
+                          <p className="text-sm text-gray-600">
+                            {data?.image_subtitle}
+                          </p>
                         </div>
                       </div>
                       <Award className="w-6 h-6 text-yellow-500" />
                     </div>
                     <div className="flex gap-2">
-                      {[...Array(5)].map((_, i) => (
+                      {[...Array(4)].map((_, i) => (
                         <Star
                           key={i}
                           className="w-4 h-4 fill-yellow-400 text-yellow-400"
