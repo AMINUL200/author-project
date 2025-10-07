@@ -4,37 +4,7 @@ const Skeleton = ({ className }) => (
   <div className={`animate-pulse bg-gray-300 ${className}`}></div>
 );
 
-// Dummy data for demonstration
-const dummyAuthorInfo = {
-  first_name: "Sarah",
-  last_name: "Mitchell",
-  image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face",
-  affiliation: "Senior Writer & Content Strategist",
-  description: "A passionate storyteller with over 10 years of experience crafting compelling narratives across technology, lifestyle, and personal development. Sarah believes in the power of words to inspire change and create meaningful connections. Her work has been featured in numerous publications, and she continues to inspire writers around the world through her authentic approach to storytelling.\n\nBorn and raised in the Pacific Northwest, Sarah developed a love for literature early on, spending countless hours in local libraries. She holds a Master's degree in Creative Writing from Columbia University and has worked with major publishing houses before venturing into independent writing and content strategy.",
-  country: "United States",
-  tagline: "Helping writers build sustainable careers through authentic storytelling",
-  achievements: [
-    "Featured in Writer's Digest for 5 consecutive years",
-    "Published author of 3 bestselling books",
-    "Former editor at major publishing house",
-    "Winner of the National Book Critics Circle Award",
-    "Keynote speaker at 50+ writing conferences"
-  ],
-  stats: {
-    articles: "500+",
-    subscribers: "10K+",
-    years: "10+"
-  },
-  expertise: ["Creative Writing", "Content Strategy", "Digital Marketing", "Personal Branding", "Memoir Writing", "Fiction"],
-  social_links: {
-    twitter: "https://twitter.com",
-    linkedin: "https://linkedin.com",
-    fb: "https://facebook.com",
-    instagram: "https://instagram.com"
-  }
-};
-
-const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error = null }) => {
+const AuthorHighlight = ({ authorInfo, loading = false, error = null }) => {
   if (loading) {
     return (
       <section className="py-20 bg-white flex justify-center">
@@ -65,7 +35,7 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
   }
 
   const getAuthorImage = () => {
-    if (authorInfo?.image) return authorInfo.image;
+    if (authorInfo?.image1) return authorInfo.image1;
     return "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face";
   };
 
@@ -73,6 +43,17 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
     if (url && url !== "http://127.0.0.1:8000/api/author") {
       window.open(url, "_blank", "noopener,noreferrer");
     }
+  };
+
+  // Process achievements string into array if needed
+  const getAchievementsArray = () => {
+    if (Array.isArray(authorInfo.achievements)) {
+      return authorInfo.achievements;
+    }
+    if (typeof authorInfo.achievements === 'string') {
+      return authorInfo.achievements.split(',').map(item => item.trim());
+    }
+    return [];
   };
 
   // Split description into paragraphs
@@ -92,7 +73,7 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
         <div className="mb-8">
           <img
             src={getAuthorImage()}
-            alt={`${authorInfo?.first_name} ${authorInfo?.last_name}`}
+            alt={authorInfo?.name}
             className="w-48 h-48 rounded object-cover shadow-md float-left mr-8 mb-4"
           />
           
@@ -101,20 +82,12 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
             {descriptionParagraphs.length > 0 ? (
               descriptionParagraphs.map((paragraph, index) => (
                 <p key={index} className="text-lg font-serif">
-                  {index === 0 && (
-                    <span className="font-bold">
-                      {authorInfo?.first_name} {authorInfo?.last_name}{' '}
-                    </span>
-                  )}
-                  {index === 0 ? paragraph.replace(`${authorInfo?.first_name} ${authorInfo?.last_name}`, '').trim() : paragraph}
+                  {paragraph}
                 </p>
               ))
             ) : (
               <p className="text-lg font-serif">
-                <span className="font-bold">
-                  {authorInfo?.first_name} {authorInfo?.last_name}{' '}
-                </span>
-                is a passionate writer dedicated to sharing insightful stories and thought-provoking content. Subscribe to get exclusive access to premium articles and join a community of engaged readers.
+                {authorInfo?.description || `Welcome to the professional profile of ${authorInfo?.name}.`}
               </p>
             )}
           </div>
@@ -124,32 +97,38 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
         <div className="clear-both"></div>
 
         {/* Achievements Section with Right Image */}
-        {authorInfo?.achievements && authorInfo.achievements.length > 0 && (
-          <div className="mt-12 mb-12">
-            <img
-              src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=300&fit=crop"
-              alt="Writing workspace"
-              className="w-64 h-48 rounded object-cover shadow-md float-right ml-8 mb-4"
-            />
-            <div className="text-gray-800 leading-relaxed space-y-4">
-              <p className="text-lg font-serif">
-                {authorInfo.first_name}'s work has garnered significant recognition throughout her career. {authorInfo.achievements.slice(0, 3).join(', ')}.
-              </p>
-              {authorInfo.achievements.length > 3 && (
-                <p className="text-lg font-serif">
-                  {authorInfo.achievements.slice(3).join(', ')}.
-                </p>
-              )}
-            </div>
-            <div className="clear-both"></div>
-          </div>
-        )}
+        {(() => {
+          const achievements = getAchievementsArray();
+          if (achievements.length > 0) {
+            return (
+              <div className="mt-12 mb-12">
+                <img
+                  src={authorInfo?.image2 || "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=300&fit=crop"}
+                  alt={`${authorInfo?.name}'s achievements`}
+                  className="w-64 h-48 rounded object-cover shadow-md float-right ml-8 mb-4"
+                />
+                <div className="text-gray-800 leading-relaxed space-y-4">
+                  <p className="text-lg font-serif">
+                    <strong>{authorInfo?.name}</strong>'s work has garnered significant recognition throughout their career. Key achievements include:
+                  </p>
+                  <ul className="list-disc list-inside text-lg font-serif space-y-2">
+                    {achievements.map((achievement, index) => (
+                      <li key={index}>{achievement}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="clear-both"></div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Expertise as flowing text */}
         {authorInfo?.expertise && authorInfo.expertise.length > 0 && (
           <div className="mb-12">
             <p className="text-lg font-serif text-gray-800 leading-relaxed">
-              {authorInfo.first_name} specializes in {authorInfo.expertise.join(', ').toLowerCase()}, bringing a wealth of knowledge and experience to each project.
+              <strong>{authorInfo.name}</strong> specializes in {authorInfo.expertise.join(', ').toLowerCase()}, bringing a wealth of knowledge and experience to each project.
             </p>
           </div>
         )}
@@ -192,7 +171,7 @@ const AuthorHighlight = ({ authorInfo = dummyAuthorInfo, loading = false, error 
                   <Linkedin size={24} />
                 </button>
               )}
-              {authorInfo.social_links.fb && (
+              {authorInfo.social_links.facebook && (
                 <button
                   onClick={() => handleSocialClick("facebook", authorInfo.social_links.fb)}
                   className="text-gray-600 hover:text-gray-900 transition-colors"

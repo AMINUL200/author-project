@@ -8,13 +8,16 @@ import {
   Tag,
   Calendar,
   Check,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import Loader from "../cmponent/common/Loader";
+import HTMLFlipBook from "react-pageflip";
 
 import { pdfjs, Document, Page } from "react-pdf";
+import { useAuth } from "../context/AuthContext";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -24,19 +27,22 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 const ArticleViewPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const storageUrl = import.meta.env.VITE_STORAGE_URL;
+  const { userData, token } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showPDF, setShowPDF] = useState(false);
   const { id } = useParams();
   const [articleData, setArticleData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pdfUrl, setPdfUrl] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [currentImagePage, setCurrentImagePage] = useState(0);
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
 
   const [containerWidth, setContainerWidth] = useState(null);
   const containerRef = useRef();
+  const flipBookRef = useRef();
 
   useEffect(() => {
     const updateWidth = () => {
@@ -52,6 +58,7 @@ const ArticleViewPage = () => {
 
   const fetchArticle = async (id) => {
     try {
+      setLoading(true);
       const response = await axios.get(`${apiUrl}article/${id}`);
 
       if (response.status === 200) {
@@ -62,6 +69,8 @@ const ArticleViewPage = () => {
     } catch (error) {
       console.error("Error fetching article:", error);
       toast.error(error.message || "Failed to fetch article.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,7 +80,6 @@ const ArticleViewPage = () => {
         withCredentials: true,
       });
       if (response.status === 200) {
-        // console.log("Subscription info:", response.data.data);
         setSubscriptionInfo(response.data.data);
       } else {
         toast.error(
@@ -83,72 +91,71 @@ const ArticleViewPage = () => {
     }
   };
 
-  const fetchPDF = async (id) => {
-    try {
-      setPdfLoading(true);
-      const response = await axios.get(`${apiUrl}articles/${id}/pdf`, {
-        responseType: "blob",
-        withCredentials: true,
-      });
-
-      if (response.status === 200) {
-        const file = new Blob([response.data], { type: "application/pdf" });
-        const fileUrl = URL.createObjectURL(file);
-        setPdfUrl(fileUrl);
-      } else {
-        toast.error(response.data.message || "Failed to fetch PDF.");
-      }
-    } catch (error) {
-      console.error("Error fetching PDF:", error);
-      toast.error(error.message || "Failed to fetch PDF.");
-    } finally {
-      setPdfLoading(false);
-      setLoading(false);
-    }
-  };
-
   const onDocumentLoadSuccess = ({ numPages }) => {
     setTotalPages(numPages);
+    setPdfLoading(false);
   };
 
   const onDocumentLoadError = (error) => {
     console.error("Error loading PDF:", error);
     toast.error("Failed to load PDF document.");
+    setPdfLoading(false);
   };
 
-  useEffect(() => {
-    const disableRightClick = (e) => e.preventDefault();
-    const disableKeyShortcuts = (e) => {
-      if (
-        e.keyCode === 123 ||
-        (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-        (e.ctrlKey &&
-          (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67))
-      ) {
-        e.preventDefault();
-        return false;
-      }
-    };
+  const onDocumentLoadStart = () => {
+    setPdfLoading(true);
+  };
 
-    const disableSelection = (e) => {
-      if (showPDF) {
-        e.preventDefault();
-        return false;
-      }
-    };
+  // Flip book event handlers
+  const onPageFlip = (e) => {
+    setCurrentImagePage(e.data);
+  };
 
-    document.addEventListener("contextmenu", disableRightClick);
-    document.addEventListener("keydown", disableKeyShortcuts);
-    document.addEventListener("selectstart", disableSelection);
-    document.addEventListener("dragstart", disableSelection);
+  const nextImage = () => {
+    if (flipBookRef.current) {
+      flipBookRef.current.pageFlip().flipNext();
+    }
+  };
 
-    return () => {
-      document.removeEventListener("contextmenu", disableRightClick);
-      document.removeEventListener("keydown", disableKeyShortcuts);
-      document.removeEventListener("selectstart", disableSelection);
-      document.removeEventListener("dragstart", disableSelection);
-    };
-  }, [showPDF]);
+  const prevImage = () => {
+    if (flipBookRef.current) {
+      flipBookRef.current.pageFlip().flipPrev();
+    }
+  };
+
+  // useEffect(() => {
+  //   const disableRightClick = (e) => e.preventDefault();
+  //   const disableKeyShortcuts = (e) => {
+  //     if (
+  //       e.keyCode === 123 ||
+  //       (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+  //       (e.ctrlKey &&
+  //         (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67))
+  //     ) {
+  //       e.preventDefault();
+  //       return false;
+  //     }
+  //   };
+
+  //   const disableSelection = (e) => {
+  //     if (showPDF) {
+  //       e.preventDefault();
+  //       return false;
+  //     }
+  //   };
+
+  //   document.addEventListener("contextmenu", disableRightClick);
+  //   document.addEventListener("keydown", disableKeyShortcuts);
+  //   document.addEventListener("selectstart", disableSelection);
+  //   document.addEventListener("dragstart", disableSelection);
+
+  //   return () => {
+  //     document.removeEventListener("contextmenu", disableRightClick);
+  //     document.removeEventListener("keydown", disableKeyShortcuts);
+  //     document.removeEventListener("selectstart", disableSelection);
+  //     document.removeEventListener("dragstart", disableSelection);
+  //   };
+  // }, [showPDF]);
 
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 3));
   const handleZoomOut = () =>
@@ -175,18 +182,9 @@ const ArticleViewPage = () => {
   useEffect(() => {
     if (id) {
       fetchArticle(id);
-      fetchPDF(id);
     }
     fetchSubscriptionInfo();
   }, [id]);
-
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [pdfUrl]);
 
   // Helper function to get billing badge color
   const getBillingBadgeColor = (interval) => {
@@ -212,6 +210,7 @@ const ArticleViewPage = () => {
   // handle subscription logic here
   const handleSubscribe = async (plan, articleId, userId) => {
     try {
+      setLoadingPlanId(plan.id);
       const payload = {
         amount: plan.price,
         currency: "USD", // or INR if needed
@@ -235,8 +234,6 @@ const ArticleViewPage = () => {
       );
 
       if (response.data.success) {
-        // console.log("PayPal order response:", response.data);
-        
         // Redirect to PayPal checkout
         window.location.href = response.data.approval_url;
       } else {
@@ -245,6 +242,8 @@ const ArticleViewPage = () => {
     } catch (error) {
       console.error("PayPal order error:", error);
       toast.error("Something went wrong with PayPal checkout");
+    } finally {
+      setLoadingPlanId(null); // stop loading
     }
   };
 
@@ -263,14 +262,197 @@ const ArticleViewPage = () => {
 
           <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 flex-wrap">
             <span className="flex items-center space-x-1 gap-2">
-              <View />
-              {articleData?.view_count}
+              <View size={16} />
+              {articleData?.view_count || 0} views
+            </span>
+            <span className="flex items-center space-x-1 gap-2">
+              <Calendar size={16} />
+              {new Date(articleData?.created_at).toLocaleDateString()}
             </span>
           </div>
 
-          <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 flex-wrap">
-            <img src={articleData?.image} alt="" />
-          </div>
+          {/* Article Images with 3D Flip Book */}
+          {articleData?.images && articleData.images.length > 0 && (
+            <div className="mb-8">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">
+                  Image Gallery
+                </h3>
+                <p className="text-slate-600">
+                  Flip through the images like a book
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center">
+                {/* Flip Book Container */}
+                <div
+                  className="relative mb-6 w-full max-w-4xl"
+                  ref={containerRef}
+                >
+                  <HTMLFlipBook
+                    ref={flipBookRef}
+                    width={
+                      containerWidth
+                        ? Math.min(containerWidth * 0.45, 500)
+                        : 500
+                    }
+                    height={
+                      containerWidth ? Math.min(containerWidth * 0.6, 700) : 700
+                    }
+                    size="stretch"
+                    minWidth={280}
+                    maxWidth={600}
+                    minHeight={600}
+                    maxHeight={800}
+                    maxShadowOpacity={0.5}
+                    showCover={true}
+                    mobileScrollSupport={true}
+                    onFlip={onPageFlip}
+                    style={{
+                      background: "transparent",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                    className="mx-auto shadow-2xl"
+                    usePortrait={true}
+                    autoSize={true}
+                  >
+                    {/* Cover Page */}
+                    <div className="page-cover">
+                      <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white flex flex-col items-center justify-center p-8 h-full w-full">
+                        <div className="text-center">
+                          <h3 className="text-2xl font-bold mb-2">
+                            {articleData?.title}
+                          </h3>
+                          <p className="text-blue-100 mb-4">Image Gallery</p>
+                          <div className="w-16 h-1 bg-white/30 mx-auto mb-4"></div>
+                          <p className="text-sm text-blue-100">
+                            {articleData?.images.length} images
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Image Pages */}
+                    {/* Image Pages - Maximum Height Version */}
+                    {articleData.images.map((image, index) => (
+                      <div key={index} className="page-content">
+                        <div className="bg-white h-full w-full flex flex-col items-center justify-center p-0 relative overflow-hidden">
+                          {" "}
+                          {/* No padding */}
+                          <div className="w-full h-full flex items-center justify-center">
+                            {" "}
+                            {/* Full height container */}
+                            <img
+                              src={image}
+                              alt={`${articleData.title} - Image ${index + 1}`}
+                              className="w-auto h-[95%] object-contain" /* 95% of container height */
+                            />
+                          </div>
+                          <div className="absolute bottom-2 left-0 right-0 text-center">
+                            <p className="text-xs text-slate-600 font-medium bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full inline-block">
+                              Image {index + 1} of {articleData.images.length}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Back Cover */}
+                    <div className="page-cover">
+                      <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white flex flex-col items-center justify-center p-8 h-full w-full">
+                        <div className="text-center">
+                          <h3 className="text-xl font-bold mb-2">The End</h3>
+                          <p className="text-gray-300 text-sm">
+                            Thank you for viewing the gallery
+                          </p>
+                          <div className="w-16 h-1 bg-white/20 mx-auto my-4"></div>
+                          <p className="text-xs text-gray-400">
+                            Continue reading below
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </HTMLFlipBook>
+                </div>
+
+                {/* Flip Book Controls */}
+                <div className="flex items-center gap-4 mb-4">
+                  <button
+                    onClick={prevImage}
+                    disabled={currentImagePage === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft size={20} />
+                    Previous
+                  </button>
+
+                  <span className="text-slate-700 font-medium">
+                    Page {currentImagePage + 1} of{" "}
+                    {articleData.images.length + 2}
+                  </span>
+
+                  <button
+                    onClick={nextImage}
+                    disabled={
+                      currentImagePage === articleData.images.length + 1
+                    }
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+
+                {/* Thumbnail Navigation */}
+                <div className="flex flex-wrap justify-center gap-2 mt-4">
+                  {articleData.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        if (flipBookRef.current) {
+                          flipBookRef.current.pageFlip().flip(index + 1);
+                        }
+                      }}
+                      className={`w-16 h-16 rounded border-2 overflow-hidden transition-all ${
+                        currentImagePage === index + 1
+                          ? "border-blue-600 scale-110 shadow-lg"
+                          : "border-gray-300 hover:border-blue-400"
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          {/* Article Links */}
+          {articleData?.links && articleData.links.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                Related Links
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {articleData.links.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <ExternalLink size={16} />
+                    <span>{link.platform}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Article Content */}
@@ -284,175 +466,174 @@ const ArticleViewPage = () => {
         </div>
 
         {/* PDF Viewer Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-slate-800 to-slate-700 p-4">
-            <div className="flex flex-col md:flex-row gap-5 md:gap-0 items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">PDF</span>
+        {articleData?.pdf_path && (
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 p-4">
+              <div className="flex flex-col md:flex-row gap-5 md:gap-0 items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">PDF</span>
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold">
+                      Research Document
+                    </h3>
+                    <p className="text-slate-300 text-sm">
+                      {totalPages > 0
+                        ? `${totalPages} page${
+                            totalPages > 1 ? "s" : ""
+                          } available`
+                        : "Loading document..."}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-white font-semibold">
-                    Research Document
-                  </h3>
-                  <p className="text-slate-300 text-sm">
-                    {totalPages > 0
-                      ? `All ${totalPages} pages available`
-                      : "Loading..."}
-                  </p>
-                </div>
-              </div>
 
-              {/* PDF Controls */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleZoomOut}
-                  className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-                  disabled={zoomLevel <= 0.5}
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </button>
-                <span className="text-white text-sm px-2">
-                  {Math.round(zoomLevel * 100)}%
-                </span>
-                <button
-                  onClick={handleZoomIn}
-                  className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-                  disabled={zoomLevel >= 3}
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </button>
-                <div className="w-px h-6 bg-slate-600 mx-2"></div>
-                <button
-                  onClick={handlePrevPage}
-                  className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
+                {/* PDF Controls */}
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max={totalPages}
-                    value={currentPage}
-                    onChange={(e) =>
-                      handlePageJump(parseInt(e.target.value) || 1)
-                    }
-                    className="w-12 px-1 py-1 text-center text-white text-sm rounded border"
-                  />
-                  <span className="text-white text-sm">/ {totalPages}</span>
+                  <button
+                    onClick={handleZoomOut}
+                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    disabled={zoomLevel <= 0.5}
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <span className="text-white text-sm px-2">
+                    {Math.round(zoomLevel * 100)}%
+                  </span>
+                  <button
+                    onClick={handleZoomIn}
+                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    disabled={zoomLevel >= 3}
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                  <div className="w-px h-6 bg-slate-600 mx-2"></div>
+                  <button
+                    onClick={handlePrevPage}
+                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    disabled={currentPage <= 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      value={currentPage}
+                      onChange={(e) =>
+                        handlePageJump(parseInt(e.target.value) || 1)
+                      }
+                      className="w-12 px-1 py-1 text-center text-white text-sm rounded border border-slate-500 bg-slate-700"
+                    />
+                    <span className="text-white text-sm">/ {totalPages}</span>
+                  </div>
+                  <button
+                    onClick={handleNextPage}
+                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                    disabled={currentPage >= totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={handleNextPage}
-                  className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-                  disabled={currentPage >= totalPages}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
-          </div>
 
-          {/* PDF Display Area */}
-          <div className="p-2 md:p-6 bg-slate-50 min-h-[600px] flex items-center justify-center">
-            {pdfLoading ? (
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-slate-500">Loading PDF...</p>
-              </div>
-            ) : pdfUrl ? (
-              <div
-                ref={containerRef}
-                className="relative w-full max-w-full overflow-auto"
-              >
-                <Document
-                  file={pdfUrl}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={onDocumentLoadError}
-                  loading={
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                      <p className="text-slate-500">Loading PDF...</p>
-                    </div>
-                  }
-                  className="flex justify-center"
+            {/* PDF Display Area */}
+            <div className="p-2 md:p-6 bg-slate-50 min-h-[600px] flex items-center justify-center">
+              {pdfLoading ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-slate-500">Loading PDF document...</p>
+                </div>
+              ) : (
+                <div
+                  ref={containerRef}
+                  className="relative w-full max-w-full overflow-auto"
                 >
-                  <Page
-                    pageNumber={currentPage}
-                    scale={zoomLevel}
-                    width={
-                      containerWidth ? containerWidth * zoomLevel : undefined
-                    }
-                    renderAnnotationLayer={false}
-                    renderTextLayer={false}
-                    className="shadow-lg"
+                  <Document
+                    file={articleData.pdf_path}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    onLoadStart={onDocumentLoadStart}
                     loading={
-                      <div className="w-full h-96 bg-slate-200 animate-pulse flex items-center justify-center">
-                        <p className="text-slate-500">Loading page...</p>
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        <p className="text-slate-500">
+                          Loading PDF document...
+                        </p>
                       </div>
                     }
-                  />
-                </Document>
-                {/* Watermark overlay */}
-                <div className="absolute bottom-[50%] right-[30%] pointer-events-none inline-flex items-center justify-center opacity-20 text-4xl font-bold text-red-600 rotate-45">
-                  Confidential • User: {articleData?.author?.name || "Guest"}
+                    className="flex justify-center"
+                  >
+                    <Page
+                      pageNumber={currentPage}
+                      scale={zoomLevel}
+                      width={
+                        containerWidth ? containerWidth * zoomLevel : undefined
+                      }
+                      renderAnnotationLayer={false}
+                      renderTextLayer={false}
+                      className="shadow-lg"
+                      loading={
+                        <div className="w-full h-96 bg-slate-200 animate-pulse flex items-center justify-center">
+                          <p className="text-slate-500">
+                            Loading page {currentPage}...
+                          </p>
+                        </div>
+                      }
+                    />
+                  </Document>
+                  {/* Watermark overlay */}
+                  <div className="absolute bottom-[50%] right-[30%] pointer-events-none inline-flex items-center justify-center opacity-20 text-4xl font-bold text-red-600 rotate-45">
+                    Confidential • Document Preview
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-slate-500 mb-2">PDF preview not available</p>
-                <button
-                  onClick={() => fetchPDF(id)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Retry Loading PDF
-                </button>
+              )}
+            </div>
+
+            {/* Page Navigation */}
+            {totalPages > 1 && (
+              <div className="bg-slate-100 px-6 py-4 border-t">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+                  <div className="text-sm text-slate-600">
+                    Showing page {currentPage} of {totalPages}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      First
+                    </button>
+                    <button
+                      onClick={handlePrevPage}
+                      disabled={currentPage <= 1}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage >= totalPages}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Last
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-
-          {/* Page Navigation */}
-          {totalPages > 1 && (
-            <div className="bg-slate-100 px-6 py-4 border-t">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
-                <div className="text-sm text-slate-600">
-                  Showing page {currentPage} of {totalPages}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    First
-                  </button>
-                  <button
-                    onClick={handlePrevPage}
-                    disabled={currentPage <= 1}
-                    className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage >= totalPages}
-                    className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 text-sm bg-white border rounded hover:bg-slate-50 disabled:opacity-50"
-                  >
-                    Last
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* New Subscription CTA Section */}
         <div className="mb-8">
@@ -536,12 +717,25 @@ const ArticleViewPage = () => {
                         onClick={() =>
                           handleSubscribe(plan, articleData?.id, 2)
                         }
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                        disabled={loadingPlanId === plan.id}
+                        className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                          loadingPlanId === plan.id
+                            ? "opacity-70 cursor-not-allowed"
+                            : "hover:shadow-lg transform hover:-translate-y-0.5"
+                        }`}
                       >
-                        {plan.price === "0.00"
-                          ? "Start Free Trial"
-                          : "Subscribe Now"}
+                        {loadingPlanId === plan.id ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Processing...</span>
+                          </div>
+                        ) : plan.price === "0.00" ? (
+                          "Start Free Trial"
+                        ) : (
+                          "Subscribe Now"
+                        )}
                       </button>
+
                       {plan.price === "0.00" && (
                         <p className="text-center text-xs text-gray-500 mt-2">
                           7-day trial • Cancel anytime
@@ -583,6 +777,42 @@ const ArticleViewPage = () => {
           user-select: none;
           -webkit-touch-callout: none;
           -webkit-tap-highlight-color: transparent;
+        }
+
+        .page-cover,
+        .page-content {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+
+        .stf__wrapper {
+          width: 100% !important;
+          height: 100% !important;
+        }
+
+        .stf__block {
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Ensure images use maximum available height */
+        .page-content img {
+          display: block;
+          margin: auto;
+          max-height: none !important; /* Remove any max-height constraints */
+          object-fit: contain;
+        }
+
+        /* Remove padding constraints for image containers */
+        .page-content > div {
+          padding: 0 !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .page-content {
+            padding: 0.5rem;
+          }
         }
       `}</style>
     </div>

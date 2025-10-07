@@ -23,6 +23,17 @@ import PaymentReturnPage from "./pages/PaymentReturnPage";
 import EventsPageTemplate from "./pages/EventsPageTemplate";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import BannerList from "./pages/admin/handle landing page/BannerList";
+import AddBanner from "./pages/admin/handle landing page/AddBanner";
+import HandleFeedBack from "./pages/admin/handle landing page/HandleFeedBack";
+import AddFeedback from "./pages/admin/handle landing page/AddFeedback";
+import HandleAuthorBio from "./pages/admin/handle landing page/HandleAuthorBio";
+import AddAuthorBio from "./pages/admin/handle landing page/AddAuthorBio";
+import HandlePublishedBook from "./pages/admin/handle landing page/HandlePublishedBook";
+import HandleEvent from "./pages/admin/handle landing page/HandleEvent";
+import AddEvent from "./pages/admin/handle landing page/AddEvent";
+import HandleFeatureBook from "./pages/admin/handle landing page/HandleFeatureBook";
+import AddFeatureBook from "./pages/admin/handle landing page/AddFeatureBook";
 
 function App() {
   const { userData, token } = useAuth();
@@ -97,7 +108,25 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="profile" element={<AdminProfilePage />} />
-          <Route path="landing-page/banners" element={<HandleBanner />} />
+          {/* <Route path="landing-page/banners" element={<HandleBanner />} /> */}
+          <Route path="landing-page/banners" element={<BannerList />} />
+          <Route path="landing-page/add-banners" element={<AddBanner/>}/>
+          <Route path="landing-page/feedback" element={<HandleFeedBack/>}/>
+          <Route path="landing-page/add-feedback" element={<AddFeedback/>}/>
+          <Route path="landing-page/author-bio" element={<HandleAuthorBio/>}/>
+          <Route path="landing-page/add-author-bio" element={<AddAuthorBio/>}/>
+          <Route path="landing-page/published-book" element={<HandlePublishedBook/>}/>
+          <Route path="landing-page/add-published-book" element={<AddNewArticle/>}/>
+          <Route path="landing-page/event-list" element={<HandleEvent/>}/>
+          <Route path="landing-page/add-event" element={<AddEvent/>}/>
+          <Route path="landing-page/feature-book" element={<HandleFeatureBook/>}/>
+          <Route path="landing-page/add-feature-book" element={<AddFeatureBook/>}/>
+
+
+
+
+
+
           <Route path="articles/categories" element={<ArticleCategories />} />
           <Route path="articles" element={<AdminViewArticles />} />
           <Route path="articles/new" element={<AddNewArticle />} />

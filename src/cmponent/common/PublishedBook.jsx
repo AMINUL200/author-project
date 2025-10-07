@@ -8,15 +8,14 @@ import HTMLFlipBook from "react-pageflip";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { useNavigate } from "react-router-dom";
 
 // Page Cover Component
 const PageCover = React.forwardRef((props, ref) => {
   return (
     <div className="page page-cover" ref={ref} data-density="hard">
       <div className="page-content">
-        <div className="cover-content">
-          {props.children}
-        </div>
+        <div className="cover-content">{props.children}</div>
       </div>
     </div>
   );
@@ -24,16 +23,16 @@ const PageCover = React.forwardRef((props, ref) => {
 
 // Page Component
 const Page = React.forwardRef((props, ref) => {
-  const { image, title, author, description, pageNumber, totalPages } = props;
-  
+  const { image, title, description, pageNumber, totalPages } = props;
+
   return (
     <div className="page" ref={ref}>
       <div className="page-content">
         <div className="page-inner">
           {image && (
             <div className="page-image-container">
-              <img 
-                src={image} 
+              <img
+                src={image}
                 alt={`Page ${pageNumber}`}
                 className="page-image"
               />
@@ -41,7 +40,6 @@ const Page = React.forwardRef((props, ref) => {
           )}
           <div className="page-text-content">
             <h3 className="page-title">{title}</h3>
-            {author && <p className="page-author">by {author}</p>}
             {description && <p className="page-description">{description}</p>}
           </div>
           <div className="page-footer">
@@ -53,88 +51,41 @@ const Page = React.forwardRef((props, ref) => {
   );
 });
 
-const PublishedBook = () => {
+const PublishedBook = ({
+  publishedBookData = [],
+  loading = false,
+  error = null,
+}) => {
   const swiperRef = useRef(null);
   const flipBookRefs = useRef({});
   const [isHovered, setIsHovered] = useState({});
   const [bookStates, setBookStates] = useState({});
+  const navigate = useNavigate()
 
-  const publications = [
-    {
-      id: 1,
-      title: "The Art of Modern Design",
-      author: "Sarah Mitchell",
-      coverImages: [
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=600&fit=crop"
-      ],
-      year: "2024",
-      category: "Design",
-      description: "Explore the fundamentals of contemporary design principles and their application in the modern world."
-    },
-    {
-      id: 2,
-      title: "Digital Transformation",
-      author: "Michael Chen",
-      coverImages: [
-        "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=600&fit=crop"
-      ],
-      year: "2023",
-      category: "Technology",
-      description: "Navigate the digital landscape with proven strategies for technological innovation and growth."
-    },
-    {
-      id: 3,
-      title: "Creative Thinking",
-      author: "Emma Thompson",
-      coverImages: [
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=600&fit=crop"
-      ],
-      year: "2024",
-      category: "Business",
-      description: "Unlock your creative potential and learn to approach problems from innovative perspectives."
-    },
-    {
-      id: 4,
-      title: "Innovation Leadership",
-      author: "David Rodriguez",
-      coverImages: [
-        "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=600&fit=crop"
-      ],
-      year: "2023",
-      category: "Leadership",
-      description: "Master the art of leading teams through change and fostering a culture of innovation."
-    }
-  ];
+  // console.log('publishedbookdata: ', publishedBookData);
+  
 
   const handleMouseEnter = (bookId) => {
-    setIsHovered(prev => ({ ...prev, [bookId]: true }));
+    setIsHovered((prev) => ({ ...prev, [bookId]: true }));
     if (swiperRef.current?.swiper) {
       swiperRef.current.swiper.autoplay.stop();
     }
   };
 
   const handleMouseLeave = (bookId) => {
-    setIsHovered(prev => ({ ...prev, [bookId]: false }));
+    setIsHovered((prev) => ({ ...prev, [bookId]: false }));
     if (swiperRef.current?.swiper) {
       swiperRef.current.swiper.autoplay.start();
     }
   };
 
   const handleFlip = (bookId, e) => {
-    setBookStates(prev => ({
+    setBookStates((prev) => ({
       ...prev,
       [bookId]: {
         ...prev[bookId],
-        currentPage: e.data
-      }
+        currentPage: e.data,
+      },
     }));
   };
 
@@ -153,9 +104,9 @@ const PublishedBook = () => {
   };
 
   const renderBookContent = (book) => {
-    const totalPages = book.coverImages.length + 1;
+    const totalPages = book.images.length + 1;
     const currentPage = bookStates[book.id]?.currentPage || 0;
-    
+
     return (
       <div className="relative w-full h-full flex items-center justify-center">
         <HTMLFlipBook
@@ -171,10 +122,10 @@ const PublishedBook = () => {
           mobileScrollSupport={true}
           onFlip={(e) => handleFlip(book.id, e)}
           className="book-flip"
-          style={{ 
-            background: 'transparent',
-            width: '100%',
-            height: '100%'
+          style={{
+            background: "transparent",
+            width: "100%",
+            height: "100%",
           }}
           drawShadow={true}
           flippingTime={900}
@@ -192,8 +143,8 @@ const PublishedBook = () => {
           <PageCover>
             <div className="front-cover w-full h-full">
               <div className="cover-image-container w-full h-full">
-                <img 
-                  src={book.coverImages[0]} 
+                <img
+                  src={book.images[0]}
                   alt={book.title}
                   className="cover-image w-full h-full object-cover"
                 />
@@ -201,18 +152,17 @@ const PublishedBook = () => {
               </div>
               <div className="cover-title">
                 <h3 className="text-base font-bold">{book.title}</h3>
-                <p className="text-sm">by {book.author}</p>
               </div>
             </div>
           </PageCover>
 
           {/* Content Pages */}
-          {book.coverImages.slice(1).map((image, index) => (
+          {book.images.slice(1).map((image, index) => (
             <Page
               key={index}
               image={image}
               title={book.title}
-              author={book.author}
+              description={book.description}
               pageNumber={index + 2}
               totalPages={totalPages}
             />
@@ -226,9 +176,6 @@ const PublishedBook = () => {
                 <h4 className="text-base font-bold text-gray-800 mb-2">
                   {book.title}
                 </h4>
-                <p className="text-gray-600 text-sm mb-3">
-                  by {book.author}
-                </p>
                 <div className="bg-white/90 rounded-lg p-3 mx-2">
                   <p className="text-gray-700 text-sm leading-relaxed">
                     {book.description}
@@ -256,7 +203,7 @@ const PublishedBook = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </motion.button>
-              
+
               <motion.button
                 onClick={() => nextButtonClick(book.id)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 rounded-full p-3 shadow-2xl border border-gray-200 pointer-events-auto"
@@ -281,7 +228,7 @@ const PublishedBook = () => {
     <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -293,9 +240,6 @@ const PublishedBook = () => {
               Published Books
             </h1>
           </div>
-          {/* <p className="text-gray-600 text-lg">
-            Hover to navigate pages • Click and drag to flip
-          </p> */}
         </motion.div>
 
         {/* Swiper Slider */}
@@ -315,13 +259,13 @@ const PublishedBook = () => {
           loop
           breakpoints={{
             640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
+            1024: { slidesPerView: 2 },
           }}
           className="pb-16"
         >
-          {publications.map((book) => (
+          {publishedBookData.map((book) => (
             <SwiperSlide key={book.id}>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -341,37 +285,24 @@ const PublishedBook = () => {
                     {book.title}
                   </h3>
 
-                  <div className="flex items-center text-gray-600 text-sm mb-4">
-                    <User className="w-4 h-4 mr-2 text-blue-600" />
-                    <span className="font-medium">{book.author}</span>
-                  </div>
-
                   <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
                     <span className="text-sm text-gray-500 font-medium">
-                      Published {book.year}
+                      Published {new Date(book.created_at).getFullYear()}
                     </span>
                     <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
-                      {book.category}
+                      {book.is_free === "1" ? "Free" : "Premium"}
                     </span>
                   </div>
 
-                  <motion.div 
-                    className="mt-4 text-center"
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {/* <p className="text-xs text-gray-500">
-                      📖 Hover for page controls
-                    </p> */}
-                  </motion.div>
-
-                  <motion.button 
+                  <motion.button
                     className="mt-4 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.02,
-                      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                      boxShadow:
+                        "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                     }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={()=> navigate(`/articles/${book.id}`) }
                   >
                     View Book Details
                   </motion.button>
@@ -415,7 +346,8 @@ const PublishedBook = () => {
           flex-direction: column;
         }
 
-        .front-cover, .back-cover {
+        .front-cover,
+        .back-cover {
           height: 100%;
           width: 100%;
           display: flex;
@@ -439,7 +371,11 @@ const PublishedBook = () => {
         .cover-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.2));
+          background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.1),
+            rgba(0, 0, 0, 0.2)
+          );
         }
 
         .cover-title {
@@ -487,7 +423,7 @@ const PublishedBook = () => {
           bottom: 0;
           left: 0;
           right: 0;
-          background: linear-gradient(transparent, rgba(0,0,0,0.7));
+          background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
           color: white;
           padding: 20px;
           padding-top: 40px;
@@ -501,13 +437,13 @@ const PublishedBook = () => {
         }
 
         .page-author {
-          color: rgba(255,255,255,0.9);
+          color: rgba(255, 255, 255, 0.9);
           font-size: 0.875rem;
           margin-bottom: 0.75rem;
         }
 
         .page-description {
-          color: rgba(255,255,255,0.9);
+          color: rgba(255, 255, 255, 0.9);
           font-size: 0.875rem;
           line-height: 1.4;
         }

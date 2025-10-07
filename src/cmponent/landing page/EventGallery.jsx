@@ -9,75 +9,97 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Link } from "react-router-dom";
 
-const EventGallery = () => {
-  const events = [
-    {
-      id: 1,
-      title: "Tech Innovation Summit 2025",
-      description:
-        "Join industry leaders and innovators for a transformative experience exploring the future of technology and digital transformation.",
-      image:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop",
-      date: "March 15, 2025",
-      location: "San Francisco, CA",
-      time: "9:00 AM - 6:00 PM",
-    },
-    {
-      id: 2,
-      title: "Creative Design Workshop",
-      description:
-        "An immersive workshop diving deep into modern design principles, user experience, and creative problem-solving techniques.",
-      image:
-        "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&h=600&fit=crop",
-      date: "March 22, 2025",
-      location: "New York, NY",
-      time: "10:00 AM - 4:00 PM",
-    },
-    {
-      id: 3,
-      title: "Startup Networking Mixer",
-      description:
-        "Connect with fellow entrepreneurs, investors, and startup enthusiasts in an evening of meaningful conversations and collaboration.",
-      image:
-        "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop",
-      date: "April 5, 2025",
-      location: "Austin, TX",
-      time: "6:00 PM - 9:00 PM",
-    },
-    {
-      id: 4,
-      title: "AI & Machine Learning Conference",
-      description:
-        "Explore cutting-edge developments in artificial intelligence and machine learning with hands-on sessions and expert speakers.",
-      image:
-        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=600&fit=crop",
-      date: "April 18, 2025",
-      location: "Seattle, WA",
-      time: "8:30 AM - 7:00 PM",
-    },
-    {
-      id: 5,
-      title: "Digital Marketing Masterclass",
-      description:
-        "Master the art of digital marketing with proven strategies, case studies, and actionable insights from industry experts.",
-      image:
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop",
-      date: "May 2, 2025",
-      location: "Los Angeles, CA",
-      time: "9:00 AM - 5:00 PM",
-    },
-    {
-      id: 6,
-      title: "Blockchain & Web3 Summit",
-      description:
-        "Dive into the world of blockchain technology, cryptocurrencies, and the decentralized web with expert insights.",
-      image:
-        "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=600&fit=crop",
-      date: "May 15, 2025",
-      location: "Miami, FL",
-      time: "8:00 AM - 6:00 PM",
-    },
-  ];
+const EventGallery = ({ eventData, loading = false, error = null }) => {
+  // console.log("event data: ", eventData);
+  
+  // Use the actual eventData from props
+  const events = eventData || [];
+
+  // Format date from "2025-07-22" to "July 22, 2025"
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Format time from "12:00:00" to "12:00 PM"
+  const formatTime = (timeString) => {
+    const time = new Date(`2000-01-01T${timeString}`);
+    return time.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Format time range
+  const formatTimeRange = (startTime, endTime) => {
+    return `${formatTime(startTime)} - ${formatTime(endTime)}`;
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+              Upcoming Events
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Discover and join our exclusive events
+            </p>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+              Upcoming Events
+            </h1>
+          </div>
+          <div className="text-center text-red-600 bg-red-50 p-8 rounded-lg">
+            <p>Error loading events: {error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!events || events.length === 0) {
+    return (
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+              Upcoming Events
+            </h1>
+            <p className="text-gray-600 text-lg">
+              Discover and join our exclusive events
+            </p>
+          </div>
+          <div className="text-center text-gray-500 bg-gray-50 p-12 rounded-lg">
+            <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <p className="text-lg">No upcoming events available.</p>
+            <p className="text-sm mt-2">Check back later for new events!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
@@ -177,7 +199,7 @@ const EventGallery = () => {
             delay: 4000,
             disableOnInteraction: false,
           }}
-          loop
+          loop={events.length > 1}
           breakpoints={{
             640: {
               slidesPerView: 2,
@@ -197,6 +219,9 @@ const EventGallery = () => {
                     src={event.image}
                     alt={event.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/400x200/cccccc/969696?text=No+Image";
+                    }}
                   />
                 </div>
 
@@ -214,7 +239,7 @@ const EventGallery = () => {
                   <div className="space-y-2 mb-5">
                     <div className="flex items-center text-gray-700 text-sm">
                       <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                      <span>{event.date}</span>
+                      <span>{formatDate(event.date)}</span>
                     </div>
                     <div className="flex items-center text-gray-700 text-sm">
                       <MapPin className="w-4 h-4 mr-2 text-blue-600" />
@@ -222,7 +247,7 @@ const EventGallery = () => {
                     </div>
                     <div className="flex items-center text-gray-700 text-sm">
                       <Clock className="w-4 h-4 mr-2 text-blue-600" />
-                      <span>{event.time}</span>
+                      <span>{formatTimeRange(event.start_time, event.end_time)}</span>
                     </div>
                   </div>
 

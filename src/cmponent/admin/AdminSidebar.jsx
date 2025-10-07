@@ -14,8 +14,8 @@ import {
   Search,
   LogOut,
   CardSim,
-  SubscriptIcon
-} from 'lucide-react';
+  SubscriptIcon,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const AdminSidebar = ({
@@ -25,20 +25,36 @@ const AdminSidebar = ({
   isHovered,
   isMobile,
   isMobileSidebarOpen,
-  onCloseMobileSidebar
+  onCloseMobileSidebar,
 }) => {
   const location = useLocation();
   const menuItems = [
     { icon: Home, label: "Dashboard", path: "/admin" },
     { icon: User, label: "Profile", path: "/admin/profile" },
-    
+
     {
       icon: ShoppingCart,
       label: "Manage Landing Page",
       path: "/admin/landing-page",
       submenu: [
         { label: "Banners", path: "/admin/landing-page/banners" },
-      ]
+        { label: "Feedback", path: "/admin/landing-page/feedback" },
+        { label: "AuthorBio", path: "/admin/landing-page/author-bio" },
+        { label: "Published Book", path: "/admin/landing-page/published-book" },
+        // { label: "Events", path: "/admin/landing-page/event-list" },
+      ],
+    },
+    {
+      icon: ShoppingCart,
+      label: "Manage Events",
+      path: "/admin/landing-page",
+      submenu: [{ label: "Events", path: "/admin/landing-page/event-list" }],
+    },
+    {
+      icon: ShoppingCart,
+      label: "Manage Feature Book",
+      path: "/admin/landing-page",
+      submenu: [{ label: "Feature Book", path: "/admin/landing-page/feature-book" }],
     },
     {
       icon: ShoppingCart,
@@ -48,23 +64,21 @@ const AdminSidebar = ({
         { label: "All Articles", path: "/admin/articles" },
         { label: "Add Article Categories", path: "/admin/articles/categories" },
         { label: "Add New Article", path: "/admin/articles/new" },
-
-      ]
+      ],
     },
     {
       icon: SubscriptIcon,
       label: "Subscriptions",
       path: "/admin/subscriptions",
-    }
-   
+    },
   ];
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  
+
   // Determine if sidebar should show text
-  const shouldShowText = isMobile 
-    ? (isMobileSidebarOpen && isHovered) // On mobile: only show text when open AND hovered
-    : (!isCollapsed || isHovered); // On desktop: show text when not collapsed OR hovered
+  const shouldShowText = isMobile
+    ? isMobileSidebarOpen && isHovered // On mobile: only show text when open AND hovered
+    : !isCollapsed || isHovered; // On desktop: show text when not collapsed OR hovered
 
   // Determine sidebar visibility and width
   const getSidebarClasses = () => {
@@ -89,7 +103,7 @@ const AdminSidebar = ({
 
   // Function to check if any submenu item is active
   const hasActiveSubmenu = (submenu) => {
-    return submenu?.some(item => location.pathname === item.path);
+    return submenu?.some((item) => location.pathname === item.path);
   };
 
   // Handle menu item click
@@ -132,26 +146,28 @@ const AdminSidebar = ({
                       isActivePath(item.path) || hasActiveSubmenu(item.submenu)
                         ? "bg-blue-50"
                         : ""
-                    } ${
-                      openSubmenu === index ? "bg-gray-50" : ""
-                    }`}
+                    } ${openSubmenu === index ? "bg-gray-50" : ""}`}
                     onClick={(event) => handleMenuClick(item, index, event)}
                   >
                     <div className="flex items-center space-x-3 min-w-0">
                       <item.icon
                         size={20}
                         className={`flex-shrink-0 ${
-                          isActivePath(item.path) || hasActiveSubmenu(item.submenu)
+                          isActivePath(item.path) ||
+                          hasActiveSubmenu(item.submenu)
                             ? "text-blue-600"
                             : "text-gray-600"
                         }`}
                       />
                       {shouldShowText && (
-                        <span className={`font-medium truncate ${
-                          isActivePath(item.path) || hasActiveSubmenu(item.submenu)
-                            ? "text-blue-700"
-                            : "text-gray-700"
-                        }`}>
+                        <span
+                          className={`font-medium truncate ${
+                            isActivePath(item.path) ||
+                            hasActiveSubmenu(item.submenu)
+                              ? "text-blue-700"
+                              : "text-gray-700"
+                          }`}
+                        >
                           {item.label}
                         </span>
                       )}
@@ -170,9 +186,7 @@ const AdminSidebar = ({
                   <Link
                     to={item.path}
                     className={`flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-100 cursor-pointer group transition-colors ${
-                      isActivePath(item.path)
-                        ? "bg-blue-50"
-                        : ""
+                      isActivePath(item.path) ? "bg-blue-50" : ""
                     }`}
                     onClick={() => handleMenuClick(item, index, {})}
                   >
@@ -186,11 +200,13 @@ const AdminSidebar = ({
                         }`}
                       />
                       {shouldShowText && (
-                        <span className={`font-medium truncate ${
-                          isActivePath(item.path)
-                            ? "text-blue-700"
-                            : "text-gray-700"
-                        }`}>
+                        <span
+                          className={`font-medium truncate ${
+                            isActivePath(item.path)
+                              ? "text-blue-700"
+                              : "text-gray-700"
+                          }`}
+                        >
                           {item.label}
                         </span>
                       )}

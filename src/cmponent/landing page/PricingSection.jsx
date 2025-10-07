@@ -1,6 +1,90 @@
 import { Check } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useState } from "react";
 
 const PricingSection = ({ plans, loading, error }) => {
+  const { userData, token } = useAuth();
+  const navigate = useNavigate();
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  // Check authentication status
+  const isAuthenticated = () => {
+    return !!(token && userData && userData.id);
+  };
+
+  // Handle subscription logic here
+  const handleSubscribe = async (plan) => {
+    // Validate authentication before proceeding
+    if (!isAuthenticated()) {
+      toast.error("Please login to subscribe to premium plans");
+      navigate("/login", { 
+        state: { 
+          from: window.location.pathname,
+          message: "Please login to subscribe to our premium plans"
+        } 
+      });
+      return;
+    }
+
+    // Additional validation to ensure userData exists
+    if (!userData || !userData.id) {
+      toast.error("User information not available. Please login again.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setLoadingPlanId(plan.id);
+      const payload = {
+        amount: plan.price,
+        currency: "USD",
+        user_id: userData.id,
+        item_name: plan.name,
+        subscription_plan_id: plan.id,
+      };
+
+      console.log("Subscription payload:", payload);
+
+      const response = await axios.post(
+        `${apiUrl}paypal/create-order`,
+        payload,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+
+      if (response.data.success) {
+        // Redirect to PayPal checkout
+        window.location.href = response.data.approval_url;
+      } else {
+        toast.error("Failed to create PayPal order");
+      }
+    } catch (error) {
+      console.error("PayPal order error:", error);
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        navigate("/login");
+      } else {
+        toast.error("Something went wrong with PayPal checkout");
+      }
+    } finally {
+      setLoadingPlanId(null);
+    }
+  };
+
+  // Handle subscription button click with validation
+  const handleSubscriptionClick = (plan) => {
+    handleSubscribe(plan);
+  };
+
   if (loading) {
     return (
       <section className="py-20 bg-gray-50">
@@ -34,6 +118,15 @@ const PricingSection = ({ plans, loading, error }) => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
           <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
+          
+          {/* Show login prompt if not authenticated */}
+          {!isAuthenticated() && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
+              <p className="text-yellow-700 text-sm">
+                🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+              </p>
+            </div>
+          )}
         </div>
 
         {plans?.length === 0 ? (
@@ -94,17 +187,54 @@ const PricingSection = ({ plans, loading, error }) => {
                       />
                       <span>Priority support</span>
                     </li>
+                    <li className="flex items-center">
+                      <Check
+                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
+                        size={20}
+                      />
+                      <span>Access to all premium articles</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Check
+                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
+                        size={20}
+                      />
+                      <span>Downloadable resources</span>
+                    </li>
                   </ul>
 
                   <button
+                    onClick={() => handleSubscriptionClick(plan)}
+                    disabled={loadingPlanId === plan.id}
                     className={`w-full py-3 rounded-full font-semibold transition-colors ${
                       isPopular
                         ? "bg-white text-purple-600 hover:bg-gray-100"
                         : "border-2 border-gray-300 text-gray-700 hover:border-purple-300 hover:text-purple-600"
+                    } ${
+                      loadingPlanId === plan.id ? "opacity-70 cursor-not-allowed" : ""
+                    } ${
+                      !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
                     }`}
                   >
-                    {plan.price === "0.00" ? "Get Started" : "Choose Plan"}
+                    {loadingPlanId === plan.id ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        <span>Processing...</span>
+                      </div>
+                    ) : !isAuthenticated() ? (
+                      "Login to Subscribe"
+                    ) : plan.price === "0.00" ? (
+                      "Get Started"
+                    ) : (
+                      "Choose Plan"
+                    )}
                   </button>
+
+                  {plan.price === "0.00" && (
+                    <p className="text-center text-xs mt-2 opacity-75">
+                      Free trial • No credit card required
+                    </p>
+                  )}
                 </div>
               );
             })}

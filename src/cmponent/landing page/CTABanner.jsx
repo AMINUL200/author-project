@@ -10,9 +10,9 @@ const CTABanner = () => {
           ad-free reading, and exclusive insights.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-full text-lg font-semibold transition-colors">
+          {/* <button className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-full text-lg font-semibold transition-colors">
             Start Free Trial
-          </button>
+          </button> */}
           <button className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-full text-lg font-semibold transition-colors">
             View Plans
           </button>
