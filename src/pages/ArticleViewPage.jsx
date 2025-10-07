@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Loader from "../cmponent/common/Loader";
 import HTMLFlipBook from "react-pageflip";
 
@@ -28,6 +28,7 @@ const ArticleViewPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const { userData, token } = useAuth();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showPDF, setShowPDF] = useState(false);
@@ -55,6 +56,11 @@ const ArticleViewPage = () => {
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
+
+  // Check authentication status
+  const isAuthenticated = () => {
+    return !!(token && userData && userData.id);
+  };
 
   const fetchArticle = async (id) => {
     try {
@@ -123,40 +129,6 @@ const ArticleViewPage = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const disableRightClick = (e) => e.preventDefault();
-  //   const disableKeyShortcuts = (e) => {
-  //     if (
-  //       e.keyCode === 123 ||
-  //       (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-  //       (e.ctrlKey &&
-  //         (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 67))
-  //     ) {
-  //       e.preventDefault();
-  //       return false;
-  //     }
-  //   };
-
-  //   const disableSelection = (e) => {
-  //     if (showPDF) {
-  //       e.preventDefault();
-  //       return false;
-  //     }
-  //   };
-
-  //   document.addEventListener("contextmenu", disableRightClick);
-  //   document.addEventListener("keydown", disableKeyShortcuts);
-  //   document.addEventListener("selectstart", disableSelection);
-  //   document.addEventListener("dragstart", disableSelection);
-
-  //   return () => {
-  //     document.removeEventListener("contextmenu", disableRightClick);
-  //     document.removeEventListener("keydown", disableKeyShortcuts);
-  //     document.removeEventListener("selectstart", disableSelection);
-  //     document.removeEventListener("dragstart", disableSelection);
-  //   };
-  // }, [showPDF]);
-
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 3));
   const handleZoomOut = () =>
     setZoomLevel((prev) => Math.max(prev - 0.25, 0.5));
@@ -207,14 +179,33 @@ const ArticleViewPage = () => {
     return `${cycle} ${interval}${cycle > 1 ? "s" : ""}`;
   };
 
-  // handle subscription logic here
-  const handleSubscribe = async (plan, articleId, userId) => {
+  // Handle subscription logic here
+  const handleSubscribe = async (plan, articleId) => {
+    // Validate authentication before proceeding
+    if (!isAuthenticated()) {
+      toast.error("Please login to subscribe to premium plans");
+      navigate("/login", { 
+        state: { 
+          from: window.location.pathname,
+          message: "Please login to subscribe to our premium plans"
+        } 
+      });
+      return;
+    }
+
+    // Additional validation to ensure userData exists
+    if (!userData || !userData.id) {
+      toast.error("User information not available. Please login again.");
+      navigate("/login");
+      return;
+    }
+
     try {
       setLoadingPlanId(plan.id);
       const payload = {
         amount: plan.price,
-        currency: "USD", // or INR if needed
-        user_id: userId,
+        currency: "USD",
+        user_id: userData.id,
         item_name: articleData?.title,
         article_id: articleId,
         subscription_plan_id: plan.id,
@@ -229,6 +220,7 @@ const ArticleViewPage = () => {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
         }
       );
@@ -241,10 +233,20 @@ const ArticleViewPage = () => {
       }
     } catch (error) {
       console.error("PayPal order error:", error);
-      toast.error("Something went wrong with PayPal checkout");
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        navigate("/login");
+      } else {
+        toast.error("Something went wrong with PayPal checkout");
+      }
     } finally {
-      setLoadingPlanId(null); // stop loading
+      setLoadingPlanId(null);
     }
+  };
+
+  // Handle subscription button click with validation
+  const handleSubscriptionClick = (plan) => {
+    handleSubscribe(plan, articleData?.id);
   };
 
   if (loading) {
@@ -334,19 +336,14 @@ const ArticleViewPage = () => {
                     </div>
 
                     {/* Image Pages */}
-                    {/* Image Pages - Maximum Height Version */}
                     {articleData.images.map((image, index) => (
                       <div key={index} className="page-content">
                         <div className="bg-white h-full w-full flex flex-col items-center justify-center p-0 relative overflow-hidden">
-                          {" "}
-                          {/* No padding */}
                           <div className="w-full h-full flex items-center justify-center">
-                            {" "}
-                            {/* Full height container */}
                             <img
                               src={image}
                               alt={`${articleData.title} - Image ${index + 1}`}
-                              className="w-auto h-[95%] object-contain" /* 95% of container height */
+                              className="w-auto h-[95%] object-contain"
                             />
                           </div>
                           <div className="absolute bottom-2 left-0 right-0 text-center">
@@ -431,6 +428,7 @@ const ArticleViewPage = () => {
               </div>
             </div>
           )}
+
           {/* Article Links */}
           {articleData?.links && articleData.links.length > 0 && (
             <div className="mb-6">
@@ -635,7 +633,7 @@ const ArticleViewPage = () => {
           </div>
         )}
 
-        {/* New Subscription CTA Section */}
+        {/* Subscription CTA Section */}
         <div className="mb-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">
@@ -645,6 +643,15 @@ const ArticleViewPage = () => {
               Subscribe to access complete research documents, downloadable
               resources, and exclusive insights from industry experts.
             </p>
+            
+            {/* Show login prompt if not authenticated */}
+            {!isAuthenticated() && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
+                <p className="text-yellow-700 text-sm">
+                  🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+                </p>
+              </div>
+            )}
           </div>
 
           {subscriptionInfo && subscriptionInfo.length > 0 ? (
@@ -714,14 +721,14 @@ const ArticleViewPage = () => {
                         <span>Plan ID: {plan.plan_id}</span>
                       </div>
                       <button
-                        onClick={() =>
-                          handleSubscribe(plan, articleData?.id, 2)
-                        }
+                        onClick={() => handleSubscriptionClick(plan)}
                         disabled={loadingPlanId === plan.id}
                         className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                           loadingPlanId === plan.id
                             ? "opacity-70 cursor-not-allowed"
                             : "hover:shadow-lg transform hover:-translate-y-0.5"
+                        } ${
+                          !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
                         }`}
                       >
                         {loadingPlanId === plan.id ? (
@@ -729,6 +736,8 @@ const ArticleViewPage = () => {
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span>Processing...</span>
                           </div>
+                        ) : !isAuthenticated() ? (
+                          "Login to Subscribe"
                         ) : plan.price === "0.00" ? (
                           "Start Free Trial"
                         ) : (
@@ -799,7 +808,7 @@ const ArticleViewPage = () => {
         .page-content img {
           display: block;
           margin: auto;
-          max-height: none !important; /* Remove any max-height constraints */
+          max-height: none !important;
           object-fit: contain;
         }
 
