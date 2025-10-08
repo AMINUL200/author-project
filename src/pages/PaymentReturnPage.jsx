@@ -53,7 +53,7 @@ const PaymentReturnPage = () => {
       }
     };
 
-    if (token && payerId) {
+    if (orderId && payerId) {
     verifyPayment();
     }
   }, [orderId, payerId]);
