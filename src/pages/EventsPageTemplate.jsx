@@ -174,7 +174,7 @@ const EventsPageTemplate = () => {
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 <span className="text-white font-semibold">
                   {eventDetails.rating}
@@ -182,7 +182,7 @@ const EventsPageTemplate = () => {
                 <span className="text-white/80 text-sm">
                   ({eventDetails.reviews} reviews)
                 </span>
-              </div>
+              </div> */}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
               {eventDetails.title}
@@ -208,10 +208,10 @@ const EventsPageTemplate = () => {
                 <MapPin className="w-5 h-5" />
                 <span>{eventDetails.location}</span>
               </div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 <span>{eventDetails.attendees}+ Attendees</span>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
