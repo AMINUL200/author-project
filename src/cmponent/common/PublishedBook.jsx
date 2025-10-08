@@ -174,7 +174,7 @@ const PublishedBook = ({
             loop
             breakpoints={{
               640: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
+              1024: { slidesPerView: 2 },
             }}
             className="pb-16"
           >
