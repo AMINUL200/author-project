@@ -225,7 +225,7 @@ const PublishedBook = ({
   };
 
   return (
-    <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+    <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen" id="published">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div

@@ -90,7 +90,7 @@ function App() {
           <Route path="events/:id" element={<EventsPageTemplate />} />
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
-          <Route path="/payment-success" element={<PaymentReturnPage />} />
+          <Route path="paypal/return" element={<PaymentReturnPage />} />
           <Route
             path="subscription-details"
             element={<SubscriptionDetails />}

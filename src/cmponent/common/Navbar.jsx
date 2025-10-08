@@ -100,18 +100,25 @@ const Navbar = () => {
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
               <button
-                onClick={() => scrollToSection("latest")}
+                onClick={() => scrollToSection("published")}
                 className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
               >
-                <span className="relative z-10">Latest Articles</span>
+                <span className="relative z-10">Published Books</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
 
               <button
-                onClick={() => scrollToSection("popular")}
+                onClick={() => scrollToSection("feature")}
                 className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
               >
-                <span className="relative z-10">Most Viewed</span>
+                <span className="relative z-10">Feature Books</span>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              </button>
+              <button
+                onClick={() => scrollToSection("pricing")}
+                className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
+              >
+                <span className="relative z-10">Pricing</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
 

@@ -12,25 +12,43 @@ const PaymentReturnPage = () => {
     const verifyPayment = async () => {
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}paypal/return?token=${token}&PayerID=${payerId}`
+          `https://animated-gelato-0927d1.netlify.app/paypal/return?token=${token}&PayerID=${payerId}`
         );
-        if (res.data.success) {
-          // now capture order
-          const captureRes = await axios.post(
-            `${import.meta.env.VITE_API_URL}capture-order`,
-            {
-              paypal_order_id: res.data.paypal_order_id,
-              order_id: res.data.order.id,
-            }
-          );
-          if (captureRes.data.success) {
-            toast.success("Payment successful! 🎉");
-            // redirect user to article with full PDF access
-            window.location.href = `/article/${res.data.order.article_id}`;
-          }
-        } else {
-          toast.error("Payment failed. Try again.");
+        console.log("before check respons: ",res.data);
+        if(res.status){
+          console.log("inner response:: ", res.data);
+          
         }
+        const order = {
+          paypal_order_id: res.data.paypal_order_id,
+          order_id: res.data.order.id,
+          article_id: res.data.article_id,
+          user_id: res.data.order.user_id,
+        };
+
+        console.log("order Details: ", order);
+        
+
+        // if (res.data.success) {
+        //   // now capture order
+        //   const captureRes = await axios.post(
+        //     `${import.meta.env.VITE_API_URL}capture-order`,
+        //     {
+        //       paypal_order_id: res.data.paypal_order_id,
+        //       order_id: res.data.order.id,
+        //       article_id: res.data.article_id,
+        //       user_id: res.data.order.user_id,
+        //     }
+        //   );
+        //   if (captureRes.data.success) {
+        //     toast.success("Payment successful! 🎉");
+        //     // redirect user to article with full PDF access
+        //     window.location.href = `/article/${res.data.order.article_id}`;
+        //   }
+        // } else {
+        //   toast.error("Payment failed. Try again.");
+        //   console.log(res.data);
+        // }
       } catch (err) {
         console.error("Return error:", err);
         toast.error("Error processing payment");

@@ -21,9 +21,19 @@ const AddEvent = () => {
     location_url: '',
     start_time: '',
     end_time: '',
-    image: null
+    image: null,
+    organizer_name: '',
+    guests: [],
+    social_links: {}
   });
   const [imagePreview, setImagePreview] = useState('');
+  const [newGuest, setNewGuest] = useState({ 
+    guest_name: '', 
+    guest_image: null, 
+    guest_designation: '',
+    guest_image_preview: '' 
+  });
+  const [newSocialLink, setNewSocialLink] = useState({ key: '', url: '' });
 
   // Fetch event data if in edit mode
   useEffect(() => {
@@ -49,12 +59,15 @@ const AddEvent = () => {
         setFormData({
           title: event.title || '',
           description: event.description || '',
-          date: event.date || '',
+          date: event.date ? event.date.split('T')[0] : '',
           location: event.location || '',
           location_url: event.location_url || '',
           start_time: event.start_time ? event.start_time.substring(0, 5) : '',
           end_time: event.end_time ? event.end_time.substring(0, 5) : '',
-          image: null
+          image: null,
+          organizer_name: event.organizer_name || '',
+          guests: event.guests || [],
+          social_links: event.social_links || {}
         });
         setImagePreview(event.image || '');
       }
@@ -77,6 +90,19 @@ const AddEvent = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (JPEG, PNG, GIF)');
+        return;
+      }
+
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Image size should be less than 10MB');
+        return;
+      }
+
       setFormData(prev => ({
         ...prev,
         image: file
@@ -97,6 +123,119 @@ const AddEvent = () => {
       image: null
     }));
     setImagePreview('');
+  };
+
+  // Guest Management
+  const handleGuestInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewGuest(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleGuestImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (JPEG, PNG, GIF)');
+        return;
+      }
+
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Image size should be less than 10MB');
+        return;
+      }
+
+      setNewGuest(prev => ({
+        ...prev,
+        guest_image: file
+      }));
+
+      // Create preview for new guest
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setNewGuest(prev => ({
+          ...prev,
+          guest_image_preview: e.target.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addGuest = () => {
+    if (!newGuest.guest_name.trim() || !newGuest.guest_designation.trim()) {
+      toast.error("Guest name and designation are required");
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      guests: [...prev.guests, { ...newGuest }]
+    }));
+
+    setNewGuest({ 
+      guest_name: '', 
+      guest_image: null, 
+      guest_designation: '',
+      guest_image_preview: '' 
+    });
+  };
+
+  const removeGuest = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      guests: prev.guests.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Social Links Management
+  const handleSocialLinkInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewSocialLink(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const addSocialLink = () => {
+    if (!newSocialLink.key.trim() || !newSocialLink.url.trim()) {
+      toast.error("Social link key and URL are required");
+      return;
+    }
+
+    // Validate URL format
+    try {
+      new URL(newSocialLink.url);
+    } catch (error) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      social_links: {
+        ...prev.social_links,
+        [newSocialLink.key]: newSocialLink.url
+      }
+    }));
+
+    setNewSocialLink({ key: '', url: '' });
+  };
+
+  const removeSocialLink = (key) => {
+    setFormData(prev => {
+      const updatedLinks = { ...prev.social_links };
+      delete updatedLinks[key];
+      return {
+        ...prev,
+        social_links: updatedLinks
+      };
+    });
   };
 
   // Format time for API (ensure it's in H:i format)
@@ -120,7 +259,7 @@ const AddEvent = () => {
     e.preventDefault();
     
     // Validate required fields
-    const requiredFields = ['title', 'description', 'date', 'location', 'start_time', 'end_time'];
+    const requiredFields = ['title', 'description', 'date', 'location', 'start_time', 'end_time', 'organizer_name'];
     const missingFields = requiredFields.filter(field => !formData[field] || formData[field].trim() === '');
     
     if (missingFields.length > 0) {
@@ -138,6 +277,7 @@ const AddEvent = () => {
       submitData.append('description', formData.description);
       submitData.append('date', formData.date);
       submitData.append('location', formData.location);
+      submitData.append('organizer_name', formData.organizer_name);
       
       // Format times for API
       submitData.append('start_time', formatTimeForAPI(formData.start_time));
@@ -151,16 +291,36 @@ const AddEvent = () => {
         submitData.append('image', formData.image);
       }
 
+      // Append guests - handle both new images and existing image URLs
+      formData.guests.forEach((guest, index) => {
+        submitData.append(`guests[${index}][guest_name]`, guest.guest_name);
+        submitData.append(`guests[${index}][guest_designation]`, guest.guest_designation);
+        
+        // Only append guest_image if it's a new file, not if it's an existing URL string
+        if (guest.guest_image instanceof File) {
+          submitData.append(`guests[${index}][guest_image]`, guest.guest_image);
+        } else if (isEdit && guest.guest_image && typeof guest.guest_image === 'string') {
+          // For existing images in edit mode, you might want to handle differently
+          // Or you can skip if you don't want to update the image
+          submitData.append(`guests[${index}][guest_image_url]`, guest.guest_image);
+        }
+      });
+
+      // Append social links
+      Object.entries(formData.social_links).forEach(([key, url]) => {
+        submitData.append(`social_links[${key}]`, url);
+      });
+
       // Debug: Log what we're sending
       console.log('Submitting data:');
       console.log('Title:', formData.title);
-      console.log('Start Time:', formData.start_time, '->', formatTimeForAPI(formData.start_time));
-      console.log('End Time:', formData.end_time, '->', formatTimeForAPI(formData.end_time));
+      console.log('Guests:', formData.guests);
+      console.log('Social Links:', formData.social_links);
 
       let response;
       if (isEdit) {
         // For Laravel, use POST with _method=PUT for file uploads
-        submitData.append('_method', 'PUT');
+        // submitData.append('_method', 'PUT');
         response = await axios.post(`${apiUrl}events/${isEdit}`, submitData, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -214,7 +374,7 @@ const AddEvent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -242,7 +402,7 @@ const AddEvent = () => {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    PNG, JPG, JPEG up to 10MB
+                    PNG, JPG, JPEG, GIF up to 10MB
                   </p>
                 </div>
                 {(imagePreview || formData.image) && (
@@ -350,7 +510,7 @@ const AddEvent = () => {
                   value={formData.start_time}
                   onChange={handleInputChange}
                   required
-                  step="1" // Some browsers need this for proper time handling
+                  step="1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
@@ -375,6 +535,23 @@ const AddEvent = () => {
               </div>
             </div>
 
+            {/* Organizer Name */}
+            <div>
+              <label htmlFor="organizer_name" className="block text-sm font-medium text-gray-700 mb-2">
+                Organizer Name *
+              </label>
+              <input
+                type="text"
+                id="organizer_name"
+                name="organizer_name"
+                value={formData.organizer_name}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter organizer name"
+              />
+            </div>
+
             {/* Location URL */}
             <div>
               <label htmlFor="location_url" className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,6 +566,173 @@ const AddEvent = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="https://maps.example.com/location"
               />
+            </div>
+
+            {/* Guests Section */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Event Guests</h3>
+              
+              {/* Add Guest Form */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Guest Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="guest_name"
+                      value={newGuest.guest_name}
+                      onChange={handleGuestInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter guest name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Designation *
+                    </label>
+                    <textarea
+                      name="guest_designation"
+                      value={newGuest.guest_designation}
+                      onChange={handleGuestInputChange}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter designation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Guest Image (Optional)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleGuestImageChange}
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {newGuest.guest_image_preview && (
+                      <div className="mt-2 relative">
+                        <img
+                          src={newGuest.guest_image_preview}
+                          alt="Guest preview"
+                          className="h-16 w-16 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={addGuest}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Add Guest
+                </button>
+              </div>
+
+              {/* Guest List */}
+              {formData.guests.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-gray-700">Added Guests:</h4>
+                  {formData.guests.map((guest, index) => (
+                    <div key={index} className="flex items-start justify-between bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-4 flex-1">
+                        {/* Guest Image */}
+                        {(guest.guest_image_preview || (typeof guest.guest_image === 'string' && guest.guest_image)) && (
+                          <div className="flex-shrink-0">
+                            <img
+                              src={guest.guest_image_preview || guest.guest_image}
+                              alt={guest.guest_name}
+                              className="h-16 w-16 object-cover rounded-lg"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{guest.guest_name}</p>
+                          <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{guest.guest_designation}</p>
+                          {guest.guest_image instanceof File && (
+                            <p className="text-xs text-gray-500 mt-1">Image: {guest.guest_image.name}</p>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeGuest(index)}
+                        className="ml-4 px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Social Links Section */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Social Links</h3>
+              
+              {/* Add Social Link Form */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Platform Key *
+                    </label>
+                    <input
+                      type="text"
+                      name="key"
+                      value={newSocialLink.key}
+                      onChange={handleSocialLinkInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g., facebook, instagram, website"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      URL *
+                    </label>
+                    <input
+                      type="url"
+                      name="url"
+                      value={newSocialLink.url}
+                      onChange={handleSocialLinkInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="https://example.com/profile"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={addSocialLink}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Add Social Link
+                </button>
+              </div>
+
+              {/* Social Links List */}
+              {Object.keys(formData.social_links).length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-md font-medium text-gray-700">Added Social Links:</h4>
+                  {Object.entries(formData.social_links).map(([key, url]) => (
+                    <div key={key} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 capitalize">{key}</p>
+                        <p className="text-sm text-gray-600 break-all">{url}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSocialLink(key)}
+                        className="ml-4 px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -427,6 +771,9 @@ const AddEvent = () => {
             <li>• Use high-quality images for better presentation</li>
             <li>• Provide clear and concise event descriptions</li>
             <li>• Double-check dates and times before submitting</li>
+            <li>• For social links, use platform names as keys (e.g., facebook, instagram, website)</li>
+            <li>• You can add multiple guests to your event</li>
+            <li>• Guest images must be JPEG, PNG, or GIF files under 10MB</li>
           </ul>
         </div>
       </div>
