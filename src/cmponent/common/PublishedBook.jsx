@@ -173,8 +173,8 @@ const PublishedBook = ({
             }}
             loop
             breakpoints={{
-              640: { slidesPerView: 2 },
-              1024: { slidesPerView: 2 },
+              640: { slidesPerView: 1 },
+              1024: { slidesPerView: 1 },
             }}
             className="pb-16"
           >
@@ -200,9 +200,9 @@ const PublishedBook = ({
                       {book.title}
                     </h3>
                     
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {/* <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                       {book.description}
-                    </p>
+                    </p> */}
 
                     <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
                       <span className="text-sm text-gray-500 font-medium">

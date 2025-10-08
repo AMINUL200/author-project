@@ -85,7 +85,7 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Upcoming Events
+               Events
             </h1>
             <p className="text-gray-600 text-lg">
               Discover and join our exclusive events
@@ -231,9 +231,9 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
                     {event.title}
                   </h3>
 
-                  <p className="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">
+                  {/* <p className="text-gray-600 text-sm mb-4 flex-1 line-clamp-3">
                     {event.description}
-                  </p>
+                  </p> */}
 
                   {/* Event Details */}
                   <div className="space-y-2 mb-5">

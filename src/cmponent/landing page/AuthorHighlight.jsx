@@ -60,7 +60,7 @@ const AuthorHighlight = ({ authorInfo, loading = false, error = null }) => {
   const descriptionParagraphs = authorInfo?.description?.split('\n\n') || [];
 
   return (
-    <section className="py-16 bg-white" id="bio">
+    <section className=" pb-16 bg-white" id="bio">
       <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
         {/* Simple Header */}
         <div className="text-center mb-12">
