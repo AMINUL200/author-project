@@ -8,6 +8,11 @@ const PaymentReturnPage = () => {
   const orderId = searchParams.get("order_id");
   const payerId = searchParams.get("paypal_order_id");
 
+  console.log("order Id:: ", orderId);
+  console.log("payerId :: ", payerId);
+  
+  
+
   useEffect(() => {
     const verifyPayment = async () => {
       try {
