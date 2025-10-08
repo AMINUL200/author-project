@@ -9,12 +9,13 @@ import {
   Calendar,
   Check,
   ExternalLink,
+  Lock,
+  Download,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import Loader from "../cmponent/common/Loader";
-import HTMLFlipBook from "react-pageflip";
 
 import { pdfjs, Document, Page } from "react-pdf";
 import { useAuth } from "../context/AuthContext";
@@ -26,7 +27,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 const ArticleViewPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-  const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const { userData, token } = useAuth();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,12 +38,13 @@ const ArticleViewPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState(null);
-  const [currentImagePage, setCurrentImagePage] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loadingPlanId, setLoadingPlanId] = useState(null);
+  const [hasPDFAccess, setHasPDFAccess] = useState(false);
 
   const [containerWidth, setContainerWidth] = useState(null);
   const containerRef = useRef();
-  const flipBookRef = useRef();
+  const imageContainerRef = useRef();
 
   useEffect(() => {
     const updateWidth = () => {
@@ -65,10 +66,18 @@ const ArticleViewPage = () => {
   const fetchArticle = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${apiUrl}article/${id}`);
+      const response = await axios.get(`${apiUrl}article/${id}`,{
+        headers:{
+          Authorization: `Bearer ${token} `
+        }
+      });
 
       if (response.status === 200) {
-        setArticleData(response.data.data);
+        const article = response.data.data;
+        setArticleData(article);
+        
+        // Check if user has PDF access (pdf_path exists and is not null/empty)
+        setHasPDFAccess(!!article.pdf_path);
       } else {
         toast.error(response.data.message || "Failed to fetch article.");
       }
@@ -112,21 +121,25 @@ const ArticleViewPage = () => {
     setPdfLoading(true);
   };
 
-  // Flip book event handlers
-  const onPageFlip = (e) => {
-    setCurrentImagePage(e.data);
-  };
-
+  // Simple carousel navigation
   const nextImage = () => {
-    if (flipBookRef.current) {
-      flipBookRef.current.pageFlip().flipNext();
+    if (articleData?.images) {
+      setCurrentImageIndex((prev) => 
+        prev === articleData.images.length - 1 ? 0 : prev + 1
+      );
     }
   };
 
   const prevImage = () => {
-    if (flipBookRef.current) {
-      flipBookRef.current.pageFlip().flipPrev();
+    if (articleData?.images) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? articleData.images.length - 1 : prev - 1
+      );
     }
+  };
+
+  const goToImage = (index) => {
+    setCurrentImageIndex(index);
   };
 
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 3));
@@ -271,9 +284,15 @@ const ArticleViewPage = () => {
               <Calendar size={16} />
               {new Date(articleData?.created_at).toLocaleDateString()}
             </span>
+            {hasPDFAccess && (
+              <span className="flex items-center space-x-1 gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                <Download size={14} />
+                PDF Available
+              </span>
+            )}
           </div>
 
-          {/* Article Images with 3D Flip Book */}
+          {/* Article Images with Simple Carousel */}
           {articleData?.images && articleData.images.length > 0 && (
             <div className="mb-8">
               <div className="text-center mb-6">
@@ -281,120 +300,73 @@ const ArticleViewPage = () => {
                   Image Gallery
                 </h3>
                 <p className="text-slate-600">
-                  Flip through the images like a book
+                  Browse through the images using the navigation controls
                 </p>
               </div>
 
               <div className="flex flex-col items-center">
-                {/* Flip Book Container */}
+                {/* Carousel Container */}
                 <div
                   className="relative mb-6 w-full max-w-4xl"
                   ref={containerRef}
                 >
-                  <HTMLFlipBook
-                    ref={flipBookRef}
-                    width={
-                      containerWidth
-                        ? Math.min(containerWidth * 0.45, 500)
-                        : 500
-                    }
-                    height={
-                      containerWidth ? Math.min(containerWidth * 0.6, 700) : 700
-                    }
-                    size="stretch"
-                    minWidth={280}
-                    maxWidth={600}
-                    minHeight={600}
-                    maxHeight={800}
-                    maxShadowOpacity={0.5}
-                    showCover={true}
-                    mobileScrollSupport={true}
-                    onFlip={onPageFlip}
-                    style={{
-                      background: "transparent",
-                      width: "100%",
-                      height: "100%",
-                    }}
-                    className="mx-auto shadow-2xl"
-                    usePortrait={true}
-                    autoSize={true}
-                  >
-                    {/* Cover Page */}
-                    <div className="page-cover">
-                      <div className="bg-gradient-to-br from-blue-600 to-purple-700 text-white flex flex-col items-center justify-center p-8 h-full w-full">
-                        <div className="text-center">
-                          <h3 className="text-2xl font-bold mb-2">
-                            {articleData?.title}
-                          </h3>
-                          <p className="text-blue-100 mb-4">Image Gallery</p>
-                          <div className="w-16 h-1 bg-white/30 mx-auto mb-4"></div>
-                          <p className="text-sm text-blue-100">
-                            {articleData?.images.length} images
-                          </p>
-                        </div>
+                  <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
+                    {/* Main Image Display */}
+                    <div 
+                      ref={imageContainerRef}
+                      className="relative w-full h-96 md:h-[500px] flex items-center justify-center bg-slate-50"
+                    >
+                      <img
+                        src={articleData.images[currentImageIndex]}
+                        alt={`${articleData.title} - Image ${currentImageIndex + 1}`}
+                        className="max-w-full max-h-full object-contain p-4"
+                      />
+                      
+                      {/* Navigation Arrows */}
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-slate-700 rounded-full p-3 shadow-lg border border-slate-200 transition-all duration-200 hover:scale-110 z-10"
+                      >
+                        <ChevronLeft size={24} />
+                      </button>
+                      
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-slate-700 rounded-full p-3 shadow-lg border border-slate-200 transition-all duration-200 hover:scale-110 z-10"
+                      >
+                        <ChevronRight size={24} />
+                      </button>
+
+                      {/* Image Counter */}
+                      <div className="absolute top-4 left-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full backdrop-blur-sm">
+                        {currentImageIndex + 1} / {articleData.images.length}
+                      </div>
+
+                      {/* Image Title */}
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full backdrop-blur-sm">
+                        Image {currentImageIndex + 1} of {articleData.images.length}
                       </div>
                     </div>
-
-                    {/* Image Pages */}
-                    {articleData.images.map((image, index) => (
-                      <div key={index} className="page-content">
-                        <div className="bg-white h-full w-full flex flex-col items-center justify-center p-0 relative overflow-hidden">
-                          <div className="w-full h-full flex items-center justify-center">
-                            <img
-                              src={image}
-                              alt={`${articleData.title} - Image ${index + 1}`}
-                              className="w-auto h-[95%] object-contain"
-                            />
-                          </div>
-                          <div className="absolute bottom-2 left-0 right-0 text-center">
-                            <p className="text-xs text-slate-600 font-medium bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full inline-block">
-                              Image {index + 1} of {articleData.images.length}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Back Cover */}
-                    <div className="page-cover">
-                      <div className="bg-gradient-to-br from-gray-800 to-gray-900 text-white flex flex-col items-center justify-center p-8 h-full w-full">
-                        <div className="text-center">
-                          <h3 className="text-xl font-bold mb-2">The End</h3>
-                          <p className="text-gray-300 text-sm">
-                            Thank you for viewing the gallery
-                          </p>
-                          <div className="w-16 h-1 bg-white/20 mx-auto my-4"></div>
-                          <p className="text-xs text-gray-400">
-                            Continue reading below
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </HTMLFlipBook>
+                  </div>
                 </div>
 
-                {/* Flip Book Controls */}
+                {/* Carousel Controls */}
                 <div className="flex items-center gap-4 mb-4">
                   <button
                     onClick={prevImage}
-                    disabled={currentImagePage === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <ChevronLeft size={20} />
                     Previous
                   </button>
 
                   <span className="text-slate-700 font-medium">
-                    Page {currentImagePage + 1} of{" "}
-                    {articleData.images.length + 2}
+                    Image {currentImageIndex + 1} of {articleData.images.length}
                   </span>
 
                   <button
                     onClick={nextImage}
-                    disabled={
-                      currentImagePage === articleData.images.length + 1
-                    }
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Next
                     <ChevronRight size={20} />
@@ -402,19 +374,15 @@ const ArticleViewPage = () => {
                 </div>
 
                 {/* Thumbnail Navigation */}
-                <div className="flex flex-wrap justify-center gap-2 mt-4">
+                <div className="flex flex-wrap justify-center gap-3 mt-4 max-w-4xl">
                   {articleData.images.map((image, index) => (
                     <button
                       key={index}
-                      onClick={() => {
-                        if (flipBookRef.current) {
-                          flipBookRef.current.pageFlip().flip(index + 1);
-                        }
-                      }}
-                      className={`w-16 h-16 rounded border-2 overflow-hidden transition-all ${
-                        currentImagePage === index + 1
-                          ? "border-blue-600 scale-110 shadow-lg"
-                          : "border-gray-300 hover:border-blue-400"
+                      onClick={() => goToImage(index)}
+                      className={`w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
+                        currentImageIndex === index
+                          ? "border-blue-600 scale-105 shadow-lg ring-2 ring-blue-400"
+                          : "border-gray-300 hover:border-blue-400 hover:scale-105"
                       }`}
                     >
                       <img
@@ -424,6 +392,11 @@ const ArticleViewPage = () => {
                       />
                     </button>
                   ))}
+                </div>
+
+                {/* Keyboard Shortcuts Info */}
+                <div className="mt-4 text-center text-slate-500 text-sm">
+                  <p>Use ← → arrow keys or click on thumbnails to navigate</p>
                 </div>
               </div>
             </div>
@@ -463,8 +436,8 @@ const ArticleViewPage = () => {
           />
         </div>
 
-        {/* PDF Viewer Section */}
-        {articleData?.pdf_path && (
+        {/* PDF Viewer Section - Only show if user has PDF access */}
+        {hasPDFAccess && articleData?.pdf_path && (
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden mb-8">
             <div className="bg-gradient-to-r from-slate-800 to-slate-700 p-4">
               <div className="flex flex-col md:flex-row gap-5 md:gap-0 items-center justify-between">
@@ -582,10 +555,6 @@ const ArticleViewPage = () => {
                       }
                     />
                   </Document>
-                  {/* Watermark overlay */}
-                  <div className="absolute bottom-[50%] right-[30%] pointer-events-none inline-flex items-center justify-center opacity-20 text-4xl font-bold text-red-600 rotate-45">
-                    Confidential • Document Preview
-                  </div>
                 </div>
               )}
             </div>
@@ -633,197 +602,155 @@ const ArticleViewPage = () => {
           </div>
         )}
 
-        {/* Subscription CTA Section */}
-        <div className="mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
-              Unlock Full Access
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Subscribe to access complete research documents, downloadable
-              resources, and exclusive insights from industry experts.
-            </p>
-            
-            {/* Show login prompt if not authenticated */}
-            {!isAuthenticated() && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
-                <p className="text-yellow-700 text-sm">
-                  🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+        {/* Subscription CTA Section - Only show if user doesn't have PDF access */}
+        {!hasPDFAccess && (
+          <div className="mb-8">
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <Lock className="w-10 h-10 text-white" />
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                Unlock Full Research Document
+              </h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                Subscribe to access the complete research PDF, downloadable resources, 
+                and exclusive insights from industry experts.
+              </p>
+              
+              {/* Show login prompt if not authenticated */}
+              {!isAuthenticated() && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
+                  <p className="text-yellow-700 text-sm">
+                    🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {subscriptionInfo && subscriptionInfo.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {subscriptionInfo.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                          {plan.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {plan.description}
+                        </p>
+                      </div>
+                      {plan.price === "0.00" && (
+                        <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
+                          Free Trial
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl font-bold text-gray-900">
+                          ₹{parseFloat(plan.price).toLocaleString()}
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium border ${getBillingBadgeColor(
+                            plan.billing_interval
+                          )}`}
+                        >
+                          {formatBillingInterval(
+                            parseInt(plan.billing_cycle),
+                            plan.billing_interval
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span>Full PDF access to this research document</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span>Downloadable resources</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span>Exclusive expert insights</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Check className="w-4 h-4 text-green-500" />
+                          <span>Access to 1000+ premium articles</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                          <Tag size={14} />
+                          <span>Plan ID: {plan.plan_id}</span>
+                        </div>
+                        <button
+                          onClick={() => handleSubscriptionClick(plan)}
+                          disabled={loadingPlanId === plan.id}
+                          className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                            loadingPlanId === plan.id
+                              ? "opacity-70 cursor-not-allowed"
+                              : "hover:shadow-lg transform hover:-translate-y-0.5"
+                          } ${
+                            !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
+                          }`}
+                        >
+                          {loadingPlanId === plan.id ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>Processing...</span>
+                            </div>
+                          ) : !isAuthenticated() ? (
+                            "Login to Subscribe"
+                          ) : plan.price === "0.00" ? (
+                            "Start Free Trial"
+                          ) : (
+                            "Subscribe Now"
+                          )}
+                        </button>
+
+                        {plan.price === "0.00" && (
+                          <p className="text-center text-xs text-gray-500 mt-2">
+                            7-day trial • Cancel anytime
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Tag className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  No subscription plans available
+                </h3>
+                <p className="text-gray-500">
+                  Please check back later for subscription options.
                 </p>
               </div>
             )}
-          </div>
 
-          {subscriptionInfo && subscriptionInfo.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {subscriptionInfo.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
-                        {plan.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        {plan.description}
-                      </p>
-                    </div>
-                    {plan.price === "0.00" && (
-                      <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
-                        Free Trial
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-3xl font-bold text-gray-900">
-                        ₹{parseFloat(plan.price).toLocaleString()}
-                      </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getBillingBadgeColor(
-                          plan.billing_interval
-                        )}`}
-                      >
-                        {formatBillingInterval(
-                          parseInt(plan.billing_cycle),
-                          plan.billing_interval
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span>
-                          Full PDF access with {totalPages || "all"} pages
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span>Downloadable resources</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span>Exclusive expert insights</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span>Access to 1000+ premium articles</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                        <Tag size={14} />
-                        <span>Plan ID: {plan.plan_id}</span>
-                      </div>
-                      <button
-                        onClick={() => handleSubscriptionClick(plan)}
-                        disabled={loadingPlanId === plan.id}
-                        className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                          loadingPlanId === plan.id
-                            ? "opacity-70 cursor-not-allowed"
-                            : "hover:shadow-lg transform hover:-translate-y-0.5"
-                        } ${
-                          !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
-                        }`}
-                      >
-                        {loadingPlanId === plan.id ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            <span>Processing...</span>
-                          </div>
-                        ) : !isAuthenticated() ? (
-                          "Login to Subscribe"
-                        ) : plan.price === "0.00" ? (
-                          "Start Free Trial"
-                        ) : (
-                          "Subscribe Now"
-                        )}
-                      </button>
-
-                      {plan.price === "0.00" && (
-                        <p className="text-center text-xs text-gray-500 mt-2">
-                          7-day trial • Cancel anytime
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Tag className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No subscription plans available
-              </h3>
-              <p className="text-gray-500">
-                Please check back later for subscription options.
+            <div className="text-center mt-6">
+              <p className="text-gray-500 text-sm">
+                All plans include full access to our research library • Cancel
+                anytime • Secure payment
               </p>
             </div>
-          )}
-
-          <div className="text-center mt-6">
-            <p className="text-gray-500 text-sm">
-              All plans include full access to our research library • Cancel
-              anytime • Secure payment
-            </p>
           </div>
-        </div>
+        )}
       </div>
-
-      <style jsx>{`
-        .no-select {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          -webkit-touch-callout: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .page-cover,
-        .page-content {
-          width: 100%;
-          height: 100%;
-          display: block;
-        }
-
-        .stf__wrapper {
-          width: 100% !important;
-          height: 100% !important;
-        }
-
-        .stf__block {
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        /* Ensure images use maximum available height */
-        .page-content img {
-          display: block;
-          margin: auto;
-          max-height: none !important;
-          object-fit: contain;
-        }
-
-        /* Remove padding constraints for image containers */
-        .page-content > div {
-          padding: 0 !important;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-          .page-content {
-            padding: 0.5rem;
-          }
-        }
-      `}</style>
     </div>
   );
 };

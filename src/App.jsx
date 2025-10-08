@@ -91,6 +91,7 @@ function App() {
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
           <Route path="paypal/return" element={<PaymentReturnPage />} />
+          <Route path="paypal/cancel" element={<PaymentReturnPage />} />
           <Route
             path="subscription-details"
             element={<SubscriptionDetails />}
