@@ -41,6 +41,7 @@ const ArticleViewPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loadingPlanId, setLoadingPlanId] = useState(null);
   const [hasPDFAccess, setHasPDFAccess] = useState(false);
+  const [sectionInfo, setSectionInfo] = useState({});
 
   const [containerWidth, setContainerWidth] = useState(null);
   const containerRef = useRef();
@@ -86,6 +87,24 @@ const ArticleViewPage = () => {
       toast.error(error.message || "Failed to fetch article.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSectionInfo = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}sections-details`, {
+        headers: {
+          Authorization: `Bearer ${token} `,
+        },
+      });
+      if(response.data.status){
+        console.log("Article Title:: ",response.data.data);
+        setSectionInfo(response.data.data)
+        
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
     }
   };
 
@@ -168,6 +187,7 @@ const ArticleViewPage = () => {
     if (id) {
       fetchArticle(id);
     }
+    fetchSectionInfo();
     fetchSubscriptionInfo();
   }, [id]);
 
@@ -297,10 +317,12 @@ const ArticleViewPage = () => {
             <div className="mb-8">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-slate-800 mb-2">
-                  Image Gallery
+                  {/* Image Gallery */}
+                  {sectionInfo?.name}
                 </h3>
                 <p className="text-slate-600">
-                  Browse through the images using the navigation controls
+                  {/* Browse through the images using the navigation controls */}
+                  {sectionInfo?.paragraph}
                 </p>
               </div>
 
@@ -614,11 +636,13 @@ const ArticleViewPage = () => {
                 </div>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                Unlock Full Book Document
+                {/* Unlock Full Book Document */}
+                {sectionInfo?.heading}
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Subscribe to access the complete research PDF, resources, and
-                exclusive insights from industry experts.
+                {/* Subscribe to access the complete research PDF, resources, and
+                exclusive insights from industry experts. */}
+                {sectionInfo?.description}
               </p>
 
               {/* Show login prompt if not authenticated */}
@@ -633,11 +657,11 @@ const ArticleViewPage = () => {
             </div>
 
             {subscriptionInfo && subscriptionInfo.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+              <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-20">
                 {subscriptionInfo.map((plan) => (
                   <div
                     key={plan.id}
-                    className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
+                    className="bg-white w-[400px] rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group transform hover:-translate-y-1"
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">

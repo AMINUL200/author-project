@@ -66,11 +66,11 @@ const PublishedBook = ({
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Main Image */}
-          <div className="relative w-full h-full overflow-hidden rounded-lg shadow-2xl">
+          <div className="relative flex justify-center w-full h-full overflow-hidden rounded-lg shadow-2xl">
             <img
               src={book.images[currentIndex]}
               alt={`${book.title} - Page ${currentIndex + 1}`}
-              className="w-full h-full object-cover transition-opacity duration-300"
+              className="max-w-full max-h-full object-contain transition-opacity duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
           </div>
@@ -233,7 +233,7 @@ const PublishedBook = ({
                   onMouseLeave={() => handleMouseLeave(book.id)}
                   whileHover={{ y: -8 }}
                 >
-                  <div className="h-[100%] w-full relative bg-gradient-to-br from-gray-50 to-gray-100">
+                  <div className="h-150  w-full relative bg-gradient-to-br from-gray-50 to-gray-100">
                     {renderBookContent(book)}
                   </div>
 

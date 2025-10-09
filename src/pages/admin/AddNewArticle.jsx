@@ -27,6 +27,7 @@ const AddNewArticle = () => {
   });
   const [existingImages, setExistingImages] = useState([]);
   const [existingPdf, setExistingPdf] = useState(null);
+  const [deletedImageIds, setDeletedImageIds] = useState([]);
   const [handleSubmitLoading, setHandleSubmitLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imageDragActive, setImageDragActive] = useState(false);
@@ -67,6 +68,9 @@ const AddNewArticle = () => {
         if (data.pdf_path) {
           setExistingPdf(data.pdf_path);
         }
+        
+        // Reset deleted images when loading fresh data
+        setDeletedImageIds([]);
       }
     } catch (error) {
       console.error("Error fetching article:", error);
@@ -167,6 +171,14 @@ const AddNewArticle = () => {
   };
 
   const removeExistingImage = (index) => {
+    const imageToRemove = existingImages[index];
+    
+    // Extract image ID or filename from the URL
+    // Assuming the image URL format includes an ID or filename
+    // Adjust this logic based on your actual image URL structure
+    const imageIdentifier = imageToRemove.split('/').pop(); // Gets the last part of the URL
+    
+    setDeletedImageIds((prev) => [...prev, imageIdentifier]);
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -257,9 +269,14 @@ const AddNewArticle = () => {
 
       // For update, we need to handle existing images and PDF
       if (isUpdateMode) {
-        // If there are existing images, we need to send them as well
+        // Send the list of images to keep (existing images that weren't deleted)
         if (existingImages.length > 0) {
           submissionData.append("existing_images", JSON.stringify(existingImages));
+        }
+        
+        // Send the list of deleted image IDs
+        if (deletedImageIds.length > 0) {
+          submissionData.append("deleted_images", JSON.stringify(deletedImageIds));
         }
         
         // If there's an existing PDF, we need to indicate we're keeping it
@@ -301,6 +318,7 @@ const AddNewArticle = () => {
         });
         setExistingImages([]);
         setExistingPdf(null);
+        setDeletedImageIds([]);
         setErrors({});
         
         // Navigate back to articles list

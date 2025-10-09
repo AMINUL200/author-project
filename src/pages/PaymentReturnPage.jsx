@@ -44,7 +44,8 @@ const PaymentReturnPage = () => {
             toast.success("Payment successful! 🎉");
             // redirect user to article with full PDF access
             setTimeout(() => {
-              navigate(`/articles/${res.data.order.article_id}`);
+              // navigate(`/articles/${res.data.order.article_id}`);
+              navigate(`/`);
             }, 2000);
           } else {
             setStatus("error");

@@ -35,6 +35,7 @@ import AddEvent from "./pages/admin/handle landing page/AddEvent";
 import HandleFeatureBook from "./pages/admin/handle landing page/HandleFeatureBook";
 import AddFeatureBook from "./pages/admin/handle landing page/AddFeatureBook";
 import SectionTitle from "./pages/admin/handle landing page/SectionTitle";
+import ArticleSectionTitle from "./pages/admin/handle landing page/ArticleSectionTitle";
 
 function App() {
   const { userData, token } = useAuth();
@@ -124,6 +125,7 @@ function App() {
           <Route path="landing-page/feature-book" element={<HandleFeatureBook/>}/>
           <Route path="landing-page/add-feature-book" element={<AddFeatureBook/>}/>
           <Route path="landing-page/section-title" element={<SectionTitle/>}/>
+          <Route path="landing-page/article-section-title" element={<ArticleSectionTitle/>}/>
 
           <Route path="subscriptions" element={<Subscriptions />} />
 

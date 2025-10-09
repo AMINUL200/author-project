@@ -9,28 +9,33 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Link } from "react-router-dom";
 
-const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null }) => {
+const EventGallery = ({
+  sectionTitle = {},
+  eventData,
+  loading = false,
+  error = null,
+}) => {
   // console.log("event data: ", eventData);
-  
+
   // Use the actual eventData from props
   const events = eventData || [];
 
   // Format date from "2025-07-22" to "July 22, 2025"
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   // Format time from "12:00:00" to "12:00 PM"
   const formatTime = (timeString) => {
     const time = new Date(`2000-01-01T${timeString}`);
-    return time.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return time.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -89,9 +94,7 @@ const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
               {sectionTitle?.sec4_name}
             </h1>
-            <p className="text-gray-600 text-lg">
-             {sectionTitle?.sec4_para}
-            </p>
+            <p className="text-gray-600 text-lg">{sectionTitle?.sec4_para}</p>
           </div>
           <div className="text-center text-gray-500 bg-gray-50 p-12 rounded-lg">
             <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -183,9 +186,7 @@ const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
             {sectionTitle?.sec4_name}
           </h1>
-          <p className="text-gray-600 text-lg">
-             {sectionTitle?.sec4_para}
-          </p>
+          <p className="text-gray-600 text-lg">{sectionTitle?.sec4_para}</p>
         </div>
 
         {/* Swiper Slider */}
@@ -200,6 +201,7 @@ const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null
           autoplay={{
             delay: 4000,
             disableOnInteraction: false,
+            reverseDirection: true, 
           }}
           loop={events.length > 1}
           breakpoints={{
@@ -222,7 +224,8 @@ const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null
                     alt={event.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/400x200/cccccc/969696?text=No+Image";
+                      e.target.src =
+                        "https://via.placeholder.com/400x200/cccccc/969696?text=No+Image";
                     }}
                   />
                 </div>
@@ -249,7 +252,9 @@ const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null
                     </div>
                     <div className="flex items-center text-gray-700 text-sm">
                       <Clock className="w-4 h-4 mr-2 text-blue-600" />
-                      <span>{formatTimeRange(event.start_time, event.end_time)}</span>
+                      <span>
+                        {formatTimeRange(event.start_time, event.end_time)}
+                      </span>
                     </div>
                   </div>
 
