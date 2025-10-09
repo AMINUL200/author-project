@@ -9,7 +9,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Link } from "react-router-dom";
 
-const EventGallery = ({ eventData, loading = false, error = null }) => {
+const EventGallery = ({sectionTitle={}, eventData, loading = false, error = null }) => {
   // console.log("event data: ", eventData);
   
   // Use the actual eventData from props
@@ -46,10 +46,12 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Upcoming Events
+              {/* Upcoming Events */}
+              {sectionTitle?.sec4_name}
             </h1>
             <p className="text-gray-600 text-lg">
-              Discover and join our exclusive events
+              {/* Discover and join our exclusive events */}
+              {sectionTitle?.sec4_para}
             </p>
           </div>
           <div className="flex justify-center items-center h-64">
@@ -67,7 +69,7 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Upcoming Events
+              {sectionTitle?.sec4_name}
             </h1>
           </div>
           <div className="text-center text-red-600 bg-red-50 p-8 rounded-lg">
@@ -85,10 +87,10 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-               Events
+              {sectionTitle?.sec4_name}
             </h1>
             <p className="text-gray-600 text-lg">
-              Discover and join our exclusive events
+             {sectionTitle?.sec4_para}
             </p>
           </div>
           <div className="text-center text-gray-500 bg-gray-50 p-12 rounded-lg">
@@ -179,10 +181,10 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-            Upcoming Events
+            {sectionTitle?.sec4_name}
           </h1>
           <p className="text-gray-600 text-lg">
-            Discover and join our exclusive events
+             {sectionTitle?.sec4_para}
           </p>
         </div>
 
@@ -256,7 +258,8 @@ const EventGallery = ({ eventData, loading = false, error = null }) => {
                     to={`/events/${event.id}`}
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center group shadow-md hover:shadow-xl"
                   >
-                    Read More
+                    {/* Read More */}
+                    {sectionTitle?.sec4_button_name}
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </div>

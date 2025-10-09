@@ -5,11 +5,13 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useState } from "react";
 
-const PricingSection = ({ plans, loading, error }) => {
+const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
   const { userData, token } = useAuth();
   const navigate = useNavigate();
   const [loadingPlanId, setLoadingPlanId] = useState(null);
   const apiUrl = import.meta.env.VITE_API_URL;
+
+  console.log("planDestils:: ", plans);
 
   // Check authentication status
   const isAuthenticated = () => {
@@ -21,11 +23,11 @@ const PricingSection = ({ plans, loading, error }) => {
     // Validate authentication before proceeding
     if (!isAuthenticated()) {
       toast.error("Please login to subscribe to premium plans");
-      navigate("/login", { 
-        state: { 
+      navigate("/login", {
+        state: {
           from: window.location.pathname,
-          message: "Please login to subscribe to our premium plans"
-        } 
+          message: "Please login to subscribe to our premium plans",
+        },
       });
       return;
     }
@@ -90,8 +92,10 @@ const PricingSection = ({ plans, loading, error }) => {
       <section className="py-14 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
-            <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              {sectionTitle?.sec6_name}
+            </h2>
+            <p className="text-xl text-gray-600">{sectionTitle?.sec6_para}</p>
           </div>
           {/* Skeleton loader */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -113,17 +117,19 @@ const PricingSection = ({ plans, loading, error }) => {
   }
 
   return (
-    <section className="py-20 bg-gray-50" id="pricing">
+    <section className="py-20 pt-10 bg-gray-50" id="pricing">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h2>
-          <p className="text-xl text-gray-600">Start free, upgrade when you're ready</p>
-          
+          <h1 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            {sectionTitle?.sec6_name}
+          </h1>
+          <p className="text-xl text-gray-600">{sectionTitle?.sec6_para}</p>
+
           {/* Show login prompt if not authenticated */}
           {!isAuthenticated() && (
             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
               <p className="text-yellow-700 text-sm">
-                🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+                🔐 {sectionTitle?.sec6_message}
               </p>
             </div>
           )}
@@ -132,7 +138,7 @@ const PricingSection = ({ plans, loading, error }) => {
         {plans?.length === 0 ? (
           <p className="text-center text-gray-500">No plans available</p>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {plans.map((plan, index) => {
               const isPopular = index === 1; // highlight 2nd plan as "Most Popular"
 
@@ -163,7 +169,11 @@ const PricingSection = ({ plans, loading, error }) => {
                     <span className="text-4xl font-bold">
                       ${parseFloat(plan.price).toFixed(2)}
                     </span>
-                    <span className={isPopular ? "text-purple-200" : "text-gray-600"}>
+                    <span
+                      className={
+                        isPopular ? "text-purple-200" : "text-gray-600"
+                      }
+                    >
                       /{plan.billing_cycle} {plan.billing_interval}
                       {plan.billing_cycle > 1 ? "s" : ""}
                     </span>
@@ -171,36 +181,21 @@ const PricingSection = ({ plans, loading, error }) => {
 
                   {/* Placeholder features (if API provides features, map here) */}
                   <ul className="space-y-4 mb-8">
-                    <li className="flex items-center">
-                      <Check
-                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
-                        size={20}
-                      />
-                      <span>
-                        Includes everything from {plan.name} package
-                      </span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check
-                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
-                        size={20}
-                      />
-                      <span>Priority support</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check
-                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
-                        size={20}
-                      />
-                      <span>Access to all premium articles</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check
-                        className={isPopular ? "text-white mr-3" : "text-green-500 mr-3"}
-                        size={20}
-                      />
-                      <span>Downloadable resources</span>
-                    </li>
+                    {plan?.plan_packages.map((pkg, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check
+                          className={
+                            isPopular
+                              ? "text-white mr-3"
+                              : "text-green-500 mr-3"
+                          }
+                          size={20}
+                        />
+                        <span>{pkg}</span>
+                      </li>
+                    ))}
+
+                    
                   </ul>
 
                   <button
@@ -211,7 +206,9 @@ const PricingSection = ({ plans, loading, error }) => {
                         ? "bg-white text-purple-600 hover:bg-gray-100"
                         : "border-2 border-gray-300 text-gray-700 hover:border-purple-300 hover:text-purple-600"
                     } ${
-                      loadingPlanId === plan.id ? "opacity-70 cursor-not-allowed" : ""
+                      loadingPlanId === plan.id
+                        ? "opacity-70 cursor-not-allowed"
+                        : ""
                     } ${
                       !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
                     }`}
@@ -223,18 +220,8 @@ const PricingSection = ({ plans, loading, error }) => {
                       </div>
                     ) : !isAuthenticated() ? (
                       "Login to Subscribe"
-                    ) : plan.price === "0.00" ? (
-                      "Get Started"
-                    ) : (
-                      "Choose Plan"
-                    )}
+                    ) : `${plan?.button}` }
                   </button>
-
-                  {plan.price === "0.00" && (
-                    <p className="text-center text-xs mt-2 opacity-75">
-                      Free trial • No credit card required
-                    </p>
-                  )}
                 </div>
               );
             })}

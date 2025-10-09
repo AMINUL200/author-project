@@ -11,6 +11,7 @@ import "swiper/css/pagination";
 import Skeleton from "../common/Skeleton";
 
 const TestimonialsSection = ({
+  sectionTitle={},
   testimonials = [],
   loading = false,
   error = null,
@@ -43,12 +44,12 @@ const TestimonialsSection = ({
   );
 
   return (
-    <section className="py-20 bg-white" id="feedback">
+    <section className="py-20 pt-10 bg-white" id="feedback">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Feedback</h2>
+          <h1 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{sectionTitle?.sec7_name}</h1>
           <p className="text-xl text-gray-600">
-            Join thousands of satisfied subscribers
+            {sectionTitle?.sec7_para}
           </p>
         </div>
 

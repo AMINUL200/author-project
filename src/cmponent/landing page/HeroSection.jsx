@@ -12,7 +12,7 @@ import {
 import Skeleton from "../common/Skeleton";
 import HeroSectionSkeleton from "../skeliton section/HeroSectionSkeleton";
 
-const HeroSection = ({ data, loading = false, error = null }) => {
+const HeroSection = ({sectionTitle, data, loading = false, error = null }) => {
   if (loading) {
     return <HeroSectionSkeleton />;
   }
@@ -61,7 +61,8 @@ const HeroSection = ({ data, loading = false, error = null }) => {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full border border-purple-200">
                 <Sparkles className="w-4 h-4 text-purple-600" />
                 <span className="text-sm font-semibold text-purple-900">
-                  Premium Writing Platform
+                  {/* Premium Writing Platform */}
+                  {sectionTitle?.sec1_first_title}
                 </span>
               </div>
 
@@ -170,9 +171,13 @@ const HeroSection = ({ data, loading = false, error = null }) => {
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900">
-                        Premium Access
+                        {/* Premium Access */}
+                        {sectionTitle?.sec1_card1_title}
                       </p>
-                      <p className="text-xs text-gray-600">Unlimited reading</p>
+                      <p className="text-xs text-gray-600">
+                        {/* Unlimited reading */}
+                        {sectionTitle?.sec1_card_para}
+                        </p>
                     </div>
                   </div>
                 </div>
@@ -184,10 +189,12 @@ const HeroSection = ({ data, loading = false, error = null }) => {
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900">
-                        50K+ Readers
+                        {/* 50K+ Readers */}
+                        {sectionTitle?.sec1_card2_title}
                       </p>
                       <p className="text-xs text-gray-600">
-                        Join the community
+                        {/* Join the community */}
+                        {sectionTitle?.sec1_card2_para}
                       </p>
                     </div>
                   </div>

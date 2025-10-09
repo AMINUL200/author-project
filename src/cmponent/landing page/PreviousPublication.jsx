@@ -9,6 +9,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 const PreviousPublication = ({
+  sectionTitle={},
   featureBookData,
   loading = false,
   error = null,
@@ -30,13 +31,15 @@ const PreviousPublication = ({
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
-              <BookOpen className="w-10 h-10 text-purple-600 mr-3" />
+              {/* <BookOpen className="w-10 h-10 text-purple-600 mr-3" /> */}
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Feature Publications
+                {/* Feature Publications */}
+                {sectionTitle?.sec3_name}
               </h1>
             </div>
             <p className="text-gray-600 text-lg">
-              Explore our collection of published works
+              {/* Explore our collection of published works */}
+              {sectionTitle?.sec3_para}
             </p>
           </div>
           <div className="flex justify-center items-center h-64">
@@ -54,9 +57,9 @@ const PreviousPublication = ({
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
-              <BookOpen className="w-10 h-10 text-purple-600 mr-3" />
+              {/* <BookOpen className="w-10 h-10 text-purple-600 mr-3" /> */}
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Feature Publications
+                {sectionTitle?.sec3_name}
               </h1>
             </div>
           </div>
@@ -75,13 +78,13 @@ const PreviousPublication = ({
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
-              <BookOpen className="w-10 h-10 text-purple-600 mr-3" />
+              {/* <BookOpen className="w-10 h-10 text-purple-600 mr-3" /> */}
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Feature Publications
+                {sectionTitle?.sec3_name}
               </h1>
             </div>
             <p className="text-gray-600 text-lg">
-              Explore our collection of published works
+              {sectionTitle?.sec3_para}
             </p>
           </div>
           <div className="text-center text-gray-500 bg-gray-50 p-12 rounded-lg">
@@ -99,13 +102,13 @@ const PreviousPublication = ({
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center mb-4">
-            <BookOpen className="w-10 h-10 text-purple-600 mr-3" />
+            {/* <BookOpen className="w-10 h-10 text-purple-600 mr-3" /> */}
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Feature Publications
+              {sectionTitle?.sec3_name}
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Explore our collection of published works
+             {sectionTitle?.sec3_para}
           </p>
         </div>
 

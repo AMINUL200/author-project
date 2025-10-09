@@ -4,7 +4,10 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 
-const Navbar = () => {
+const Navbar = ({ data, loading, error }) => {
+   
+
+   const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const { token, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

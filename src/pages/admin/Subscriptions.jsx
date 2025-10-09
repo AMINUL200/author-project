@@ -11,15 +11,17 @@ import {
   Calendar,
   Clock,
   Tag,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 const Subscriptions = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const { token } = useAuth();
-  
+
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [handleLoading, setHandleLoading] = useState(false);
   const [popupOpen, setPopupOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,6 +33,8 @@ const Subscriptions = () => {
     billing_cycle: "",
     billing_interval: "",
     plan_id: "",
+    plan_packages: [""],
+    button: "Subscribe Now",
   });
 
   // Fetch subscription list
@@ -58,11 +62,39 @@ const Subscriptions = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle plan package change
+  const handlePackageChange = (index, value) => {
+    const updatedPackages = [...formData.plan_packages];
+    updatedPackages[index] = value;
+    setFormData((prev) => ({ ...prev, plan_packages: updatedPackages }));
+  };
+
+  // Add new package field
+  const addPackageField = () => {
+    setFormData((prev) => ({
+      ...prev,
+      plan_packages: [...prev.plan_packages, ""],
+    }));
+  };
+
+  // Remove package field
+  const removePackageField = (index) => {
+    if (formData.plan_packages.length > 1) {
+      const updatedPackages = formData.plan_packages.filter(
+        (_, i) => i !== index
+      );
+      setFormData((prev) => ({ ...prev, plan_packages: updatedPackages }));
+    }
+  };
+
   // Open popup
   const openPopup = (subscription = null) => {
     if (subscription) {
       setEditData(subscription);
-      setFormData(subscription);
+      setFormData({
+        ...subscription,
+        plan_packages: subscription.plan_packages || [""],
+      });
     } else {
       setEditData(null);
       setFormData({
@@ -72,6 +104,8 @@ const Subscriptions = () => {
         billing_cycle: "",
         billing_interval: "",
         plan_id: "",
+        plan_packages: [""],
+        button: "Subscribe Now",
       });
     }
     setPopupOpen(true);
@@ -86,19 +120,28 @@ const Subscriptions = () => {
   // Submit (Add / Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setHandleLoading(true);
     try {
+      // Filter out empty packages before submitting
+      const submitData = {
+        ...formData,
+        plan_packages: formData.plan_packages.filter(
+          (pkg) => pkg.trim() !== ""
+        ),
+      };
+
       if (editData) {
         // Update
-        await axios.put(
+        await axios.post(
           `${apiUrl}subscription-plans/${editData.id}`,
-          formData,
+          submitData,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
       } else {
         // Add
-        await axios.post(`${apiUrl}subscription-plans`, formData, {
+        await axios.post(`${apiUrl}subscription-plans`, submitData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -106,6 +149,8 @@ const Subscriptions = () => {
       closePopup();
     } catch (err) {
       console.error("Error saving subscription:", err);
+    } finally {
+      setHandleLoading(false);
     }
   };
 
@@ -167,8 +212,6 @@ const Subscriptions = () => {
           Add New Plan
         </button>
       </div>
-
-    
 
       {/* Search and Filter */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -254,11 +297,36 @@ const Subscriptions = () => {
                   </span>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100">
+                {/* Plan Packages */}
+                {sub.plan_packages && sub.plan_packages.length > 0 && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                      Package Includes:
+                    </h4>
+                    <ul className="space-y-2">
+                      {sub.plan_packages.map((pkg, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm text-gray-600"
+                        >
+                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <span>{pkg}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-gray-100 space-y-2">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Tag size={14} />
                     <span>Plan ID: {sub.plan_id}</span>
                   </div>
+                  {sub.button && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>Button Text: "{sub.button}"</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -410,10 +478,65 @@ const Subscriptions = () => {
                 </div>
               </div>
 
+              {/* Plan Packages */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Plan Packages
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addPackageField}
+                    className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg hover:bg-green-200 transition-colors"
+                  >
+                    + Add Package
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {formData.plan_packages.map((pkg, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={pkg}
+                        onChange={(e) =>
+                          handlePackageChange(index, e.target.value)
+                        }
+                        placeholder={`Package feature ${index + 1}`}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                      />
+                      {formData.plan_packages.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removePackageField(index)}
+                          className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Button Text
+                </label>
+                <input
+                  type="text"
+                  name="button"
+                  value={formData.button}
+                  onChange={handleChange}
+                  placeholder="e.g., Subscribe Free, Buy Now, etc."
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                />
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={closePopup}
+                  disabled={handleLoading}
                   className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancel
@@ -421,9 +544,21 @@ const Subscriptions = () => {
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all font-medium"
+                  disabled={handleLoading}
+                  className={`flex-1 flex items-center justify-center gap-2 
+    bg-gradient-to-r from-blue-600 to-blue-700 text-white 
+    px-6 py-3 rounded-xl font-medium
+    transition-all transform hover:-translate-y-0.5 hover:shadow-lg
+    disabled:opacity-70 disabled:cursor-not-allowed`}
                 >
-                  {editData ? "Update Plan" : "Create Plan"}
+                  {handleLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>{editData ? "Update Plan" : "Create Plan"}</span>
+                  )}
                 </button>
               </div>
             </div>

@@ -41,7 +41,6 @@ const AdminSidebar = ({
         { label: "Feedback", path: "/admin/landing-page/feedback" },
         { label: "AuthorBio", path: "/admin/landing-page/author-bio" },
         { label: "Published Book", path: "/admin/landing-page/published-book" },
-        // { label: "Events", path: "/admin/landing-page/event-list" },
       ],
     },
     {
@@ -51,21 +50,28 @@ const AdminSidebar = ({
       submenu: [{ label: "Events", path: "/admin/landing-page/event-list" }],
     },
     {
-      icon: ShoppingCart,
-      label: "Manage Feature Book",
-      path: "/admin/landing-page",
-      submenu: [{ label: "Feature Book", path: "/admin/landing-page/feature-book" }],
+      icon: User,
+      label: "Section Title",
+      path: "/admin/landing-page/section-title",
     },
     {
       icon: ShoppingCart,
-      label: "Manage Articles",
-      path: "/admin/articles",
+      label: "Manage Feature Book",
+      path: "/admin/landing-page",
       submenu: [
-        { label: "All Articles", path: "/admin/articles" },
-        { label: "Add Article Categories", path: "/admin/articles/categories" },
-        { label: "Add New Article", path: "/admin/articles/new" },
+        { label: "Feature Book", path: "/admin/landing-page/feature-book" },
       ],
     },
+    // {
+    //   icon: ShoppingCart,
+    //   label: "Manage Articles",
+    //   path: "/admin/articles",
+    //   submenu: [
+    //     { label: "All Articles", path: "/admin/articles" },
+    //     { label: "Add Article Categories", path: "/admin/articles/categories" },
+    //     { label: "Add New Article", path: "/admin/articles/new" },
+    //   ],
+    // },
     {
       icon: SubscriptIcon,
       label: "Subscriptions",

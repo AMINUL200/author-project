@@ -66,16 +66,16 @@ const ArticleViewPage = () => {
   const fetchArticle = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${apiUrl}article/${id}`,{
-        headers:{
-          Authorization: `Bearer ${token} `
-        }
+      const response = await axios.get(`${apiUrl}article/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token} `,
+        },
       });
 
       if (response.status === 200) {
         const article = response.data.data;
         setArticleData(article);
-        
+
         // Check if user has PDF access (pdf_path exists and is not null/empty)
         setHasPDFAccess(!!article.pdf_path);
       } else {
@@ -124,7 +124,7 @@ const ArticleViewPage = () => {
   // Simple carousel navigation
   const nextImage = () => {
     if (articleData?.images) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === articleData.images.length - 1 ? 0 : prev + 1
       );
     }
@@ -132,7 +132,7 @@ const ArticleViewPage = () => {
 
   const prevImage = () => {
     if (articleData?.images) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? articleData.images.length - 1 : prev - 1
       );
     }
@@ -197,11 +197,11 @@ const ArticleViewPage = () => {
     // Validate authentication before proceeding
     if (!isAuthenticated()) {
       toast.error("Please login to subscribe to premium plans");
-      navigate("/login", { 
-        state: { 
+      navigate("/login", {
+        state: {
           from: window.location.pathname,
-          message: "Please login to subscribe to our premium plans"
-        } 
+          message: "Please login to subscribe to our premium plans",
+        },
       });
       return;
     }
@@ -276,10 +276,10 @@ const ArticleViewPage = () => {
           </h1>
 
           <div className="flex items-center space-x-4 text-sm text-slate-500 mb-6 flex-wrap">
-            <span className="flex items-center space-x-1 gap-2">
+            {/* <span className="flex items-center space-x-1 gap-2">
               <View size={16} />
               {articleData?.view_count || 0} views
-            </span>
+            </span> */}
             <span className="flex items-center space-x-1 gap-2">
               <Calendar size={16} />
               {new Date(articleData?.created_at).toLocaleDateString()}
@@ -312,16 +312,18 @@ const ArticleViewPage = () => {
                 >
                   <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
                     {/* Main Image Display */}
-                    <div 
+                    <div
                       ref={imageContainerRef}
                       className="relative w-full h-96 md:h-[500px] flex items-center justify-center bg-slate-50"
                     >
                       <img
                         src={articleData.images[currentImageIndex]}
-                        alt={`${articleData.title} - Image ${currentImageIndex + 1}`}
+                        alt={`${articleData.title} - Image ${
+                          currentImageIndex + 1
+                        }`}
                         className="max-w-full max-h-full object-contain p-4"
                       />
-                      
+
                       {/* Navigation Arrows */}
                       <button
                         onClick={prevImage}
@@ -329,7 +331,7 @@ const ArticleViewPage = () => {
                       >
                         <ChevronLeft size={24} />
                       </button>
-                      
+
                       <button
                         onClick={nextImage}
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-slate-700 rounded-full p-3 shadow-lg border border-slate-200 transition-all duration-200 hover:scale-110 z-10"
@@ -344,7 +346,8 @@ const ArticleViewPage = () => {
 
                       {/* Image Title */}
                       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-sm px-4 py-2 rounded-full backdrop-blur-sm">
-                        Image {currentImageIndex + 1} of {articleData.images.length}
+                        Image {currentImageIndex + 1} of{" "}
+                        {articleData.images.length}
                       </div>
                     </div>
                   </div>
@@ -401,29 +404,6 @@ const ArticleViewPage = () => {
               </div>
             </div>
           )}
-
-          {/* Article Links */}
-          {articleData?.links && articleData.links.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                Related Links
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {articleData.links.map((link, index) => (
-                  <a
-                    key={index}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <ExternalLink size={16} />
-                    <span>{link.platform}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Article Content */}
@@ -435,6 +415,28 @@ const ArticleViewPage = () => {
             }}
           />
         </div>
+        {/* Article Links */}
+        {articleData?.links && articleData.links.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-slate-800 mb-3">
+              Related Links
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {articleData.links.map((link, index) => (
+                <a
+                  key={index}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <ExternalLink size={16} />
+                  <span>{link.platform}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* PDF Viewer Section - Only show if user has PDF access */}
         {hasPDFAccess && articleData?.pdf_path && (
@@ -612,25 +614,26 @@ const ArticleViewPage = () => {
                 </div>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                Unlock Full Research Document
+                Unlock Full Book Document
               </h2>
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                Subscribe to access the complete research PDF, downloadable resources, 
-                and exclusive insights from industry experts.
+                Subscribe to access the complete research PDF, resources, and
+                exclusive insights from industry experts.
               </p>
-              
+
               {/* Show login prompt if not authenticated */}
               {!isAuthenticated() && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md mx-auto">
                   <p className="text-yellow-700 text-sm">
-                    🔐 <strong>Login required:</strong> Please sign in to subscribe to our premium plans
+                    🔐 <strong>Login required:</strong> Please sign in to
+                    subscribe to our premium plans
                   </p>
                 </div>
               )}
             </div>
 
             {subscriptionInfo && subscriptionInfo.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
                 {subscriptionInfo.map((plan) => (
                   <div
                     key={plan.id}
@@ -670,29 +673,15 @@ const ArticleViewPage = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span>Full PDF access to this research document</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span>Downloadable resources</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span>Exclusive expert insights</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span>Access to 1000+ premium articles</span>
-                        </div>
+                        {plan?.plan_packages.map((pkg, index) => (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Check className="w-4 h-4 text-green-500" />
+                            <span>{pkg}</span>
+                          </div>
+                        ))}
                       </div>
 
                       <div className="pt-4 border-t border-gray-100">
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                          <Tag size={14} />
-                          <span>Plan ID: {plan.plan_id}</span>
-                        </div>
                         <button
                           onClick={() => handleSubscriptionClick(plan)}
                           disabled={loadingPlanId === plan.id}
@@ -701,7 +690,9 @@ const ArticleViewPage = () => {
                               ? "opacity-70 cursor-not-allowed"
                               : "hover:shadow-lg transform hover:-translate-y-0.5"
                           } ${
-                            !isAuthenticated() ? "opacity-90 hover:opacity-100" : ""
+                            !isAuthenticated()
+                              ? "opacity-90 hover:opacity-100"
+                              : ""
                           }`}
                         >
                           {loadingPlanId === plan.id ? (
@@ -711,18 +702,10 @@ const ArticleViewPage = () => {
                             </div>
                           ) : !isAuthenticated() ? (
                             "Login to Subscribe"
-                          ) : plan.price === "0.00" ? (
-                            "Start Free Trial"
                           ) : (
-                            "Subscribe Now"
+                            `${plan?.button}`
                           )}
                         </button>
-
-                        {plan.price === "0.00" && (
-                          <p className="text-center text-xs text-gray-500 mt-2">
-                            7-day trial • Cancel anytime
-                          </p>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -742,12 +725,12 @@ const ArticleViewPage = () => {
               </div>
             )}
 
-            <div className="text-center mt-6">
+            {/* <div className="text-center mt-6">
               <p className="text-gray-500 text-sm">
                 All plans include full access to our research library • Cancel
                 anytime • Secure payment
               </p>
-            </div>
+            </div> */}
           </div>
         )}
       </div>

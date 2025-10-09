@@ -341,7 +341,7 @@ const AddNewArticle = () => {
       <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading article data...</p>
+          <p className="mt-4 text-gray-600">Loading Book data...</p>
         </div>
       </div>
     );
@@ -357,7 +357,7 @@ const AddNewArticle = () => {
               {isUpdateMode ? <Edit className="w-6 h-6 text-white" /> : <Plus className="w-6 h-6 text-white" />}
             </div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {isUpdateMode ? `Edit Article #${updateId}` : "Add New Article"}
+              {isUpdateMode ? `Edit Book #${updateId}` : "Add New Book"}
             </h1>
           </div>
           <p className="text-gray-600">
@@ -370,7 +370,7 @@ const AddNewArticle = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
               <FileText className="w-5 h-5 text-blue-600" />
-              Article Title
+              Book Title
             </label>
             <input
               type="text"
@@ -438,7 +438,7 @@ const AddNewArticle = () => {
                 />
                 <div className="flex-1">
                   <span className="text-gray-900 font-medium group-hover:text-blue-600 transition-colors">
-                    Free Article
+                    Free Book
                   </span>
                   <p className="text-sm text-gray-500">Available to all users</p>
                 </div>
@@ -453,7 +453,7 @@ const AddNewArticle = () => {
                 />
                 <div className="flex-1">
                   <span className="text-gray-900 font-medium group-hover:text-blue-600 transition-colors">
-                    Premium Article
+                    Premium Book
                   </span>
                   <p className="text-sm text-gray-500">Requires subscription</p>
                 </div>
@@ -534,7 +534,7 @@ const AddNewArticle = () => {
               <div className="text-center py-8 text-gray-500">
                 <Link className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                 <p>No links added yet</p>
-                <p className="text-sm">Add platforms where users can find or purchase this article</p>
+                <p className="text-sm">Add platforms where users can find or purchase this Book</p>
               </div>
             )}
           </div>
@@ -543,7 +543,7 @@ const AddNewArticle = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
               <Image className="w-5 h-5 text-blue-600" />
-              Article Images ({formData.images.length + existingImages.length} selected)
+              Book Images ({formData.images.length + existingImages.length} selected)
             </label>
 
             {/* Existing Images Display */}
@@ -798,7 +798,7 @@ const AddNewArticle = () => {
               ) : (
                 <>
                   {isUpdateMode ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                  {isUpdateMode ? "Update Article" : "Create Article"}
+                  {isUpdateMode ? "Update Book" : "Create Book"}
                 </>
               )}
             </button>

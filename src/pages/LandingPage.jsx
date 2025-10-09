@@ -17,12 +17,13 @@ import PreviousPublication from "../cmponent/landing page/PreviousPublication";
 // import PublishedBook from '../cmponent/landing page/PublishedBook';
 import PublishedBook from "../cmponent/common/PublishedBook";
 import { useAuth } from "../context/AuthContext";
+import { data } from "react-router-dom";
 
 const LandingPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-  const {userData, token} = useAuth();
+  const { userData, token } = useAuth();
 
-console.log(userData);
+  console.log(userData);
 
   const [heroData, setHeroData] = useState({});
   const [pricingPlans, setPricingPlans] = useState([]);
@@ -31,6 +32,7 @@ console.log(userData);
   const [publishedBookData, setPublishedBookData] = useState([]);
   const [featureBookData, setFeatureBookData] = useState([]);
   const [event, setEvent] = useState([]);
+  const [sectionTitle, setSectionTitle] = useState([]);
 
   const [loading, setLoading] = useState({
     hero: true,
@@ -51,6 +53,26 @@ console.log(userData);
     featurebook: null,
     event: null,
   });
+
+  useEffect(() => {
+    const fetchSectionData = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}sections`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.data.status) {
+          // console.log("section title:: ", response.data.data);
+          setSectionTitle(response.data.data);
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    };
+    fetchSectionData();
+  }, []);
 
   // 🔹 Fetch all APIs in parallel
   useEffect(() => {
@@ -95,43 +117,54 @@ console.log(userData);
 
   return (
     <div className="min-h-screen">
-      <HeroSection data={heroData} loading={loading.hero} error={error.hero} />
+      <HeroSection
+        sectionTitle={sectionTitle}
+        data={heroData}
+        loading={loading.hero}
+        error={error.hero}
+      />
 
       <PublishedBook
+        sectionTitle={sectionTitle}
         publishedBookData={publishedBookData}
         loading={loading.publishedBook}
         error={error.publishedBook}
       />
 
       <PreviousPublication
+        sectionTitle={sectionTitle}
         featureBookData={featureBookData}
         loading={loading.featurebook}
         error={error.featurebook}
       />
       <EventGallery
+        sectionTitle={sectionTitle}
         eventData={event}
         loading={loading.event}
         error={error.event}
       />
 
       <AuthorHighlight
+        sectionTitle={sectionTitle}
         authorInfo={authorInfo}
         loading={loading.author}
         error={error.author}
       />
       <PricingSection
+        sectionTitle={sectionTitle}
         plans={pricingPlans}
         loading={loading.pricing}
         error={error.pricing}
       />
       <TestimonialsSection
+        sectionTitle={sectionTitle}
         testimonials={testimonials}
         loading={loading.testimonials}
         error={error.testimonials}
       />
 
       {/* <NewsletterSection /> */}
-      <CTABanner />
+      <CTABanner sectionTitle={sectionTitle} />
       <Footer />
     </div>
   );
