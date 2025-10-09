@@ -201,7 +201,7 @@ const EventGallery = ({
           autoplay={{
             delay: 4000,
             disableOnInteraction: false,
-            reverseDirection: true, 
+            reverseDirection: true,
           }}
           loop={events.length > 1}
           breakpoints={{
@@ -214,9 +214,15 @@ const EventGallery = ({
           }}
           className="pb-16"
         >
-          {events.map((event) => (
+          {events.map((event, index) => (
             <SwiperSlide key={event.id}>
               <div className="event-card bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col">
+                {/* 🟢 New Event Badge for 0th index */}
+                {index === 0 && (
+                  <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                    New Event
+                  </div>
+                )}
                 {/* Image */}
                 <div className="h-48 overflow-hidden">
                   <img
