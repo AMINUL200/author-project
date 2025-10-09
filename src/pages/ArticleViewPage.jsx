@@ -304,12 +304,12 @@ const ArticleViewPage = () => {
               <Calendar size={16} />
               {new Date(articleData?.created_at).toLocaleDateString()}
             </span>
-            {hasPDFAccess && (
+            {/* {hasPDFAccess && (
               <span className="flex items-center space-x-1 gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full">
                 <Download size={14} />
                 PDF Available
               </span>
-            )}
+            )} */}
           </div>
 
           {/* Article Images with Simple Carousel */}
