@@ -25,7 +25,7 @@ const PreviousPublication = ({
   // Loading state
   if (loading) {
     return (
-      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
@@ -94,7 +94,7 @@ const PreviousPublication = ({
 
   return (
     <div
-      className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen"
+      className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-screen"
       id="feature"
     >
       <div className="max-w-7xl mx-auto">

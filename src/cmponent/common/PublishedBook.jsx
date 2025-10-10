@@ -136,7 +136,7 @@ const PublishedBook = ({
 
   if (loading) {
     return (
-      <div className="py-12 px-4 min-h-screen flex items-center justify-center relative">
+      <div className="py-12 px-4 md:min-h-screen flex items-center justify-center relative">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
@@ -164,7 +164,7 @@ const PublishedBook = ({
 
   return (
     <div
-      className="relative py-12 px-4 min-h-screen overflow-hidden"
+      className="relative py-12 px-4 md:min-h-screen overflow-hidden"
       id="published"
     >
       {/* 🌈 Animated Background Elements */}
@@ -247,7 +247,7 @@ const PublishedBook = ({
                       </h2>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-8">
+                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8">
                         {book.description || "Explore this amazing publication with rich content and beautiful visuals."}
                       </p>
                     </div>

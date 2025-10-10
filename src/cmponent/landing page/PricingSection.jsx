@@ -138,7 +138,7 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
         {plans?.length === 0 ? (
           <p className="text-center text-gray-500">No plans available</p>
         ) : (
-          <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-20">
+          <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-20">
             {plans.map((plan, index) => {
               // const isPopular = index === 1; // highlight 2nd plan as "Most Popular"
               const isPopular = false; // highlight 2nd plan as "Most Popular"

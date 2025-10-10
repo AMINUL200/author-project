@@ -43,7 +43,7 @@ const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
   return (
     <>
       <section
-        className="relative bg-gradient-to-br from-slate-50 via-white to-purple-50 min-h-screen flex items-center overflow-hidden"
+        className="relative bg-gradient-to-br from-slate-50 via-white to-purple-50 md:min-h-screen flex items-center overflow-hidden"
         id="home"
       >
         {/* Animated Background Elements */}

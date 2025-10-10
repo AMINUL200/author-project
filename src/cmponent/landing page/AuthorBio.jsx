@@ -52,7 +52,7 @@ const AuthorBio = ({
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6 " id="bio">
+    <div className="md:min-h-screen bg-white flex items-center justify-center p-6 " id="bio">
       <div className="max-w-6xl w-full bg-white  overflow-hidden">
         <div className="grid md:grid-cols-2 gap-0">
           {/* Left Side - Content */}

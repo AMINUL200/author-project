@@ -47,7 +47,7 @@ const EventGallery = ({
   // Loading state
   if (loading) {
     return (
-      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white ">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
@@ -70,7 +70,7 @@ const EventGallery = ({
   // Error state
   if (error) {
     return (
-      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+      <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
@@ -107,7 +107,7 @@ const EventGallery = ({
   }
 
   return (
-    <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen">
+    <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-screen">
       <style>{`
         /* Modern Pagination Styles */
         .swiper-pagination {
