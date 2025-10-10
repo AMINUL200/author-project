@@ -140,7 +140,8 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
         ) : (
           <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-20">
             {plans.map((plan, index) => {
-              const isPopular = index === 1; // highlight 2nd plan as "Most Popular"
+              // const isPopular = index === 1; // highlight 2nd plan as "Most Popular"
+              const isPopular = false; // highlight 2nd plan as "Most Popular"
 
               return (
                 <div

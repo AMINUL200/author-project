@@ -12,7 +12,7 @@ import {
 import Skeleton from "../common/Skeleton";
 import HeroSectionSkeleton from "../skeliton section/HeroSectionSkeleton";
 
-const HeroSection = ({sectionTitle, data, loading = false, error = null }) => {
+const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
   if (loading) {
     return <HeroSectionSkeleton />;
   }
@@ -57,15 +57,6 @@ const HeroSection = ({sectionTitle, data, loading = false, error = null }) => {
           <div className="grid lg:grid-cols-2 gap-12 items-top">
             {/* Left Column - Content */}
             <div className="text-left space-y-8 animate-fade-in-up">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full border border-purple-200">
-                <Sparkles className="w-4 h-4 text-purple-600" />
-                <span className="text-sm font-semibold text-purple-900">
-                  {/* Premium Writing Platform */}
-                  {sectionTitle?.sec1_first_title}
-                </span>
-              </div>
-
               {/* Main Heading */}
               <h1 className="text-5xl md:text-5xl font-extrabold leading-tight">
                 <span className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 bg-clip-text text-transparent">
@@ -102,41 +93,40 @@ const HeroSection = ({sectionTitle, data, loading = false, error = null }) => {
             {/* Right Column - Visual Element */}
             <div className="relative lg:block hidden">
               <div className="relative">
-                {/* Main Card */}
-                <div className="bg-white rounded-3xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                
                   <div
-                    className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl overflow-hidden relative"
-                    style={{ height: "350px" }}
+                    className="bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden relative mx-auto"
+                    style={{ width: "400px", height: "550px" }} // A5 page ratio
                   >
                     {/* Image Stack with Transitions */}
                     {data?.images?.map((image, index) => (
                       <img
                         key={index}
                         src={image}
-                        alt={`Reading ${index + 1}`}
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
+                        alt={`A5 Page ${index + 1}`}
+                        className={`absolute inset-0 w-full h-full object-fill p-4 bg-white transition-all duration-1000 ${
                           index === currentImageIndex
                             ? "opacity-100 scale-100"
-                            : "opacity-0 scale-110"
+                            : "opacity-0 scale-105"
                         }`}
                       />
                     ))}
 
                     {/* Image Indicators */}
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
                       {data?.images?.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all duration-300 ${
                             index === currentImageIndex
-                              ? "bg-white w-8"
-                              : "bg-white/50 hover:bg-white/75"
+                              ? "bg-gray-800 w-8"
+                              : "bg-gray-400 hover:bg-gray-600"
                           }`}
                         />
                       ))}
                     </div>
-                  </div>
+
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -162,51 +152,9 @@ const HeroSection = ({sectionTitle, data, loading = false, error = null }) => {
                     </div>
                   </div>
                 </div>
-
-                {/* Floating Cards */}
-                <div className="absolute -top-6 -left-6 bg-white rounded-2xl shadow-xl p-4 animate-float">
-                  <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center">
-                      <Check className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        {/* Premium Access */}
-                        {sectionTitle?.sec1_card1_title}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {/* Unlimited reading */}
-                        {sectionTitle?.sec1_card_para}
-                        </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 animate-float delay-500">
-                  <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        {/* 50K+ Readers */}
-                        {sectionTitle?.sec1_card2_title}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {/* Join the community */}
-                        {sectionTitle?.sec1_card2_para}
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ArrowRight className="rotate-90 text-purple-400" size={32} />
         </div>
 
         {/* Custom Styles */}

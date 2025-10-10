@@ -8,7 +8,6 @@ const SectionTitle = () => {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [handleLoading, setHandleLoading] = useState(false);
-  const [logoUploading, setLogoUploading] = useState(false);
   const [formData, setFormData] = useState({
     sec1_first_title: null,
     sec1_card1_title: null,
@@ -73,7 +72,7 @@ const SectionTitle = () => {
     }));
   };
 
-  const handleLogoUpload = async (e) => {
+  const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -91,13 +90,45 @@ const SectionTitle = () => {
       return;
     }
 
-    setLogoUploading(true);
+    // Create a temporary URL for preview
+    const logoUrl = URL.createObjectURL(file);
+    setFormData((prev) => ({
+      ...prev,
+      com_logo: logoUrl,
+      logoFile: file, // Store the file object for later upload
+    }));
 
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const handleRemoveLogo = () => {
+    setFormData((prev) => ({
+      ...prev,
+      com_logo: null,
+      logoFile: null,
+    }));
+    toast.success('Logo removed successfully!');
+  };
+
+  const handleSubmit = async () => {
+    setHandleLoading(true);
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('logo', file);
+      
+      // Append all form fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'logoFile' && formData[key] !== null) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
 
-      const response = await axios.post(`${apiUrl}sections/upload-logo`, formDataToSend, {
+      // Append logo file if selected
+      if (formData.logoFile) {
+        formDataToSend.append('logo', formData.logoFile);
+      }
+
+      const response = await axios.post(`${apiUrl}sections/update`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -105,60 +136,10 @@ const SectionTitle = () => {
       });
 
       if (response.data.status) {
-        const logoUrl = response.data.data.logoUrl;
-        setFormData((prev) => ({
-          ...prev,
-          com_logo: logoUrl,
-        }));
-        toast.success('Logo uploaded successfully!');
-      } else {
-        toast.error(response.data.message || 'Failed to upload logo');
-      }
-    } catch (error) {
-      console.error('Logo upload error:', error);
-      toast.error(error.response?.data?.message || 'Failed to upload logo');
-    } finally {
-      setLogoUploading(false);
-      // Reset file input
-      e.target.value = '';
-    }
-  };
-
-  const handleRemoveLogo = async () => {
-    try {
-      const response = await axios.delete(`${apiUrl}sections/remove-logo`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.status) {
-        setFormData((prev) => ({
-          ...prev,
-          com_logo: null,
-        }));
-        toast.success('Logo removed successfully!');
-      } else {
-        toast.error(response.data.message || 'Failed to remove logo');
-      }
-    } catch (error) {
-      console.error('Logo removal error:', error);
-      toast.error(error.response?.data?.message || 'Failed to remove logo');
-    }
-  };
-
-  const handleSubmit = async () => {
-    setHandleLoading(true);
-    try {
-      const response = await axios.post(`${apiUrl}sections/update`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.status) {
         console.log(response.data);
-        toast.success("Update Success ");
+        toast.success("Update Success");
+        // Clear the logoFile after successful upload
+        setFormData(prev => ({ ...prev, logoFile: null }));
         fetchSectionTitle();
       }
     } catch (error) {
@@ -181,7 +162,7 @@ const SectionTitle = () => {
 
   const renderInputField = (key, value) => {
     // Skip these fields
-    if (key === "id" || key === "created_at" || key === "updated_at") {
+    if (key === "id" || key === "created_at" || key === "updated_at" || key === "logoFile") {
       return null;
     }
 
@@ -226,17 +207,14 @@ const SectionTitle = () => {
               type="file"
               id="logo-upload"
               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-              onChange={handleLogoUpload}
+              onChange={handleLogoChange}
               className="hidden"
-              disabled={logoUploading}
             />
             <label
               htmlFor="logo-upload"
-              className={`px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors ${
-                logoUploading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className="px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors"
             >
-              {logoUploading ? 'Uploading...' : 'Choose Logo Image'}
+              Choose Logo Image
             </label>
             <span className="text-sm text-gray-500">
               JPEG, PNG, GIF, WebP (Max 5MB)
@@ -287,7 +265,7 @@ const SectionTitle = () => {
 
   const groupedFields = {};
   Object.keys(formData).forEach((key) => {
-    if (key !== "id" && key !== "created_at" && key !== "updated_at") {
+    if (key !== "id" && key !== "created_at" && key !== "updated_at" && key !== "logoFile") {
       const match = key.match(/^sec(\d+)/);
       let section = match ? `Section ${match[1]}` : "Other";
       

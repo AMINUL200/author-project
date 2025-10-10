@@ -60,6 +60,16 @@ const AdminSidebar = ({
       path: "/admin/landing-page/article-section-title",
     },
     {
+      icon: User,
+      label: " Book Review",
+      path: "/admin/landing-page/book-review",
+    },
+    {
+      icon: User,
+      label: "Contact Section",
+      path: "/admin/landing-page/contact",
+    },
+    {
       icon: ShoppingCart,
       label: "Manage Feature Book",
       path: "/admin/landing-page",

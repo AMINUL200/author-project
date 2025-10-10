@@ -18,6 +18,8 @@ import PreviousPublication from "../cmponent/landing page/PreviousPublication";
 import PublishedBook from "../cmponent/common/PublishedBook";
 import { useAuth } from "../context/AuthContext";
 import { data } from "react-router-dom";
+import BooksReview from "../cmponent/landing page/BooksReview";
+import AuthorBio from "../cmponent/landing page/AuthorBio";
 
 const LandingPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -33,6 +35,7 @@ const LandingPage = () => {
   const [featureBookData, setFeatureBookData] = useState([]);
   const [event, setEvent] = useState([]);
   const [sectionTitle, setSectionTitle] = useState([]);
+  const [bookRevData, setBookRevData] = useState({});
 
   const [loading, setLoading] = useState({
     hero: true,
@@ -42,6 +45,7 @@ const LandingPage = () => {
     publishedBook: true,
     featurebook: true,
     event: true,
+    review: true,
   });
 
   const [error, setError] = useState({
@@ -52,6 +56,7 @@ const LandingPage = () => {
     publishedBook: null,
     featurebook: null,
     event: null,
+    review: null,
   });
 
   useEffect(() => {
@@ -85,6 +90,7 @@ const LandingPage = () => {
         publishedBook: axios.get(`${apiUrl}article-list`),
         featurebook: axios.get(`${apiUrl}all-feature-update`),
         event: axios.get(`${apiUrl}all-event`),
+        review: axios.get(`${apiUrl}reviews`),
       };
 
       Object.entries(requests).forEach(async ([key, req]) => {
@@ -99,6 +105,7 @@ const LandingPage = () => {
               setPublishedBookData(res.data.data || []);
             if (key === "featurebook") setFeatureBookData(res.data.data || []);
             if (key === "event") setEvent(res.data.data || {});
+            if (key === "review") setBookRevData(res.data.data || {});
           } else {
             throw new Error(res.data.message || `Failed to fetch ${key}`);
           }
@@ -130,6 +137,11 @@ const LandingPage = () => {
         loading={loading.publishedBook}
         error={error.publishedBook}
       />
+      <BooksReview
+        reviewData={bookRevData}
+        loading={loading.review}
+        error={error.review}
+      />
 
       <PreviousPublication
         sectionTitle={sectionTitle}
@@ -144,7 +156,13 @@ const LandingPage = () => {
         error={error.event}
       />
 
-      <AuthorHighlight
+      {/* <AuthorHighlight
+        sectionTitle={sectionTitle}
+        authorInfo={authorInfo}
+        loading={loading.author}
+        error={error.author}
+      /> */}
+      <AuthorBio
         sectionTitle={sectionTitle}
         authorInfo={authorInfo}
         loading={loading.author}

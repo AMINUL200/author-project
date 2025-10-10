@@ -36,6 +36,9 @@ import HandleFeatureBook from "./pages/admin/handle landing page/HandleFeatureBo
 import AddFeatureBook from "./pages/admin/handle landing page/AddFeatureBook";
 import SectionTitle from "./pages/admin/handle landing page/SectionTitle";
 import ArticleSectionTitle from "./pages/admin/handle landing page/ArticleSectionTitle";
+import HandleBookReview from "./pages/admin/handle landing page/HandleBookReview";
+import HandleContact from "./pages/admin/handle landing page/HandleContact";
+import BioProfile from "./pages/BioProfile";
 
 function App() {
   const { userData, token } = useAuth();
@@ -89,6 +92,7 @@ function App() {
           }
         >
           <Route index element={<LandingPage />} />
+          <Route path="bio-details" element={<BioProfile />} />
           <Route path="events/:id" element={<EventsPageTemplate />} />
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
@@ -126,6 +130,8 @@ function App() {
           <Route path="landing-page/add-feature-book" element={<AddFeatureBook/>}/>
           <Route path="landing-page/section-title" element={<SectionTitle/>}/>
           <Route path="landing-page/article-section-title" element={<ArticleSectionTitle/>}/>
+          <Route path="landing-page/book-review" element={<HandleBookReview/>}/>
+          <Route path="landing-page/contact" element={<HandleContact/>}/>
 
           <Route path="subscriptions" element={<Subscriptions />} />
 
