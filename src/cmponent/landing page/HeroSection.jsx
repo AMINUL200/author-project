@@ -54,7 +54,7 @@ const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-top">
+          <div className="grid md:grid-cols-2 gap-12 items-top">
             {/* Left Column - Content */}
             <div className="text-left space-y-8 animate-fade-in-up">
               {/* Main Heading */}
@@ -91,41 +91,43 @@ const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
             </div>
 
             {/* Right Column - Visual Element */}
-            <div className="relative lg:block hidden">
+            <div className="relative flex justify-center lg:justify-end mt-10 lg:mt-0">
               <div className="relative">
-                
-                  <div
-                    className="bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden relative mx-auto"
-                    style={{ width: "400px", height: "550px" }} // A5 page ratio
-                  >
-                    {/* Image Stack with Transitions */}
-                    {data?.images?.map((image, index) => (
-                      <img
+                <div
+                  className="bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden relative mx-auto"
+                  style={{
+                    width: "min(90vw, 400px)",
+                    height: "min(120vw, 550px)", // scales on small screens
+                  }} // A5 page ratio
+                >
+                  {/* Image Stack with Transitions */}
+                  {data?.images?.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image}
+                      alt={`A5 Page ${index + 1}`}
+                      className={`absolute inset-0 w-full h-full object-fill p-4 bg-white transition-all duration-1000 ${
+                        index === currentImageIndex
+                          ? "opacity-100 scale-100"
+                          : "opacity-0 scale-105"
+                      }`}
+                    />
+                  ))}
+
+                  {/* Image Indicators */}
+                  <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+                    {data?.images?.map((_, index) => (
+                      <button
                         key={index}
-                        src={image}
-                        alt={`A5 Page ${index + 1}`}
-                        className={`absolute inset-0 w-full h-full object-fill p-4 bg-white transition-all duration-1000 ${
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
                           index === currentImageIndex
-                            ? "opacity-100 scale-100"
-                            : "opacity-0 scale-105"
+                            ? "bg-gray-800 w-8"
+                            : "bg-gray-400 hover:bg-gray-600"
                         }`}
                       />
                     ))}
-
-                    {/* Image Indicators */}
-                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
-                      {data?.images?.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                            index === currentImageIndex
-                              ? "bg-gray-800 w-8"
-                              : "bg-gray-400 hover:bg-gray-600"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                  </div>
 
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center justify-between">

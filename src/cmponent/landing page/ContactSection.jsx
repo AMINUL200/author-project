@@ -34,7 +34,8 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
           {/* Left Side */}
           <div className="flex flex-col space-y-6 w-full md:w-1/2">
             <h2 className="text-3xl md:text-4xl font-bold mb-2">
-              Let’s Get Connected
+              {/* Let’s Get Connected */}
+              {contact.title}
             </h2>
 
             <div className="space-y-4">

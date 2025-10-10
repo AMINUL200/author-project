@@ -117,7 +117,7 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
   }
 
   return (
-    <section className="py-20 pt-10 bg-gray-50" id="pricing">
+    <section className="py-20 pt-10 bg-gray-50 m-4" id="pricing">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -138,7 +138,7 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
         {plans?.length === 0 ? (
           <p className="text-center text-gray-500">No plans available</p>
         ) : (
-          <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-20">
+          <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-20 p-4">
             {plans.map((plan, index) => {
               // const isPopular = index === 1; // highlight 2nd plan as "Most Popular"
               const isPopular = false; // highlight 2nd plan as "Most Popular"

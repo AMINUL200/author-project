@@ -3,6 +3,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+// import RichTextInput from "../../../cmponent/common/RichTextInput";
 
 const AddAuthorBio = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -157,13 +158,13 @@ const AddAuthorBio = () => {
       formData.append("country", authorData.country);
       formData.append("tagline", authorData.tagline);
       formData.append("achievements", authorData.achievements);
-      
+
       // Append expertise as array - handle both string and array formats
       if (Array.isArray(authorData.expertise)) {
         authorData.expertise.forEach((skill) => {
           formData.append("expertise[]", skill);
         });
-      } else if (typeof authorData.expertise === 'string') {
+      } else if (typeof authorData.expertise === "string") {
         // If expertise comes as string, try to parse it
         try {
           const parsedExpertise = JSON.parse(authorData.expertise);
@@ -221,9 +222,15 @@ const AddAuthorBio = () => {
       console.error("Error saving author bio:", error);
       // More detailed error message
       if (error.response) {
-        toast.error(`Failed to ${isUpdateMode ? "update" : "create"} author bio: ${error.response.data.message || 'Server error'}`);
+        toast.error(
+          `Failed to ${isUpdateMode ? "update" : "create"} author bio: ${
+            error.response.data.message || "Server error"
+          }`
+        );
       } else {
-        toast.error(`Failed to ${isUpdateMode ? "update" : "create"} author bio`);
+        toast.error(
+          `Failed to ${isUpdateMode ? "update" : "create"} author bio`
+        );
       }
     } finally {
       setLoading(false);
@@ -273,135 +280,152 @@ const AddAuthorBio = () => {
         {/* Form */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <form onSubmit={handleSubmit} className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column - Basic Info & Images */}
-              <div className="space-y-6">
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={authorData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter author name"
-                  />
+            <div className="space-y-8">
+              {/* Basic Info & Images - Now in a single column layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={authorData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter author name"
+                    />
+                  </div>
+
+                  {/* Tagline */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tagline *
+                    </label>
+                    <input
+                      type="text"
+                      name="tagline"
+                      value={authorData.tagline}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter professional tagline"
+                    />
+                  </div>
+
+                  {/* Affiliation */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Affiliation *
+                    </label>
+                    <input
+                      type="text"
+                      name="affiliation"
+                      value={authorData.affiliation}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter organization or affiliation"
+                    />
+                  </div>
+
+                  {/* Country */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Country *
+                    </label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={authorData.country}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter country"
+                    />
+                  </div>
+
+                  {/* Achievements */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Achievements
+                    </label>
+                    <textarea
+                      name="achievements"
+                      value={authorData.achievements}
+                      onChange={handleInputChange}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter key achievements (comma separated)"
+                    />
+                  </div>
                 </div>
 
-                {/* Tagline */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tagline *
-                  </label>
-                  <input
-                    type="text"
-                    name="tagline"
-                    value={authorData.tagline}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter professional tagline"
-                  />
-                </div>
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {/* Image 1 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Primary Image *
+                    </label>
+                    <ImageUpload
+                      preview={image1Preview}
+                      onChange={(e) => handleImageChange(e, "image1")}
+                      required={!isUpdateMode}
+                      label="Upload primary image"
+                    />
+                  </div>
 
-                {/* Affiliation */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Affiliation *
-                  </label>
-                  <input
-                    type="text"
-                    name="affiliation"
-                    value={authorData.affiliation}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter organization or affiliation"
-                  />
-                </div>
-
-                {/* Country */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Country *
-                  </label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={authorData.country}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter country"
-                  />
-                </div>
-
-                {/* Achievements */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Achievements
-                  </label>
-                  <textarea
-                    name="achievements"
-                    value={authorData.achievements}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter key achievements (comma separated)"
-                  />
-                </div>
-
-                {/* Image 1 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Primary Image *
-                  </label>
-                  <ImageUpload
-                    preview={image1Preview}
-                    onChange={(e) => handleImageChange(e, "image1")}
-                    required={!isUpdateMode}
-                    label="Upload primary image"
-                  />
-                </div>
-
-                {/* Image 2 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Secondary Image
-                  </label>
-                  <ImageUpload
-                    preview={image2Preview}
-                    onChange={(e) => handleImageChange(e, "image2")}
-                    required={false}
-                    label="Upload secondary image"
-                  />
+                  {/* Image 2 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Secondary Image
+                    </label>
+                    <ImageUpload
+                      preview={image2Preview}
+                      onChange={(e) => handleImageChange(e, "image2")}
+                      required={false}
+                      label="Upload secondary image"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Right Column - Description, Expertise & Social Links */}
-              <div className="space-y-6">
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description *
-                  </label>
-                  <textarea
-                    name="description"
-                    value={authorData.description}
-                    onChange={handleInputChange}
-                    required
-                    rows="6"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter author biography description"
-                  />
-                </div>
+              {/* Description - Full Width */}
+              <div className="border-t pt-8">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={authorData.description}
+                  onChange={handleInputChange}
+                  required
+                  rows="8"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter author biography description"
+                />
+                {/* <RichTextInput
+                  value={authorData.description}
+                  onChange={(content) =>
+                    setAuthorData((prev) => ({
+                      ...prev,
+                      description: content,
+                    }))
+                  }
+                  placeholder="Enter author biography description..."
+                  height="200px"
+                /> */}
+              </div>
 
+              {/* Expertise & Social Links - Side by side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-t pt-8">
                 {/* Expertise */}
-                <div>
+                <div className="space-y-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expertise & Skills
                   </label>
@@ -507,7 +531,7 @@ const AddAuthorBio = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-8 flex justify-end space-x-3">
+            <div className="mt-8 flex justify-end space-x-3 border-t pt-6">
               <button
                 type="button"
                 onClick={handleCancel}

@@ -62,7 +62,7 @@ const Navbar = ({ data, loading, error }) => {
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center group">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  {/* <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                     <svg
                       className="w-6 h-6 text-white"
                       fill="currentColor"
@@ -70,16 +70,16 @@ const Navbar = ({ data, loading, error }) => {
                     >
                       <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                     </svg>
-                  </div>
-                  <div className="absolute inset-0 w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                  </div> */}
+                  {/* <div className="absolute inset-0 w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div> */}
                 </div>
                 <div className="ml-3">
                   <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     BookSpace
                   </span>
-                  <div className="text-xs text-gray-500 font-medium">
+                  {/* <div className="text-xs text-gray-500 font-medium">
                     Digital Book
-                  </div>
+                  </div> */}
                 </div>
               </Link>
             </div>
