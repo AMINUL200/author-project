@@ -9,13 +9,11 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 const PreviousPublication = ({
-  sectionTitle={},
+  sectionTitle = {},
   featureBookData,
   loading = false,
   error = null,
 }) => {
-
-  
   // Use the actual featureBookData from props
   const publications = featureBookData || [];
 
@@ -83,9 +81,7 @@ const PreviousPublication = ({
                 {sectionTitle?.sec3_name}
               </h1>
             </div>
-            <p className="text-gray-600 text-lg">
-              {sectionTitle?.sec3_para}
-            </p>
+            <p className="text-gray-600 text-lg">{sectionTitle?.sec3_para}</p>
           </div>
           <div className="text-center text-gray-500 bg-gray-50 p-12 rounded-lg">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -97,7 +93,10 @@ const PreviousPublication = ({
   }
 
   return (
-    <div className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen" id="feature">
+    <div
+      className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white min-h-screen"
+      id="feature"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12 text-center">
@@ -107,14 +106,12 @@ const PreviousPublication = ({
               {sectionTitle?.sec3_name}
             </h1>
           </div>
-          <p className="text-gray-600 text-lg">
-             {sectionTitle?.sec3_para}
-          </p>
+          <p className="text-gray-600 text-lg">{sectionTitle?.sec3_para}</p>
         </div>
 
         {/* Swiper Slider */}
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
+          modules={[Navigation, Pagination, ]}
           spaceBetween={24}
           slidesPerView={1}
           pagination={{
@@ -131,10 +128,10 @@ const PreviousPublication = ({
               slidesPerView: 2,
             },
             768: {
-              slidesPerView: 2,
+              slidesPerView: 3,
             },
             1024: {
-              slidesPerView: 2,
+              slidesPerView: 4,
             },
           }}
           className="pb-16"
@@ -143,21 +140,25 @@ const PreviousPublication = ({
             <SwiperSlide key={book.id}>
               <div className="book-card bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col transition-transform duration-300 hover:scale-105">
                 {/* Book Cover */}
-                <div className="h-80 overflow-hidden relative">
+                <div
+                  className="h-80 overflow-hidden relative"
+                  // style={{ width: "400px", height: "550px" }}
+                >
                   <div className="book-cover h-full">
                     <img
                       src={book.image}
                       alt={book.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-fill"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/300x400/cccccc/969696?text=No+Image";
+                        e.target.src =
+                          "https://via.placeholder.com/300x400/cccccc/969696?text=No+Image";
                       }}
                     />
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col">
+                {/* <div className="p-5 flex-1 flex flex-col">
                   <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
                     {book.title}
                   </h3>
@@ -173,8 +174,7 @@ const PreviousPublication = ({
                     </span>
                   </div>
 
-                  {/* Removed View Details Button */}
-                </div>
+                </div> */}
               </div>
             </SwiperSlide>
           ))}

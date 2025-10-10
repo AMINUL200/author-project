@@ -247,7 +247,7 @@ const PublishedBook = ({
                       </h2>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-4">
+                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-8">
                         {book.description || "Explore this amazing publication with rich content and beautiful visuals."}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ const PublishedBook = ({
                     {/* Action Button */}
                     <div className="space-y-4">
                       <motion.button
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        className="w-[50%] bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         whileHover={{
                           scale: 1.02,
                           boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -278,7 +278,7 @@ const PublishedBook = ({
                   </div>
 
                   {/* Right Section - Image Carousel */}
-                  <div className="lg:w-[50%] h-full relative bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+                  <div className="lg:w-[50%] h-full relative bg-white p-6">
                     <div className="h-full w-full rounded-2xl overflow-hidden">
                       {renderBookContent(book)}
                     </div>
