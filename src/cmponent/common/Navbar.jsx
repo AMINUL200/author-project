@@ -5,9 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 
 const Navbar = ({ data, loading, error }) => {
-   
-
-   const storageUrl = import.meta.env.VITE_STORAGE_URL;
+  const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const { token, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -109,19 +107,19 @@ const Navbar = ({ data, loading, error }) => {
                 <span className="relative z-10">Published Books</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
+              <button
+                onClick={() => scrollToSection("review")}
+                className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
+              >
+                <span className="relative z-10">Review</span>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              </button>
 
               <button
                 onClick={() => scrollToSection("feature")}
                 className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
               >
                 <span className="relative z-10">Feature Books</span>
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-              </button>
-              <button
-                onClick={() => scrollToSection("pricing")}
-                className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
-              >
-                <span className="relative z-10">Pricing</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
 
@@ -153,7 +151,6 @@ const Navbar = ({ data, loading, error }) => {
                       Logout
                     </span>
                   </button>
-                
                 </div>
               ) : (
                 <Link

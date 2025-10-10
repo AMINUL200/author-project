@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { data } from "react-router-dom";
 import BooksReview from "../cmponent/landing page/BooksReview";
 import AuthorBio from "../cmponent/landing page/AuthorBio";
+import ContactSection from "../cmponent/landing page/ContactSection";
 
 const LandingPage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -36,6 +37,7 @@ const LandingPage = () => {
   const [event, setEvent] = useState([]);
   const [sectionTitle, setSectionTitle] = useState([]);
   const [bookRevData, setBookRevData] = useState({});
+  const [contactData, setContactData] = useState({});
 
   const [loading, setLoading] = useState({
     hero: true,
@@ -46,6 +48,7 @@ const LandingPage = () => {
     featurebook: true,
     event: true,
     review: true,
+    contact: true,
   });
 
   const [error, setError] = useState({
@@ -57,6 +60,7 @@ const LandingPage = () => {
     featurebook: null,
     event: null,
     review: null,
+    contact: null,
   });
 
   useEffect(() => {
@@ -91,6 +95,7 @@ const LandingPage = () => {
         featurebook: axios.get(`${apiUrl}all-feature-update`),
         event: axios.get(`${apiUrl}all-event`),
         review: axios.get(`${apiUrl}reviews`),
+        contact: axios.get(`${apiUrl}contacts`),
       };
 
       Object.entries(requests).forEach(async ([key, req]) => {
@@ -106,6 +111,7 @@ const LandingPage = () => {
             if (key === "featurebook") setFeatureBookData(res.data.data || []);
             if (key === "event") setEvent(res.data.data || {});
             if (key === "review") setBookRevData(res.data.data || {});
+            if (key === "contact") setContactData(res.data.data || {});
           } else {
             throw new Error(res.data.message || `Failed to fetch ${key}`);
           }
@@ -182,8 +188,14 @@ const LandingPage = () => {
       />
 
       {/* <NewsletterSection /> */}
-      <CTABanner sectionTitle={sectionTitle} />
-      <Footer />
+      {/* <CTABanner sectionTitle={sectionTitle} />
+      <Footer /> */}
+
+      <ContactSection
+        contact={contactData}
+        loading={loading.contact}
+        error={error.contact}
+      />
     </div>
   );
 };

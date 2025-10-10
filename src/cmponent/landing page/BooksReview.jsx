@@ -31,7 +31,7 @@ const BooksReview = ({ reviewData, loading = false, error = null }) => {
   }
 
   return (
-    <div className="bg-[#f7f7f7] py-26">
+    <div className="bg-[#f7f7f7] py-26" id="review">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between px-4">
         {/* Left: Book Reviews */}
         <div className="flex flex-col md:flex-row items-center gap-10">

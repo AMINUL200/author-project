@@ -146,12 +146,12 @@ const AuthorBio = ({
           {/* Right Side - Image */}
           <div className="relative bg-gradient-to-br bg-white">
             <div className="absolute inset-0 bg-black opacity-20"></div>
-            <div className="relative bg-white h-full flex items-center justify-center p-12">
+            <div className="relative bg-white h-full flex items-center justify-center pt-10 md:p-20">
               {/* Decorative Elements */}
 
               {/* Profile Image Placeholder */}
               <div
-                className="relative z-10 w-100 h-120 rounded-3xl border border-black/20 overflow-hidden transform  hover:rotate-0 transition-transform duration-500"
+                className="relative z-10 w-70  md:w-100 h-80 md:h-120 rounded-3xl border border-black/20 overflow-hidden transform  hover:rotate-0 transition-transform duration-500"
                 style={{ boxShadow: "rgb(38, 57, 77) 0px 20px 30px -10px" }}
               >
                 <div className="w-full h-full flex items-center justify-center">

@@ -113,8 +113,8 @@ function App() {
             </AdminRoute>
           }
         >
-          <Route index element={<AdminDashboard />} />
-          <Route path="profile" element={<AdminProfilePage />} />
+          <Route index element={<AdminProfilePage />} />
+          <Route index path="profile" element={<AdminProfilePage />} />
           {/* <Route path="landing-page/banners" element={<HandleBanner />} /> */}
           <Route path="landing-page/banners" element={<BannerList />} />
           <Route path="landing-page/add-banners" element={<AddBanner/>}/>

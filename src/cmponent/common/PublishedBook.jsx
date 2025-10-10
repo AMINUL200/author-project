@@ -67,7 +67,7 @@ const PublishedBook = ({
             <img
               src={book.images[currentIndex]}
               alt={`${book.title} - Page ${currentIndex + 1}`}
-              className="max-w-full max-h-full object-cover transition-opacity duration-300"
+              className="w-full h-full object-fill transition-opacity duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none rounded-2xl" />
           </div>

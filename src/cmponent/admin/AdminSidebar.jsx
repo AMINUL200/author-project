@@ -29,7 +29,7 @@ const AdminSidebar = ({
 }) => {
   const location = useLocation();
   const menuItems = [
-    { icon: Home, label: "Dashboard", path: "/admin" },
+    // { icon: Home, label: "Dashboard", path: "/admin" },
     { icon: User, label: "Profile", path: "/admin/profile" },
 
     {

@@ -39,6 +39,7 @@ const SectionTitle = () => {
     com_name: null,
     com_description: null,
   });
+  const [logoFile, setLogoFile] = useState(null); // Separate state for logo file
 
   const fetchSectionTitle = async () => {
     try {
@@ -94,9 +95,9 @@ const SectionTitle = () => {
     const logoUrl = URL.createObjectURL(file);
     setFormData((prev) => ({
       ...prev,
-      com_logo: logoUrl,
-      logoFile: file, // Store the file object for later upload
+      com_logo: logoUrl, // This is only for preview
     }));
+    setLogoFile(file); // Store the actual file separately
 
     // Reset file input
     e.target.value = '';
@@ -106,8 +107,8 @@ const SectionTitle = () => {
     setFormData((prev) => ({
       ...prev,
       com_logo: null,
-      logoFile: null,
     }));
+    setLogoFile(null);
     toast.success('Logo removed successfully!');
   };
 
@@ -116,16 +117,21 @@ const SectionTitle = () => {
     try {
       const formDataToSend = new FormData();
       
-      // Append all form fields
+      // Append all form fields except com_logo (we'll handle it separately)
       Object.keys(formData).forEach(key => {
-        if (key !== 'logoFile' && formData[key] !== null) {
+        if (key !== 'com_logo' && formData[key] !== null) {
           formDataToSend.append(key, formData[key]);
         }
       });
 
-      // Append logo file if selected
-      if (formData.logoFile) {
-        formDataToSend.append('logo', formData.logoFile);
+      // Append logo file if selected - use the actual file object
+      if (logoFile) {
+        formDataToSend.append('com_logo', logoFile);
+      } else if (formData.com_logo && !formData.com_logo.startsWith('blob:')) {
+        // If com_logo exists and is not a blob URL (meaning it's the existing logo from server)
+        // You might want to handle this case based on your API requirements
+        // Some APIs accept the existing logo URL, others might require re-upload
+        // formDataToSend.append('com_logo', formData.com_logo);
       }
 
       const response = await axios.post(`${apiUrl}sections/update`, formDataToSend, {
@@ -138,13 +144,22 @@ const SectionTitle = () => {
       if (response.data.status) {
         console.log(response.data);
         toast.success("Update Success");
-        // Clear the logoFile after successful upload
-        setFormData(prev => ({ ...prev, logoFile: null }));
-        fetchSectionTitle();
+        setLogoFile(null); // Clear the logo file after successful upload
+        fetchSectionTitle(); // Refresh data to get the updated logo URL from server
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      if (error.response?.data?.errors) {
+        // Handle specific field errors
+        const errors = error.response.data.errors;
+        Object.keys(errors).forEach(field => {
+          errors[field].forEach(errorMessage => {
+            toast.error(`${field}: ${errorMessage}`);
+          });
+        });
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       setHandleLoading(false);
     }
@@ -162,7 +177,7 @@ const SectionTitle = () => {
 
   const renderInputField = (key, value) => {
     // Skip these fields
-    if (key === "id" || key === "created_at" || key === "updated_at" || key === "logoFile") {
+    if (key === "id" || key === "created_at" || key === "updated_at") {
       return null;
     }
 
@@ -265,7 +280,7 @@ const SectionTitle = () => {
 
   const groupedFields = {};
   Object.keys(formData).forEach((key) => {
-    if (key !== "id" && key !== "created_at" && key !== "updated_at" && key !== "logoFile") {
+    if (key !== "id" && key !== "created_at" && key !== "updated_at") {
       const match = key.match(/^sec(\d+)/);
       let section = match ? `Section ${match[1]}` : "Other";
       
