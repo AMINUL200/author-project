@@ -4,6 +4,7 @@ import { Upload, FileText, DollarSign, Plus, X, Image, Trash2, Link, Globe, Edit
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import CustomTextEditor from "../../cmponent/common/TextEditor";
 
 const AddNewArticle = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -414,7 +415,7 @@ const AddNewArticle = () => {
               <FileText className="w-5 h-5 text-blue-600" />
               Description
             </label>
-            <textarea
+            {/* <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
@@ -423,6 +424,17 @@ const AddNewArticle = () => {
               className={`w-full px-4 py-3 rounded-lg border transition-colors resize-none ${
                 errors.description ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-blue-500"
               } focus:outline-none`}
+            /> */}
+            <CustomTextEditor
+            value={formData.description}
+            onChange={(newContent) =>
+              setFormData((prev) =>({
+                ...prev,
+                description:newContent
+              }))
+            }
+            placeholder="Write a compelling description for your article..."
+            height={400}
             />
             <div className="flex justify-between items-center mt-2">
               {errors.description ? (

@@ -166,8 +166,8 @@ const HandleAuthorBio = () => {
                       <div className="text-sm space-y-3">
                         <div>
                           <span className="font-medium text-gray-900">Description:</span>
-                          <p className="mt-1 text-gray-600 line-clamp-3">
-                            {bio.description}
+                          <p className="mt-1 text-gray-600 line-clamp-3" dangerouslySetInnerHTML={{__html:bio.description}}>
+                            {/* {bio.description} */}
                           </p>
                         </div>
                         <div>

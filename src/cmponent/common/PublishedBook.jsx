@@ -247,8 +247,8 @@ const PublishedBook = ({
                       </h2>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8">
-                        {book.description || "Explore this amazing publication with rich content and beautiful visuals."}
+                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8" dangerouslySetInnerHTML={{__html:book.description}}>
+                        {/* {book.description || "Explore this amazing publication with rich content and beautiful visuals."} */}
                       </p>
                     </div>
 

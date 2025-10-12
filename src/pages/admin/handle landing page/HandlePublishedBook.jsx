@@ -241,8 +241,8 @@ const HandlePublishedBook = () => {
                     {truncateText(article.title, 60)}
                   </h3>
 
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {truncateText(article.description, 120)}
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3" dangerouslySetInnerHTML={{__html:truncateText(article.description, 120)}}>
+                    {/* {truncateText(article.description, 120)} */}
                   </p>
 
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-4">

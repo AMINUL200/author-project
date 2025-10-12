@@ -3,6 +3,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import CustomTextEditor from "../../../cmponent/common/TextEditor";
 // import RichTextInput from "../../../cmponent/common/RichTextInput";
 
 const AddAuthorBio = () => {
@@ -400,7 +401,7 @@ const AddAuthorBio = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
                 </label>
-                <textarea
+                {/* <textarea
                   name="description"
                   value={authorData.description}
                   onChange={handleInputChange}
@@ -408,18 +409,19 @@ const AddAuthorBio = () => {
                   rows="8"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter author biography description"
-                />
-                {/* <RichTextInput
+                /> */}
+
+                <CustomTextEditor
                   value={authorData.description}
-                  onChange={(content) =>
+                  onChange={(newContent) =>
                     setAuthorData((prev) => ({
                       ...prev,
-                      description: content,
+                      description: newContent,
                     }))
                   }
-                  placeholder="Enter author biography description..."
-                  height="200px"
-                /> */}
+                  placeholder="Enter author biography description"
+                  height={400}
+                />
               </div>
 
               {/* Expertise & Social Links - Side by side */}
