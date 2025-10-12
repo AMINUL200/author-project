@@ -4,6 +4,7 @@ import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Loader from "../../../cmponent/common/Loader";
+import CustomTextEditor from "../../../cmponent/common/TextEditor";
 
 const AddBanner = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -17,7 +18,7 @@ const AddBanner = () => {
   const isUpdateMode = Boolean(updateId);
 
   const [loading, setLoading] = useState(true);
-  const [handleLoading, setHandleLoading] = useState(false)
+  const [handleLoading, setHandleLoading] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [bannerData, setBannerData] = useState({
     heading1: "",
@@ -78,28 +79,28 @@ const AddBanner = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length > 0) {
       // Create preview URLs for new files
-      const newPreviews = files.map(file => URL.createObjectURL(file));
-      
+      const newPreviews = files.map((file) => URL.createObjectURL(file));
+
       // Update previews state
-      setImagePreviews(prev => [...prev, ...newPreviews]);
-      
+      setImagePreviews((prev) => [...prev, ...newPreviews]);
+
       // Update banner data with new files
-      setBannerData(prev => ({
+      setBannerData((prev) => ({
         ...prev,
-        images: [...prev.images, ...files]
+        images: [...prev.images, ...files],
       }));
     }
   };
 
   const removeImage = (index) => {
     // Remove from previews
-    setImagePreviews(prev => {
+    setImagePreviews((prev) => {
       const newPreviews = [...prev];
       // Revoke object URL to avoid memory leaks
-      if (newPreviews[index].startsWith('blob:')) {
+      if (newPreviews[index].startsWith("blob:")) {
         URL.revokeObjectURL(newPreviews[index]);
       }
       newPreviews.splice(index, 1);
@@ -107,12 +108,12 @@ const AddBanner = () => {
     });
 
     // Remove from banner data
-    setBannerData(prev => {
+    setBannerData((prev) => {
       const newImages = [...prev.images];
       newImages.splice(index, 1);
       return {
         ...prev,
-        images: newImages
+        images: newImages,
       };
     });
   };
@@ -123,7 +124,7 @@ const AddBanner = () => {
 
     try {
       const formData = new FormData();
-      
+
       // Append all text fields
       formData.append("heading1", bannerData.heading1);
       formData.append("heading2", bannerData.heading2);
@@ -142,12 +143,16 @@ const AddBanner = () => {
       let response;
       if (isUpdateMode) {
         // Update existing banner
-        response = await axios.post(`${apiUrl}banner-update/${updateId}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        response = await axios.post(
+          `${apiUrl}banner-update/${updateId}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
         toast.success("Banner updated successfully!");
       } else {
         // Create new banner
@@ -173,8 +178,8 @@ const AddBanner = () => {
 
   const handleCancel = () => {
     // Clean up object URLs to avoid memory leaks
-    imagePreviews.forEach(preview => {
-      if (preview.startsWith('blob:')) {
+    imagePreviews.forEach((preview) => {
+      if (preview.startsWith("blob:")) {
         URL.revokeObjectURL(preview);
       }
     });
@@ -184,8 +189,8 @@ const AddBanner = () => {
   // Clean up object URLs when component unmounts
   useEffect(() => {
     return () => {
-      imagePreviews.forEach(preview => {
-        if (preview.startsWith('blob:')) {
+      imagePreviews.forEach((preview) => {
+        if (preview.startsWith("blob:")) {
           URL.revokeObjectURL(preview);
         }
       });
@@ -193,7 +198,7 @@ const AddBanner = () => {
   }, [imagePreviews]);
 
   if (loading && isUpdateMode) {
-    return <Loader/>
+    return <Loader />;
   }
 
   return (
@@ -205,7 +210,9 @@ const AddBanner = () => {
             {isUpdateMode ? `Edit Banner #${updateId}` : "Add New Banner"}
           </h1>
           <p className="text-gray-600 mt-2">
-            {isUpdateMode ? "Update your banner details" : "Create a new banner for your website"}
+            {isUpdateMode
+              ? "Update your banner details"
+              : "Create a new banner for your website"}
           </p>
         </div>
 
@@ -252,7 +259,7 @@ const AddBanner = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description *
                   </label>
-                  <textarea
+                  {/* <textarea
                     name="description"
                     value={bannerData.description}
                     onChange={handleInputChange}
@@ -260,6 +267,17 @@ const AddBanner = () => {
                     rows="4"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter banner description"
+                  /> */}
+                  <CustomTextEditor 
+                  value={bannerData.description} 
+                  onChange={(newContent) =>
+                    setBannerData((prev) =>({
+                      ...prev,
+                      description:newContent
+                    }))
+                  }
+                  placeholder="Enter banner description"
+                  height={50}
                   />
                 </div>
 
@@ -319,7 +337,7 @@ const AddBanner = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Banner Images *
                   </label>
-                  
+
                   {/* Image Previews */}
                   {imagePreviews.length > 0 && (
                     <div className="mb-4">
@@ -380,7 +398,9 @@ const AddBanner = () => {
                             onChange={handleImageChange}
                             accept="image/*"
                             multiple
-                            required={!isUpdateMode && imagePreviews.length === 0}
+                            required={
+                              !isUpdateMode && imagePreviews.length === 0
+                            }
                           />
                         </label>
                         <p className="pl-1">or drag and drop</p>
@@ -402,7 +422,7 @@ const AddBanner = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                 disabled={handleLoading}
+                disabled={handleLoading}
                 className="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
@@ -414,14 +434,31 @@ const AddBanner = () => {
               >
                 {handleLoading ? (
                   <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
                     </svg>
                     {isUpdateMode ? "Updating..." : "Creating..."}
                   </span>
+                ) : isUpdateMode ? (
+                  "Update Banner"
                 ) : (
-                  isUpdateMode ? "Update Banner" : "Create Banner"
+                  "Create Banner"
                 )}
               </button>
             </div>

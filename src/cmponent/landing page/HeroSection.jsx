@@ -69,8 +69,8 @@ const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
               </h1>
 
               {/* Description */}
-              <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-2xl">
-                {data?.description}
+              <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-2xl" dangerouslySetInnerHTML={{__html:data?.description}}>
+                {/* {data?.description} */}
               </p>
 
               {/* CTA Buttons */}

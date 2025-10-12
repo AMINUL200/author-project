@@ -69,9 +69,9 @@ const BioProfile = () => {
           <h1 className="text-4xl font-bold text-blue-700 mb-2">{bio?.name}</h1>
           <h2 className="text-lg text-gray-500 font-medium mb-6">{bio.tagline}</h2>
 
-          <p className="text-gray-600 mb-6 leading-relaxed text-justify">
-            <span className="text-blue-700 font-semibold">{bio.name}</span> —{" "}
-            {bio.description}
+          <p className="text-gray-600 mb-6 leading-relaxed text-justify default-style" dangerouslySetInnerHTML={{__html:bio.description}}>
+            {/* <span className="text-blue-700 font-semibold">{bio.name}</span> —{" "} */}
+            {/* {bio.description} */}
           </p>
 
           {/* Achievements */}

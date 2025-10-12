@@ -61,25 +61,10 @@ const Navbar = ({ data, loading, error }) => {
             {/* Logo Section */}
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center group">
-                <div className="relative">
-                  {/* <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                    </svg>
-                  </div> */}
-                  {/* <div className="absolute inset-0 w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div> */}
-                </div>
                 <div className="ml-3">
                   <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     BookSpace
                   </span>
-                  {/* <div className="text-xs text-gray-500 font-medium">
-                    Digital Book
-                  </div> */}
                 </div>
               </Link>
             </div>
@@ -97,7 +82,7 @@ const Navbar = ({ data, loading, error }) => {
                 onClick={() => scrollToSection("bio")}
                 className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
               >
-                <span className="relative z-10">Author's Bio </span>
+                <span className="relative z-10">Author's Bio</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
               <button
@@ -114,7 +99,6 @@ const Navbar = ({ data, loading, error }) => {
                 <span className="relative z-10">Review</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
-
               <button
                 onClick={() => scrollToSection("feature")}
                 className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
@@ -130,7 +114,7 @@ const Navbar = ({ data, loading, error }) => {
                   <button
                     onClick={() => {
                       logout();
-                      toast.info("logout Success Full");
+                      toast.info("Logout Successful");
                     }}
                     className="relative px-6 py-2.5 font-semibold rounded-xl transition-all duration-300 
       bg-gradient-to-r from-red-600 to-pink-600 text-white hover:shadow-lg hover:shadow-red-500/25 
@@ -209,12 +193,12 @@ const Navbar = ({ data, loading, error }) => {
         {/* Mobile Menu */}
         <div
           className={`lg:hidden transition-all duration-300 ${
-            isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            isMenuOpen ? "max-h-110 opacity-100" : "max-h-0 opacity-0"
           } overflow-hidden bg-white/95 backdrop-blur-md border-t border-gray-100`}
         >
           <div className="px-4 py-6 space-y-2">
             <button
-              onClick={() => scrollToSection("latest")}
+              onClick={() => scrollToSection("home")}
               className="flex items-center w-full px-4 py-3 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 group"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">
@@ -223,18 +207,14 @@ const Navbar = ({ data, loading, error }) => {
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                    clipRule="evenodd"
-                  />
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                 </svg>
               </div>
-              Latest Articles
+              Home
             </button>
 
             <button
-              onClick={() => scrollToSection("popular")}
+              onClick={() => scrollToSection("bio")}
               className="flex items-center w-full px-4 py-3 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 group"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">
@@ -243,14 +223,18 @@ const Navbar = ({ data, loading, error }) => {
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
-              Most Viewed
+              Author's Bio
             </button>
 
             <button
-              onClick={() => scrollToSection("about")}
+              onClick={() => scrollToSection("published")}
               className="flex items-center w-full px-4 py-3 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 group"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">
@@ -259,14 +243,46 @@ const Navbar = ({ data, loading, error }) => {
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
+                  <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                </svg>
+              </div>
+              Published Books
+            </button>
+
+            <button
+              onClick={() => scrollToSection("review")}
+              className="flex items-center w-full px-4 py-3 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 group"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              Review
+            </button>
+
+            <button
+              onClick={() => scrollToSection("feature")}
+              className="flex items-center w-full px-4 py-3 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-all duration-300 group"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
                     clipRule="evenodd"
                   />
                 </svg>
               </div>
-              About
+              Feature Books
             </button>
 
             <div className="pt-4 border-t border-gray-100">
@@ -274,7 +290,7 @@ const Navbar = ({ data, loading, error }) => {
                 <button
                   onClick={() => {
                     logout();
-                    toast.info("Logout Success full");
+                    toast.info("Logout Successful");
                     setIsMenuOpen(false);
                   }}
                   className="flex items-center justify-center w-full px-4 py-3 

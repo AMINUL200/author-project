@@ -227,8 +227,8 @@ const EventsPageTemplate = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 About This Event
               </h2>
-              <div className="prose prose-lg text-gray-600">
-                <p>{eventDetails.description}</p>
+              <div className="prose prose-lg text-gray-600 default-style" >
+                <p dangerouslySetInnerHTML={{__html:eventDetails.description}}></p>
               </div>
             </div>
 

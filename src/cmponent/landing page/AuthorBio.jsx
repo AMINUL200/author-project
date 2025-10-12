@@ -127,7 +127,7 @@ const AuthorBio = ({
               </div>
             )}
 
-            <p className="text-gray-600 leading-relaxed text-lg line-clamp-8" dangerouslySetInnerHTML={{__html:authorInfo?.description}}>
+            <p className="text-gray-600 leading-relaxed text-lg line-clamp-8 default-style" dangerouslySetInnerHTML={{__html:authorInfo?.description}}>
               {/* {authorInfo?.description} */}
             </p>
 

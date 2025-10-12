@@ -145,8 +145,8 @@ const BannerList = () => {
 
                     {/* Description */}
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs line-clamp-3">
-                        {banner.description}
+                      <div className="text-sm text-gray-900 max-w-xs line-clamp-3" dangerouslySetInnerHTML={{__html:banner.description}}>
+                        {/* {banner.description} */}
                       </div>
                     </td>
 

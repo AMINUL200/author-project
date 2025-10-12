@@ -75,8 +75,8 @@ const BooksReview = ({ reviewData, loading = false, error = null }) => {
           <h2 className="text-4xl font-bold text-black mb-3">
             {reviewData?.title}
           </h2>
-          <p className="text-lg text-gray-800 leading-relaxed">
-            {reviewData?.description}
+          <p className="text-lg text-gray-800 leading-relaxed"dangerouslySetInnerHTML={{__html:reviewData?.description}} >
+            {/* {reviewData?.description} */}
           </p>
         </div>
       </div>

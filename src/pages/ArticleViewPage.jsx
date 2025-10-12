@@ -431,7 +431,7 @@ const ArticleViewPage = () => {
         {/* Article Content */}
         <div className="prose prose-lg max-w-none mb-12">
           <div
-            className="text-slate-700 leading-relaxed"
+            className="text-slate-700 leading-relaxed default-style"
             dangerouslySetInnerHTML={{
               __html: articleData?.description,
             }}
@@ -639,10 +639,10 @@ const ArticleViewPage = () => {
                 {/* Unlock Full Book Document */}
                 {sectionInfo?.heading}
               </h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto" dangerouslySetInnerHTML={{__html:sectionInfo?.description}}>
                 {/* Subscribe to access the complete research PDF, resources, and
                 exclusive insights from industry experts. */}
-                {sectionInfo?.description}
+                {/* {sectionInfo?.description} */}
               </p>
 
               {/* Show login prompt if not authenticated */}

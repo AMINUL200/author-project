@@ -162,3 +162,54 @@
 .animate-pulse-slow {
   animation: pulse 4s ease-in-out infinite;
 }
+
+
+.default-style {
+  @apply text-slate-700 leading-relaxed;
+}
+
+.default-style a {
+  @apply text-blue-600 underline hover:text-blue-800 transition-colors duration-200;
+}
+
+.default-style p {
+  @apply mb-3;
+}
+
+.default-style ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.default-style ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.default-style li {
+  @apply mb-1;
+}
+
+.default-style h1,
+.default-style h2,
+.default-style h3,
+.default-style h4,
+.default-style h5,
+.default-style h6 {
+  @apply font-semibold mt-4 mb-2 text-gray-900;
+}
+
+.default-style blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4;
+}
+
+.default-style code {
+  @apply bg-gray-100 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.default-style table {
+  @apply border-collapse border border-gray-300 my-4 w-full;
+}
+
+.default-style th,
+.default-style td {
+  @apply border border-gray-300 px-3 py-2;
+}
