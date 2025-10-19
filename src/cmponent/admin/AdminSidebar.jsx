@@ -17,6 +17,7 @@ import {
   SubscriptIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { label, path } from "framer-motion/client";
 
 const AdminSidebar = ({
   isCollapsed,
@@ -76,6 +77,11 @@ const AdminSidebar = ({
       submenu: [
         { label: "Feature Book", path: "/admin/landing-page/feature-book" },
       ],
+    },
+    {
+      icon: Package,
+      label: "Manage Meta Tags",
+      path: "/admin/handle-meta-tags",
     },
     // {
     //   icon: ShoppingCart,

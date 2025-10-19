@@ -68,7 +68,7 @@ const BannerList = () => {
             <h1 className="text-3xl font-bold text-gray-900">Banner Management</h1>
             <p className="text-gray-600 mt-2">Manage your website banners and promotions</p>
           </div>
-          <button
+          {/* <button
             onClick={() => navigate(`/admin/landing-page/add-banners`)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2"
           >
@@ -76,7 +76,7 @@ const BannerList = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <span>Add New Banner</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Table Container */}
@@ -115,7 +115,7 @@ const BannerList = () => {
                         <div className="flex-shrink-0 h-16 w-16 relative">
                           <img
                             className="h-16 w-16 rounded-md object-cover border"
-                            src={banner.images[0]}
+                            src={banner.images[0].image}
                             alt={banner.image_title}
                           />
                           <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1 rounded">
@@ -171,12 +171,12 @@ const BannerList = () => {
                         >
                           Edit
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleDelete(banner.id)}
                           className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors duration-200"
                         >
                           Delete
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>

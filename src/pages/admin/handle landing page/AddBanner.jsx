@@ -27,18 +27,19 @@ const AddBanner = () => {
     button_name: "",
     image_title: "",
     image_subtitle: "",
-    images: [],
+    images: [], // This will contain objects with image_url and image_alts
   });
 
   // Fetch banner data when in update mode
   useEffect(() => {
     if (isUpdateMode && updateId) {
       fetchBannerData();
+    } else {
+      setLoading(false);
     }
   }, [isUpdateMode, updateId]);
 
   const fetchBannerData = async () => {
-    // setHandleLoading(true);
     try {
       const response = await axios.get(`${apiUrl}banner-edit/${updateId}`, {
         headers: {
@@ -48,6 +49,34 @@ const AddBanner = () => {
 
       if (response.status === 200) {
         const data = response.data;
+
+        console.log("API Response:", data);
+        console.log("Images data:", data.images);
+
+        // Transform the images data to match the required structure
+        let transformedImages = [];
+        if (data.images && Array.isArray(data.images)) {
+          transformedImages = data.images.map((img) => {
+            // Handle different possible image object structures
+            if (typeof img === "string") {
+              return {
+                image_url: img,
+                image_alts: "",
+              };
+            } else if (typeof img === "object") {
+              return {
+                image_url:
+                  img.image_url || img.url || img.path || img.src || "",
+                image_alts: img.image_alts || img.alt || img.caption || "",
+              };
+            }
+            return {
+              image_url: "",
+              image_alts: "",
+            };
+          });
+        }
+
         setBannerData({
           heading1: data.heading1 || "",
           heading2: data.heading2 || "",
@@ -55,10 +84,18 @@ const AddBanner = () => {
           button_name: data.button_name || "",
           image_title: data.image_title || "",
           image_subtitle: data.image_subtitle || "",
-          images: data.images || [],
+          images: transformedImages,
         });
-        if (data.images && data.images.length > 0) {
-          setImagePreviews(data.images);
+
+        // Set image previews for existing images
+        if (transformedImages.length > 0) {
+          setImagePreviews(
+            transformedImages.map((img) => ({
+              preview: img.image_url,
+              alt: img.image_alts,
+              isExisting: true,
+            }))
+          );
         }
       }
     } catch (error) {
@@ -81,28 +118,74 @@ const AddBanner = () => {
     const files = Array.from(e.target.files);
 
     if (files.length > 0) {
-      // Create preview URLs for new files
-      const newPreviews = files.map((file) => URL.createObjectURL(file));
+      // Create preview URLs and image objects for new files
+      const newImageObjects = files.map((file) => ({
+        file: file,
+        image_url: URL.createObjectURL(file),
+        image_alts: "", // Empty alt text by default, user can fill later
+        isNew: true, // Mark as new image
+      }));
 
       // Update previews state
-      setImagePreviews((prev) => [...prev, ...newPreviews]);
+      setImagePreviews((prev) => [
+        ...prev,
+        ...newImageObjects.map((img) => ({
+          preview: img.image_url,
+          alt: img.image_alts,
+          isExisting: false,
+        })),
+      ]);
 
-      // Update banner data with new files
+      // Update banner data with new image objects
       setBannerData((prev) => ({
         ...prev,
-        images: [...prev.images, ...files],
+        images: [...prev.images, ...newImageObjects],
       }));
     }
+
+    // Clear the file input to allow selecting the same file again
+    e.target.value = "";
+  };
+
+  // Handle alt text change for specific image
+  const handleAltTextChange = (index, altText) => {
+    setBannerData((prev) => {
+      const updatedImages = [...prev.images];
+      updatedImages[index] = {
+        ...updatedImages[index],
+        image_alts: altText,
+      };
+      return {
+        ...prev,
+        images: updatedImages,
+      };
+    });
+
+    // Also update previews for display
+    setImagePreviews((prev) => {
+      const updatedPreviews = [...prev];
+      updatedPreviews[index] = {
+        ...updatedPreviews[index],
+        alt: altText,
+      };
+      return updatedPreviews;
+    });
   };
 
   const removeImage = (index) => {
+    const imageToRemove = bannerData.images[index];
+
+    // Revoke object URL for new images to avoid memory leaks
+    if (
+      imageToRemove.image_url &&
+      imageToRemove.image_url.startsWith("blob:")
+    ) {
+      URL.revokeObjectURL(imageToRemove.image_url);
+    }
+
     // Remove from previews
     setImagePreviews((prev) => {
       const newPreviews = [...prev];
-      // Revoke object URL to avoid memory leaks
-      if (newPreviews[index].startsWith("blob:")) {
-        URL.revokeObjectURL(newPreviews[index]);
-      }
       newPreviews.splice(index, 1);
       return newPreviews;
     });
@@ -133,16 +216,26 @@ const AddBanner = () => {
       formData.append("image_title", bannerData.image_title);
       formData.append("image_subtitle", bannerData.image_subtitle);
 
-      // Append all image files
-      bannerData.images.forEach((image, index) => {
-        if (image instanceof File) {
-          formData.append("images[]", image);
+      // Append each image file directly to the images array
+      bannerData.images.forEach((img, index) => {
+        if (img.file) {
+          // For new images, append the file directly
+          formData.append(`images[${index}][image_url]`, img.file);
+          formData.append(`images[${index}][image_alts]`, img.image_alts || "");
+        } else {
+          // For existing images, append URL and alt text
+          formData.append(`images[${index}][image_url]`, img.image_url);
+          formData.append(`images[${index}][image_alts]`, img.image_alts || "");
         }
       });
 
+      console.log("FormData entries:");
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
       let response;
       if (isUpdateMode) {
-        // Update existing banner
         response = await axios.post(
           `${apiUrl}banner-update/${updateId}`,
           formData,
@@ -153,15 +246,18 @@ const AddBanner = () => {
             },
           }
         );
+        console.log(response);
+        
         toast.success("Banner updated successfully!");
       } else {
-        // Create new banner
         response = await axios.post(`${apiUrl}banner`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         });
+        console.log(response);
+        
         toast.success("Banner created successfully!");
       }
 
@@ -170,7 +266,20 @@ const AddBanner = () => {
       }
     } catch (error) {
       console.error("Error saving banner:", error);
-      toast.error(`Failed to ${isUpdateMode ? "update" : "create"} banner`);
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 422 && data.errors) {
+          Object.entries(data.errors).forEach(([key, val]) =>
+            toast.error(`${key}: ${val[0]}`)
+          );
+        } else if (status === 500) {
+          toast.error("Server error — please check backend logs.");
+        } else {
+          toast.error(`Error: ${status} - ${data.message || "Unknown error"}`);
+        }
+      } else {
+        toast.error(`Failed to ${isUpdateMode ? "update" : "create"} banner`);
+      }
     } finally {
       setHandleLoading(false);
     }
@@ -179,8 +288,8 @@ const AddBanner = () => {
   const handleCancel = () => {
     // Clean up object URLs to avoid memory leaks
     imagePreviews.forEach((preview) => {
-      if (preview.startsWith("blob:")) {
-        URL.revokeObjectURL(preview);
+      if (preview.preview && preview.preview.startsWith("blob:")) {
+        URL.revokeObjectURL(preview.preview);
       }
     });
     navigate("/admin/landing-page/banners");
@@ -190,8 +299,8 @@ const AddBanner = () => {
   useEffect(() => {
     return () => {
       imagePreviews.forEach((preview) => {
-        if (preview.startsWith("blob:")) {
-          URL.revokeObjectURL(preview);
+        if (preview.preview && preview.preview.startsWith("blob:")) {
+          URL.revokeObjectURL(preview.preview);
         }
       });
     };
@@ -259,25 +368,16 @@ const AddBanner = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description *
                   </label>
-                  {/* <textarea
-                    name="description"
+                  <CustomTextEditor
                     value={bannerData.description}
-                    onChange={handleInputChange}
-                    required
-                    rows="4"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(newContent) =>
+                      setBannerData((prev) => ({
+                        ...prev,
+                        description: newContent,
+                      }))
+                    }
                     placeholder="Enter banner description"
-                  /> */}
-                  <CustomTextEditor 
-                  value={bannerData.description} 
-                  onChange={(newContent) =>
-                    setBannerData((prev) =>({
-                      ...prev,
-                      description:newContent
-                    }))
-                  }
-                  placeholder="Enter banner description"
-                  height={50}
+                    height={50}
                   />
                 </div>
 
@@ -338,29 +438,58 @@ const AddBanner = () => {
                     Banner Images *
                   </label>
 
-                  {/* Image Previews */}
+                  {/* Image Previews with Alt Text Input */}
                   {imagePreviews.length > 0 && (
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Selected Images ({imagePreviews.length})
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      <div className="space-y-4">
                         {imagePreviews.map((preview, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={preview}
-                              alt={`Preview ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-md border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            >
-                              ×
-                            </button>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                              Image {index + 1}
+                          <div
+                            key={index}
+                            className="border rounded-lg p-3 bg-gray-50"
+                          >
+                            <div className="flex space-x-3">
+                              {/* Image Preview */}
+                              <div className="relative flex-shrink-0">
+                                <img
+                                  src={preview.preview}
+                                  alt={`Preview ${index + 1}`}
+                                  className="w-20 h-20 object-cover rounded-md border"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-90 hover:opacity-100 transition-opacity duration-200"
+                                >
+                                  ×
+                                </button>
+                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
+                                  {preview.isExisting ? "Existing" : "New"}
+                                </div>
+                              </div>
+
+                              {/* Alt Text Input */}
+                              <div className="flex-grow">
+                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                  Alt Text for SEO (Image {index + 1})
+                                </label>
+                                <input
+                                  type="text"
+                                  value={
+                                    bannerData.images[index]?.image_alts || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleAltTextChange(index, e.target.value)
+                                  }
+                                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Enter descriptive alt text for SEO"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Describe this image for accessibility and SEO
+                                </p>
+                              </div>
                             </div>
                           </div>
                         ))}

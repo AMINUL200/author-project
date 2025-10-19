@@ -39,17 +39,14 @@ import ArticleSectionTitle from "./pages/admin/handle landing page/ArticleSectio
 import HandleBookReview from "./pages/admin/handle landing page/HandleBookReview";
 import HandleContact from "./pages/admin/handle landing page/HandleContact";
 import BioProfile from "./pages/BioProfile";
+import HandleMetaData from "./pages/admin/HandleMetaData";
+import MetaData from "./cmponent/common/MetaData";
 
 function App() {
-  const { userData, token } = useAuth();
 
-  // useEffect(() => {
-  //   toast.info("Toastify test message!", { autoClose: 2000 });
-  // }, []);
-  // console.log("User Data:", userData);
-  // console.log("Token:", token);
   return (
     <Router>
+      <MetaData/>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -132,6 +129,7 @@ function App() {
           <Route path="landing-page/article-section-title" element={<ArticleSectionTitle/>}/>
           <Route path="landing-page/book-review" element={<HandleBookReview/>}/>
           <Route path="landing-page/contact" element={<HandleContact/>}/>
+          <Route path="handle-meta-tags" element={<HandleMetaData />} />
 
           <Route path="subscriptions" element={<Subscriptions />} />
 

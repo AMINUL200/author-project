@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Upload, FileText, DollarSign, Plus, X, Image, Trash2, Link, Globe, Edit, Eye } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  DollarSign,
+  Plus,
+  X,
+  Image,
+  Trash2,
+  Link,
+  Globe,
+  Edit,
+  Eye,
+  Search,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -11,7 +24,7 @@ const AddNewArticle = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Extract query parameters for edit mode
   const searchParams = new URLSearchParams(location.search);
   const updateId = searchParams.get("update");
@@ -20,15 +33,15 @@ const AddNewArticle = () => {
   const [loading, setLoading] = useState(isUpdateMode);
   const [formData, setFormData] = useState({
     title: "",
+    title_seo: "",
     description: "",
+    description_seo: "",
     is_free: 1,
     pdf: null,
-    images: [],
+    images: [], // This will contain objects with image_url and image_alts
     links: [],
   });
-  const [existingImages, setExistingImages] = useState([]);
   const [existingPdf, setExistingPdf] = useState(null);
-  const [deletedImageIds, setDeletedImageIds] = useState([]);
   const [handleSubmitLoading, setHandleSubmitLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imageDragActive, setImageDragActive] = useState(false);
@@ -53,25 +66,45 @@ const AddNewArticle = () => {
 
       if (response.status === 200) {
         const data = response.data.data;
+        
+        // Transform the images data to match the required structure (same as banner)
+        let transformedImages = [];
+        if (data.images && Array.isArray(data.images)) {
+          transformedImages = data.images.map((img, index) => {
+            // Handle different possible image object structures
+            if (typeof img === "string") {
+              return {
+                image_url: img,
+                image_alts: "",
+              };
+            } else if (typeof img === "object") {
+              return {
+                image_url: img.image_url || img.url || img.path || img.src || "",
+                image_alts: img.image_alts || img.alt || img.caption || "",
+              };
+            }
+            return {
+              image_url: "",
+              image_alts: "",
+            };
+          });
+        }
+
         setFormData({
           title: data.title || "",
+          title_seo: data.title_seo || "",
           description: data.description || "",
+          description_seo: data.description_seo || "",
           is_free: data.is_free === "0" ? 0 : 1,
-          pdf: null, // We'll handle existing PDF separately
-          images: [], // We'll handle existing images separately
+          pdf: null,
+          images: transformedImages,
           links: data.links || [],
         });
-        
-        // Set existing images and PDF for display
-        if (data.images && data.images.length > 0) {
-          setExistingImages(data.images);
-        }
+
+        // Set existing PDF for display
         if (data.pdf_path) {
           setExistingPdf(data.pdf_path);
         }
-        
-        // Reset deleted images when loading fresh data
-        setDeletedImageIds([]);
       }
     } catch (error) {
       console.error("Error fetching article:", error);
@@ -107,17 +140,24 @@ const AddNewArticle = () => {
     }
 
     // Check if platform already exists
-    if (formData.links.some(link => link.platform.toLowerCase() === newLink.platform.toLowerCase())) {
+    if (
+      formData.links.some(
+        (link) => link.platform.toLowerCase() === newLink.platform.toLowerCase()
+      )
+    ) {
       toast.error(`"${newLink.platform}" link already exists`);
       return;
     }
 
     setFormData((prev) => ({
       ...prev,
-      links: [...prev.links, { 
-        platform: newLink.platform.trim(), 
-        url: newLink.url.trim() 
-      }]
+      links: [
+        ...prev.links,
+        {
+          platform: newLink.platform.trim(),
+          url: newLink.url.trim(),
+        },
+      ],
     }));
     setNewLink({ platform: "", url: "" });
     setErrors((prev) => ({ ...prev, links: "" }));
@@ -126,7 +166,7 @@ const AddNewArticle = () => {
   const removeLink = (index) => {
     setFormData((prev) => ({
       ...prev,
-      links: prev.links.filter((_, i) => i !== index)
+      links: prev.links.filter((_, i) => i !== index),
     }));
   };
 
@@ -140,12 +180,14 @@ const AddNewArticle = () => {
   };
 
   const handleImageChange = (files) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     const maxSize = 5 * 1024 * 1024; // 5MB
-    
-    const validFiles = Array.from(files).filter(file => {
+
+    const validFiles = Array.from(files).filter((file) => {
       if (!allowedTypes.includes(file.type)) {
-        toast.error(`Invalid file type: ${file.name}. Only JPG, PNG, WEBP are allowed.`);
+        toast.error(
+          `Invalid file type: ${file.name}. Only JPG, PNG, WEBP are allowed.`
+        );
         return false;
       }
       if (file.size > maxSize) {
@@ -156,31 +198,49 @@ const AddNewArticle = () => {
     });
 
     if (validFiles.length > 0) {
-      setFormData((prev) => ({ 
-        ...prev, 
-        images: [...prev.images, ...validFiles] 
+      // Create image objects with the same structure as banner component
+      const newImageObjects = validFiles.map((file) => ({
+        file: file,
+        image_url: URL.createObjectURL(file),
+        image_alts: "", // Empty alt text by default
+        isNew: true, // Mark as new image
+      }));
+
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...newImageObjects],
       }));
       setErrors((prev) => ({ ...prev, images: "" }));
     }
   };
 
-  const removeImage = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }));
+  // Handle alt text change for specific image (same as banner)
+  const handleImageAltChange = (index, altText) => {
+    setFormData((prev) => {
+      const updatedImages = [...prev.images];
+      updatedImages[index] = {
+        ...updatedImages[index],
+        image_alts: altText,
+      };
+      return {
+        ...prev,
+        images: updatedImages,
+      };
+    });
   };
 
-  const removeExistingImage = (index) => {
-    const imageToRemove = existingImages[index];
-    
-    // Extract image ID or filename from the URL
-    // Assuming the image URL format includes an ID or filename
-    // Adjust this logic based on your actual image URL structure
-    const imageIdentifier = imageToRemove.split('/').pop(); // Gets the last part of the URL
-    
-    setDeletedImageIds((prev) => [...prev, imageIdentifier]);
-    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  const removeImage = (index) => {
+    const imageToRemove = formData.images[index];
+
+    // Revoke object URL for new images to avoid memory leaks (same as banner)
+    if (imageToRemove.image_url && imageToRemove.image_url.startsWith("blob:")) {
+      URL.revokeObjectURL(imageToRemove.image_url);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const handleDrag = (e) => {
@@ -224,15 +284,25 @@ const AddNewArticle = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-    else if (formData.description.length < 50) newErrors.description = "Description should be at least 50 characters";
-    
+    if (!formData.title_seo.trim())
+      newErrors.title_seo = "SEO Title is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
+    else if (formData.description.length < 50)
+      newErrors.description = "Description should be at least 50 characters";
+    if (!formData.description_seo.trim())
+      newErrors.description_seo = "SEO Description is required";
+
     // For PDF, require either existing PDF or new upload
-    if (!formData.pdf && !existingPdf) newErrors.pdf = "PDF file is required";
-    
+    if (!formData.pdf && !existingPdf) {
+      newErrors.pdf = "PDF file is required";
+    }
+
     // For images, require either existing images or new uploads
-    if (formData.images.length === 0 && existingImages.length === 0) newErrors.images = "At least one image is required";
-    
+    if (formData.images.length === 0) {
+      newErrors.images = "At least one image is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -240,26 +310,35 @@ const AddNewArticle = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setHandleSubmitLoading(true);
-    
+
     try {
       const submissionData = new FormData();
       submissionData.append("title", formData.title);
+      submissionData.append("title_seo", formData.title_seo);
       submissionData.append("description", formData.description);
+      submissionData.append("description_seo", formData.description_seo);
       submissionData.append("is_free", formData.is_free);
-      
+
       // Append PDF if it's a new file
       if (formData.pdf) {
         submissionData.append("pdf", formData.pdf);
       } else if (!existingPdf) {
-        // If no PDF and no existing PDF, this should have been caught by validation
         throw new Error("PDF file is required");
       }
-      
-      // Append all new images
-      formData.images.forEach((image, index) => {
-        submissionData.append(`images[${index}]`, image);
+
+      // Append images with the same structure as banner component
+      formData.images.forEach((img, index) => {
+        if (img.file) {
+          // For new images, append the file directly
+          submissionData.append(`images[${index}][image_url]`, img.file);
+          submissionData.append(`images[${index}][image_alts]`, img.image_alts || "");
+        } else {
+          // For existing images, append URL and alt text
+          submissionData.append(`images[${index}][image_url]`, img.image_url);
+          submissionData.append(`images[${index}][image_alts]`, img.image_alts || "");
+        }
       });
 
       // Append links as individual form fields
@@ -268,36 +347,30 @@ const AddNewArticle = () => {
         submissionData.append(`links[${index}][url]`, link.url);
       });
 
-      // For update, we need to handle existing images and PDF
-      if (isUpdateMode) {
-        // Send the list of images to keep (existing images that weren't deleted)
-        if (existingImages.length > 0) {
-          submissionData.append("existing_images", JSON.stringify(existingImages));
-        }
-        
-        // Send the list of deleted image IDs
-        if (deletedImageIds.length > 0) {
-          submissionData.append("deleted_images", JSON.stringify(deletedImageIds));
-        }
-        
-        // If there's an existing PDF, we need to indicate we're keeping it
-        if (existingPdf && !formData.pdf) {
-          submissionData.append("keep_existing_pdf", "1");
-        }
+      // If there's an existing PDF and we're not uploading a new one, indicate we're keeping it
+      if (isUpdateMode && existingPdf && !formData.pdf) {
+        submissionData.append("keep_existing_pdf", "1");
+      }
+
+      console.log("FormData entries:");
+      for (const pair of submissionData.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
       let response;
       if (isUpdateMode) {
-        // Update existing article
-        response = await axios.post(`${apiUrl}article-update/${updateId}`, submissionData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        response = await axios.post(
+          `${apiUrl}article-update/${updateId}`,
+          submissionData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
         toast.success("Article updated successfully!");
       } else {
-        // Create new article
         response = await axios.post(`${apiUrl}articles`, submissionData, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -308,38 +381,30 @@ const AddNewArticle = () => {
       }
 
       if (response.status === 200) {
-        // Reset form and navigate back
-        setFormData({
-          title: "",
-          description: "",
-          is_free: 1,
-          pdf: null,
-          images: [],
-          links: [],
+        // Clean up object URLs before navigating
+        formData.images.forEach((img) => {
+          if (img.image_url && img.image_url.startsWith("blob:")) {
+            URL.revokeObjectURL(img.image_url);
+          }
         });
-        setExistingImages([]);
-        setExistingPdf(null);
-        setDeletedImageIds([]);
-        setErrors({});
-        
-        // Navigate back to articles list
+
         navigate("/admin/landing-page/published-book");
       }
     } catch (error) {
       console.error("Error details:", error);
-      
+
       if (error.response) {
-        console.error("Server response:", error.response.data);
-        console.error("Server errors:", error.response.data?.errors);
-        
         if (error.response.data?.errors) {
           const serverErrors = error.response.data.errors;
           setErrors(serverErrors);
-          Object.values(serverErrors).forEach(errorMsg => {
+          Object.values(serverErrors).forEach((errorMsg) => {
             toast.error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
           });
         } else {
-          toast.error(error.response.data?.message || `Failed to ${isUpdateMode ? "update" : "create"} article`);
+          toast.error(
+            error.response.data?.message ||
+              `Failed to ${isUpdateMode ? "update" : "create"} article`
+          );
         }
       } else if (error.request) {
         toast.error("No response from server. Check your connection.");
@@ -352,8 +417,25 @@ const AddNewArticle = () => {
   };
 
   const handleCancel = () => {
+    // Clean up object URLs to avoid memory leaks (same as banner)
+    formData.images.forEach((img) => {
+      if (img.image_url && img.image_url.startsWith("blob:")) {
+        URL.revokeObjectURL(img.image_url);
+      }
+    });
     navigate("/admin/landing-page/published-book");
   };
+
+  // Clean up object URLs when component unmounts (same as banner)
+  useEffect(() => {
+    return () => {
+      formData.images.forEach((img) => {
+        if (img.image_url && img.image_url.startsWith("blob:")) {
+          URL.revokeObjectURL(img.image_url);
+        }
+      });
+    };
+  }, [formData.images]);
 
   if (loading) {
     return (
@@ -372,15 +454,25 @@ const AddNewArticle = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className={`w-10 h-10 ${isUpdateMode ? "bg-green-600" : "bg-blue-600"} rounded-lg flex items-center justify-center`}>
-              {isUpdateMode ? <Edit className="w-6 h-6 text-white" /> : <Plus className="w-6 h-6 text-white" />}
+            <div
+              className={`w-10 h-10 ${
+                isUpdateMode ? "bg-green-600" : "bg-blue-600"
+              } rounded-lg flex items-center justify-center`}
+            >
+              {isUpdateMode ? (
+                <Edit className="w-6 h-6 text-white" />
+              ) : (
+                <Plus className="w-6 h-6 text-white" />
+              )}
             </div>
             <h1 className="text-3xl font-bold text-gray-900">
               {isUpdateMode ? `Edit Book #${updateId}` : "Add New Book"}
             </h1>
           </div>
           <p className="text-gray-600">
-            {isUpdateMode ? "Update your article details" : "Create and publish a new article for your audience"}
+            {isUpdateMode
+              ? "Update your article details"
+              : "Create and publish a new article for your audience"}
           </p>
         </div>
 
@@ -398,7 +490,9 @@ const AddNewArticle = () => {
               onChange={handleInputChange}
               placeholder="Enter your article title..."
               className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                errors.title ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-blue-500"
+                errors.title
+                  ? "border-red-300 focus:border-red-500"
+                  : "border-gray-200 focus:border-blue-500"
               } focus:outline-none`}
             />
             {errors.title && (
@@ -409,32 +503,48 @@ const AddNewArticle = () => {
             )}
           </div>
 
+          {/* SEO Title Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+              <Search className="w-5 h-5 text-blue-600" />
+              SEO Title
+            </label>
+            <input
+              type="text"
+              name="title_seo"
+              value={formData.title_seo}
+              onChange={handleInputChange}
+              placeholder="Enter SEO title for search engines..."
+              className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                errors.title_seo
+                  ? "border-red-300 focus:border-red-500"
+                  : "border-gray-200 focus:border-blue-500"
+              } focus:outline-none`}
+            />
+            {errors.title_seo && (
+              <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                <X className="w-4 h-4" />
+                {errors.title_seo}
+              </p>
+            )}
+          </div>
+
           {/* Description Section */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
               <FileText className="w-5 h-5 text-blue-600" />
               Description
             </label>
-            {/* <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Write a compelling description for your article..."
-              rows={6}
-              className={`w-full px-4 py-3 rounded-lg border transition-colors resize-none ${
-                errors.description ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-blue-500"
-              } focus:outline-none`}
-            /> */}
             <CustomTextEditor
-            value={formData.description}
-            onChange={(newContent) =>
-              setFormData((prev) =>({
-                ...prev,
-                description:newContent
-              }))
-            }
-            placeholder="Write a compelling description for your article..."
-            height={400}
+              value={formData.description}
+              onChange={(newContent) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: newContent,
+                }))
+              }
+              placeholder="Write a compelling description for your article..."
+              height={400}
             />
             <div className="flex justify-between items-center mt-2">
               {errors.description ? (
@@ -445,10 +555,42 @@ const AddNewArticle = () => {
               ) : (
                 <p className="text-sm text-gray-500">Minimum 50 characters</p>
               )}
-              <span className={`text-sm ${formData.description.length < 50 ? "text-red-500" : "text-green-600"}`}>
+              <span
+                className={`text-sm ${
+                  formData.description.length < 50
+                    ? "text-red-500"
+                    : "text-green-600"
+                }`}
+              >
                 {formData.description.length} characters
               </span>
             </div>
+          </div>
+
+          {/* SEO Description Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+              <Search className="w-5 h-5 text-blue-600" />
+              SEO Description
+            </label>
+            <textarea
+              name="description_seo"
+              value={formData.description_seo}
+              onChange={handleInputChange}
+              placeholder="Enter SEO description for search engines..."
+              rows={4}
+              className={`w-full px-4 py-3 rounded-lg border transition-colors resize-none ${
+                errors.description_seo
+                  ? "border-red-300 focus:border-red-500"
+                  : "border-gray-200 focus:border-blue-500"
+              } focus:outline-none`}
+            />
+            {errors.description_seo && (
+              <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                <X className="w-4 h-4" />
+                {errors.description_seo}
+              </p>
+            )}
           </div>
 
           {/* Pricing Toggle */}
@@ -463,14 +605,18 @@ const AddNewArticle = () => {
                   type="radio"
                   name="is_free"
                   checked={formData.is_free === 1}
-                  onChange={() => setFormData((prev) => ({ ...prev, is_free: 1 }))}
+                  onChange={() =>
+                    setFormData((prev) => ({ ...prev, is_free: 1 }))
+                  }
                   className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
                 />
                 <div className="flex-1">
                   <span className="text-gray-900 font-medium group-hover:text-blue-600 transition-colors">
                     Free Book
                   </span>
-                  <p className="text-sm text-gray-500">Available to all users</p>
+                  <p className="text-sm text-gray-500">
+                    Available to all users
+                  </p>
                 </div>
               </label>
               <label className="flex items-center gap-3 cursor-pointer group flex-1 p-4 border-2 rounded-lg transition-all hover:border-blue-200">
@@ -478,7 +624,9 @@ const AddNewArticle = () => {
                   type="radio"
                   name="is_free"
                   checked={formData.is_free === 0}
-                  onChange={() => setFormData((prev) => ({ ...prev, is_free: 0 }))}
+                  onChange={() =>
+                    setFormData((prev) => ({ ...prev, is_free: 0 }))
+                  }
                   className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
                 />
                 <div className="flex-1">
@@ -497,7 +645,10 @@ const AddNewArticle = () => {
               <Link className="w-5 h-5 text-blue-600" />
               External Links ({formData.links.length} added)
             </label>
-            <p className="text-gray-600 mb-4">Add links to Amazon, Flipkart, social media, or any other platforms</p>
+            <p className="text-gray-600 mb-4">
+              Add links to Amazon, Flipkart, social media, or any other
+              platforms
+            </p>
 
             {/* Add New Link Form */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
@@ -542,12 +693,19 @@ const AddNewArticle = () => {
             {formData.links.length > 0 ? (
               <div className="space-y-3">
                 {formData.links.map((link, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <Globe className="w-4 h-4 text-blue-600" />
                       <div>
-                        <span className="font-medium text-blue-900 capitalize">{link.platform}</span>
-                        <p className="text-sm text-blue-700 truncate max-w-xs">{link.url}</p>
+                        <span className="font-medium text-blue-900 capitalize">
+                          {link.platform}
+                        </span>
+                        <p className="text-sm text-blue-700 truncate max-w-xs">
+                          {link.url}
+                        </p>
                       </div>
                     </div>
                     <button
@@ -564,48 +722,22 @@ const AddNewArticle = () => {
               <div className="text-center py-8 text-gray-500">
                 <Link className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                 <p>No links added yet</p>
-                <p className="text-sm">Add platforms where users can find or purchase this Book</p>
+                <p className="text-sm">
+                  Add platforms where users can find or purchase this Book
+                </p>
               </div>
             )}
           </div>
 
-          {/* Multiple Images Upload Section */}
+          {/* Multiple Images Upload Section - Updated */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
               <Image className="w-5 h-5 text-blue-600" />
-              Book Images ({formData.images.length + existingImages.length} selected)
+              Book Images ({formData.images.length} selected)
             </label>
 
-            {/* Existing Images Display */}
-            {existingImages.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Existing Images:</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {existingImages.map((imageUrl, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={imageUrl}
-                        alt={`Existing ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg shadow-md"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeExistingImage(index)}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <div className="mt-1 text-xs text-gray-500 truncate">
-                        Existing Image {index + 1}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* New Images Upload */}
-            {formData.images.length === 0 && existingImages.length === 0 ? (
+            {/* Images Display */}
+            {formData.images.length === 0 ? (
               <div
                 className={`relative border-2 border-dashed rounded-lg p-8 transition-colors ${
                   imageDragActive
@@ -627,10 +759,18 @@ const AddNewArticle = () => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <div className="text-center">
-                  <Image className={`mx-auto w-12 h-12 mb-4 ${imageDragActive ? "text-blue-600" : "text-gray-400"}`} />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Drop your images here</h3>
+                  <Image
+                    className={`mx-auto w-12 h-12 mb-4 ${
+                      imageDragActive ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Drop your images here
+                  </h3>
                   <p className="text-gray-600 mb-4">or click to browse files</p>
-                  <p className="text-sm text-gray-500 mb-4">Supports JPG, PNG, WEBP (max 5MB each)</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Supports JPG, PNG, WEBP (max 5MB each)
+                  </p>
                   <div className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     Choose Images
                   </div>
@@ -659,37 +799,66 @@ const AddNewArticle = () => {
                   />
                   <div className="text-center">
                     <Plus className="mx-auto w-8 h-8 text-gray-400 mb-2" />
-                    <p className="text-gray-600">Click or drag to add more images</p>
+                    <p className="text-gray-600">
+                      Click or drag to add more images
+                    </p>
                   </div>
                 </div>
 
-                {/* New Image Previews */}
-                {formData.images.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">New Images:</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={URL.createObjectURL(image)}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-lg shadow-md"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                          <div className="mt-1 text-xs text-gray-500 truncate">
-                            {image.name}
+                {/* Image Previews with Alt Text Input - Updated like banner */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Selected Images ({formData.images.length})
+                  </h4>
+                  <div className="space-y-4">
+                    {formData.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="border rounded-lg p-3 bg-gray-50"
+                      >
+                        <div className="flex space-x-3">
+                          {/* Image Preview */}
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={image.image_url}
+                              alt={`Preview ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded-md border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-90 hover:opacity-100 transition-opacity duration-200"
+                            >
+                              ×
+                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
+                              {image.isNew ? "New" : "Existing"}
+                            </div>
+                          </div>
+
+                          {/* Alt Text Input */}
+                          <div className="flex-grow">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Alt Text for SEO (Image {index + 1})
+                            </label>
+                            <input
+                              type="text"
+                              value={image.image_alts || ""}
+                              onChange={(e) =>
+                                handleImageAltChange(index, e.target.value)
+                              }
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="Enter descriptive alt text for SEO"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Describe this image for accessibility and SEO
+                            </p>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
@@ -711,12 +880,16 @@ const AddNewArticle = () => {
             {/* Existing PDF Display */}
             {existingPdf && !formData.pdf && (
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Existing PDF:</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Existing PDF:
+                </h4>
                 <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center gap-3">
                     <FileText className="w-8 h-8 text-blue-600" />
                     <div>
-                      <p className="font-medium text-blue-900">Current PDF File</p>
+                      <p className="font-medium text-blue-900">
+                        Current PDF File
+                      </p>
                       <p className="text-sm text-blue-700">Click to view</p>
                     </div>
                   </div>
@@ -763,9 +936,15 @@ const AddNewArticle = () => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <div className="text-center">
-                  <Upload className={`mx-auto w-12 h-12 mb-4 ${dragActive ? "text-blue-600" : "text-gray-400"}`} />
+                  <Upload
+                    className={`mx-auto w-12 w-12 mb-4 ${
+                      dragActive ? "text-blue-600" : "text-gray-400"
+                    }`}
+                  />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {existingPdf ? "Upload new PDF to replace existing" : "Drop your PDF file here"}
+                    {existingPdf
+                      ? "Upload new PDF to replace existing"
+                      : "Drop your PDF file here"}
                   </h3>
                   <p className="text-gray-600 mb-4">or click to browse files</p>
                   <div className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
@@ -778,8 +957,12 @@ const AddNewArticle = () => {
                 <div className="flex items-center gap-3">
                   <FileText className="w-8 h-8 text-green-600" />
                   <div>
-                    <p className="font-medium text-green-900">{formData.pdf.name}</p>
-                    <p className="text-sm text-green-700">{(formData.pdf.size / (1024 * 1024)).toFixed(2)} MB</p>
+                    <p className="font-medium text-green-900">
+                      {formData.pdf.name}
+                    </p>
+                    <p className="text-sm text-green-700">
+                      {(formData.pdf.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
                 <button
@@ -827,7 +1010,11 @@ const AddNewArticle = () => {
                 </>
               ) : (
                 <>
-                  {isUpdateMode ? <Edit className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                  {isUpdateMode ? (
+                    <Edit className="w-5 h-5" />
+                  ) : (
+                    <Plus className="w-5 h-5" />
+                  )}
                   {isUpdateMode ? "Update Book" : "Create Book"}
                 </>
               )}

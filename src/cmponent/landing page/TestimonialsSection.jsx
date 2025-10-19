@@ -1,24 +1,51 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Star } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-// import Skeleton from "../common/Skeleton"; // adjust path if needed
-
-// Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Skeleton from "../common/Skeleton";
 
 const TestimonialsSection = ({
-  sectionTitle={},
+  sectionTitle = {},
   testimonials = [],
   loading = false,
   error = null,
 }) => {
   const paginationRef = useRef(null);
 
-  // Skeleton loader for testimonials
+  // ✅ Structured Data (SEO Rich Snippets)
+  useEffect(() => {
+    if (testimonials.length > 0) {
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        itemListElement: testimonials.map((t, index) => ({
+          "@type": "Review",
+          position: index + 1,
+          author: { "@type": "Person", name: t.name },
+          reviewBody: t.feedback,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: t.rating,
+            bestRating: "5",
+            worstRating: "1",
+          },
+        })),
+      };
+
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.innerHTML = JSON.stringify(structuredData);
+      document.head.appendChild(script);
+
+      return () => {
+        document.head.removeChild(script);
+      };
+    }
+  }, [testimonials]);
+
   const renderSkeletons = () => (
     <>
       {[...Array(3)].map((_, index) => (
@@ -44,13 +71,22 @@ const TestimonialsSection = ({
   );
 
   return (
-    <section className="py-20 pt-10 bg-white" id="feedback">
+    <section
+      className="py-20 pt-10 bg-white"
+      id="feedback"
+      aria-labelledby="testimonials-heading"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{sectionTitle?.sec7_name}</h1>
-          <p className="text-xl text-gray-600">
-            {sectionTitle?.sec7_para}
-          </p>
+          <h2
+            id="testimonials-heading"
+            className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+          >
+            {sectionTitle?.sec7_name || "Testimonials"}
+          </h2>
+          {sectionTitle?.sec7_para && (
+            <p className="text-xl text-gray-600">{sectionTitle.sec7_para}</p>
+          )}
         </div>
 
         <div className="relative">
@@ -69,9 +105,8 @@ const TestimonialsSection = ({
               pagination={{
                 el: paginationRef.current,
                 clickable: true,
-                renderBullet: (index, className) => {
-                  return `<span class="${className}" style="background-color: #4F46E5; width: 12px; height: 12px; margin: 0 6px;"></span>`;
-                },
+                renderBullet: (index, className) =>
+                  `<span class="${className}" style="background-color: #4F46E5; width: 12px; height: 12px; margin: 0 6px;"></span>`,
               }}
               navigation={{
                 nextEl: ".testimonial-swiper-button-next",
@@ -91,49 +126,62 @@ const TestimonialsSection = ({
             >
               {loading
                 ? renderSkeletons()
-                : testimonials.map((testimonial, index) => (
+                : testimonials.map((t, index) => (
                     <SwiperSlide key={index}>
-                      <div className="bg-gray-50 rounded-xl p-6 h-full flex flex-col">
+                      <article
+                        className="bg-gray-50 rounded-xl p-6 h-full flex flex-col"
+                        itemScope
+                        itemType="https://schema.org/Review"
+                      >
                         <div className="flex items-center mb-4">
-                          {[...Array(Number(testimonial.rating))].map((_, i) => (
+                          {[...Array(Number(t.rating))].map((_, i) => (
                             <Star
                               key={i}
                               className="text-yellow-400 fill-current"
                               size={16}
+                              aria-hidden="true"
                             />
                           ))}
                         </div>
-                        <p className="text-gray-700 mb-6 italic flex-grow">
-                          "{testimonial.feedback}"
+                        <p
+                          className="text-gray-700 mb-6 italic flex-grow"
+                          itemProp="reviewBody"
+                          aria-label={`Feedback by ${t.name}`}
+                        >
+                          "{t.feedback}"
                         </p>
                         <div className="flex items-center">
                           <img
-                            src={testimonial.image}
-                            alt={testimonial.name}
+                            src={t.image}
+                            alt={t.image_alt || `${t.name} profile picture`}
                             className="w-12 h-12 rounded-full mr-4"
+                            loading="lazy"
                           />
                           <div>
-                            <p className="font-semibold text-gray-900">
-                              {testimonial.name}
+                            <p
+                              className="font-semibold text-gray-900"
+                              itemProp="author"
+                            >
+                              {t.name}
                             </p>
                             <p className="text-gray-600 text-sm">
-                              {testimonial.designation}
+                              {t.designation}
                             </p>
                           </div>
                         </div>
-                      </div>
+                      </article>
                     </SwiperSlide>
                   ))}
             </Swiper>
           )}
 
-          {/* Custom pagination */}
+          {/* Pagination */}
           <div
             ref={paginationRef}
             className="absolute bottom-0 left-0 right-0 flex justify-center mt-8 space-x-2"
           ></div>
 
-          {/* Custom navigation buttons */}
+          {/* Navigation buttons */}
           <div className="testimonial-swiper-button-prev absolute top-1/2 -left-12 -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -142,12 +190,7 @@ const TestimonialsSection = ({
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </div>
           <div className="testimonial-swiper-button-next absolute top-1/2 -right-12 -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full p-3 shadow-md hover:bg-gray-100 transition-colors">
@@ -158,12 +201,7 @@ const TestimonialsSection = ({
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </div>
         </div>
