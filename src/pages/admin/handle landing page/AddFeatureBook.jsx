@@ -17,6 +17,8 @@ const AddFeatureBook = () => {
     title: '',
     author_name: '',
     published_date: '',
+    title_seo: '',
+    image_alt: '',
     image: null
   });
   const [imagePreview, setImagePreview] = useState('');
@@ -45,6 +47,8 @@ const AddFeatureBook = () => {
           title: book.title || '',
           author_name: book.author_name || '',
           published_date: book.published_date || '',
+          title_seo: book.title_seo || '',
+          image_alt: book.image_alt || '',
           image: null
         });
         setImagePreview(book.image || '');
@@ -130,6 +134,8 @@ const AddFeatureBook = () => {
       submitData.append('title', formData.title);
       submitData.append('author_name', formData.author_name);
       submitData.append('published_date', formData.published_date);
+      submitData.append('title_seo', formData.title_seo);
+      submitData.append('image_alt', formData.image_alt);
       
       if (formData.image) {
         submitData.append('image', formData.image);
@@ -140,6 +146,8 @@ const AddFeatureBook = () => {
       console.log('Title:', formData.title);
       console.log('Author:', formData.author_name);
       console.log('Published Date:', formData.published_date);
+      console.log('SEO Title:', formData.title_seo);
+      console.log('Image Alt:', formData.image_alt);
       console.log('Has Image:', !!formData.image);
 
       let response;
@@ -306,6 +314,44 @@ const AddFeatureBook = () => {
               />
             </div>
 
+            {/* SEO Title */}
+            <div>
+              <label htmlFor="title_seo" className="block text-sm font-medium text-gray-700 mb-2">
+                SEO Title
+              </label>
+              <input
+                type="text"
+                id="title_seo"
+                name="title_seo"
+                value={formData.title_seo}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter SEO title for better search visibility"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional: A SEO-friendly title for search engines
+              </p>
+            </div>
+
+            {/* Image Alt Text */}
+            <div>
+              <label htmlFor="image_alt" className="block text-sm font-medium text-gray-700 mb-2">
+                Image Alt Text
+              </label>
+              <input
+                type="text"
+                id="image_alt"
+                name="image_alt"
+                value={formData.image_alt}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter descriptive text for the book cover image"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Optional: Descriptive text for accessibility and SEO
+              </p>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <button
@@ -341,6 +387,8 @@ const AddFeatureBook = () => {
             <li>• Use high-quality book cover images for better presentation</li>
             <li>• Ensure the published date is accurate</li>
             <li>• Double-check author name spelling</li>
+            <li>• SEO Title helps with search engine visibility</li>
+            <li>• Image Alt Text improves accessibility and SEO</li>
             {isEdit && (
               <li>• Leave image field empty to keep the current book cover</li>
             )}

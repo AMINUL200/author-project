@@ -19,7 +19,12 @@ const HandleBookReview = () => {
         url2_title: '',
         url2: '',
         url3_title: '',
-        url3: ''
+        url3: '',
+        title_seo: '',
+        description_seo: '',
+        url1_seo: '',
+        url2_seo: '',
+        url3_seo: ''
     });
 
     // Fetch book review data
@@ -44,7 +49,12 @@ const HandleBookReview = () => {
                     url2_title: response.data.data.url2_title || '',
                     url2: response.data.data.url2 || '',
                     url3_title: response.data.data.url3_title || '',
-                    url3: response.data.data.url3 || ''
+                    url3: response.data.data.url3 || '',
+                    title_seo: response.data.data.title_seo || '',
+                    description_seo: response.data.data.description_seo || '',
+                    url1_seo: response.data.data.url1_seo || '',
+                    url2_seo: response.data.data.url2_seo || '',
+                    url3_seo: response.data.data.url3_seo || ''
                 });
             }
         } catch (err) {
@@ -145,113 +155,189 @@ const HandleBookReview = () => {
                             />
                         </div>
 
+                        {/* SEO Title */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                SEO Title
+                            </label>
+                            <input
+                                type="text"
+                                name="title_seo"
+                                value={formData.title_seo}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter SEO title"
+                            />
+                        </div>
+
                         {/* Description */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Description
                             </label>
-                            {/* <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                rows="4"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter book description"
-                            /> */}
                             <CustomTextEditor 
-                             value={formData.description}
-                             onChange={(newContent)=>
-                                setFormData((prev) =>({
-                                    ...prev,
-                                    description:newContent
-                                }))
-                             }
-                             height={300}
+                                value={formData.description}
+                                onChange={(newContent) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        description: newContent
+                                    }))
+                                }
+                                height={300}
                             />
                         </div>
 
-                        {/* URL 1 */}
-                        <div>
+                        {/* SEO Description */}
+                        <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 1 Title
+                                SEO Description
                             </label>
-                            <input
-                                type="text"
-                                name="url1_title"
-                                value={formData.url1_title}
+                            <textarea
+                                name="description_seo"
+                                value={formData.description_seo}
                                 onChange={handleInputChange}
+                                rows="3"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 1 title"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 1
-                            </label>
-                            <input
-                                type="url"
-                                name="url1"
-                                value={formData.url1}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 1"
+                                placeholder="Enter SEO description"
                             />
                         </div>
 
-                        {/* URL 2 */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 2 Title
-                            </label>
-                            <input
-                                type="text"
-                                name="url2_title"
-                                value={formData.url2_title}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 2 title"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 2
-                            </label>
-                            <input
-                                type="url"
-                                name="url2"
-                                value={formData.url2}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 2"
-                            />
+                        {/* URL 1 Section */}
+                        <div className="md:col-span-2 border-t pt-4 mt-2">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">URL 1 Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 1 Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url1_title"
+                                        value={formData.url1_title}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 1 title"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 1
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="url1"
+                                        value={formData.url1}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 1"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 1 SEO
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url1_seo"
+                                        value={formData.url1_seo}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 1 SEO text"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* URL 3 */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 3 Title
-                            </label>
-                            <input
-                                type="text"
-                                name="url3_title"
-                                value={formData.url3_title}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 3 title"
-                            />
+                        {/* URL 2 Section */}
+                        <div className="md:col-span-2 border-t pt-4 mt-2">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">URL 2 Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 2 Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url2_title"
+                                        value={formData.url2_title}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 2 title"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 2
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="url2"
+                                        value={formData.url2}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 2"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 2 SEO
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url2_seo"
+                                        value={formData.url2_seo}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 2 SEO text"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                URL 3
-                            </label>
-                            <input
-                                type="url"
-                                name="url3"
-                                value={formData.url3}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter URL 3"
-                            />
+
+                        {/* URL 3 Section */}
+                        <div className="md:col-span-2 border-t pt-4 mt-2">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">URL 3 Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 3 Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url3_title"
+                                        value={formData.url3_title}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 3 title"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 3
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="url3"
+                                        value={formData.url3}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 3"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        URL 3 SEO
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="url3_seo"
+                                        value={formData.url3_seo}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter URL 3 SEO text"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 

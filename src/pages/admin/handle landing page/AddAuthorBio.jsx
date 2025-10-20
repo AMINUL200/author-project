@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import CustomTextEditor from "../../../cmponent/common/TextEditor";
-// import RichTextInput from "../../../cmponent/common/RichTextInput";
+// import RichTextEditor from "../../../cmponent/common/RichTextEditor";
 
 const AddAuthorBio = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -37,6 +37,9 @@ const AddAuthorBio = () => {
     },
     image1: null,
     image2: null,
+    image1_alt: "",
+    image2_alt: "",
+    description_seo: "",
   });
 
   // Fetch author data when in update mode
@@ -73,6 +76,9 @@ const AddAuthorBio = () => {
           },
           image1: data.image1 || null,
           image2: data.image2 || null,
+          image1_alt: data.image1_alt || "",
+          image2_alt: data.image2_alt || "",
+          description_seo: data.description_seo || "",
         });
         if (data.image1) setImage1Preview(data.image1);
         if (data.image2) setImage2Preview(data.image2);
@@ -159,6 +165,9 @@ const AddAuthorBio = () => {
       formData.append("country", authorData.country);
       formData.append("tagline", authorData.tagline);
       formData.append("achievements", authorData.achievements);
+      formData.append("image1_alt", authorData.image1_alt);
+      formData.append("image2_alt", authorData.image2_alt);
+      formData.append("description_seo", authorData.description_seo);
 
       // Append expertise as array - handle both string and array formats
       if (Array.isArray(authorData.expertise)) {
@@ -379,6 +388,23 @@ const AddAuthorBio = () => {
                       required={!isUpdateMode}
                       label="Upload primary image"
                     />
+                    {/* Image 1 Alt Text */}
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Primary Image Alt Text
+                      </label>
+                      <input
+                        type="text"
+                        name="image1_alt"
+                        value={authorData.image1_alt}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter descriptive text for primary image"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Optional: Descriptive text for accessibility and SEO
+                      </p>
+                    </div>
                   </div>
 
                   {/* Image 2 */}
@@ -392,6 +418,23 @@ const AddAuthorBio = () => {
                       required={false}
                       label="Upload secondary image"
                     />
+                    {/* Image 2 Alt Text */}
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Secondary Image Alt Text
+                      </label>
+                      <input
+                        type="text"
+                        name="image2_alt"
+                        value={authorData.image2_alt}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter descriptive text for secondary image"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Optional: Descriptive text for accessibility and SEO
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -401,16 +444,6 @@ const AddAuthorBio = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
                 </label>
-                {/* <textarea
-                  name="description"
-                  value={authorData.description}
-                  onChange={handleInputChange}
-                  required
-                  rows="8"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter author biography description"
-                /> */}
-
                 <CustomTextEditor
                   value={authorData.description}
                   onChange={(newContent) =>
@@ -422,6 +455,25 @@ const AddAuthorBio = () => {
                   placeholder="Enter author biography description"
                   height={400}
                 />
+              </div>
+
+              {/* SEO Description - Full Width */}
+              <div className="border-t pt-8">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SEO Description
+                </label>
+                <textarea
+                  name="description_seo"
+                  value={authorData.description_seo}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter SEO-optimized description for search engines"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Optional: A concise, SEO-friendly description that appears in search results. 
+                  Keep it between 150-160 characters for optimal display.
+                </p>
               </div>
 
               {/* Expertise & Social Links - Side by side */}

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
@@ -55,19 +55,75 @@ const PublishedBook = ({
     }
   };
 
+  // Generate JSON-LD structured data for books
+  useEffect(() => {
+    if (publishedBookData.length > 0) {
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": sectionTitle?.sec2_title || "Published Books",
+        "description": sectionTitle?.sec2_para,
+        "itemListElement": publishedBookData.map((book, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "Book",
+            "@id": `${window.location.origin}/articles/${book.id}`,
+            "name": book.title,
+            "description": book.description_seo || book.description?.replace(/<[^>]*>/g, '').substring(0, 200),
+            "image": book.images?.[0]?.image || book.images?.[0],
+            "datePublished": book.created_at,
+            "inLanguage": "en",
+            "isAccessibleForFree": book.is_free === "1",
+            "numberOfPages": book.images?.length || 0,
+            "genre": book.category || "General",
+            "offers": book.is_free === "1" ? {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "https://schema.org/InStock"
+            } : undefined
+          }
+        }))
+      };
+
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify(structuredData);
+      script.id = 'published-books-structured-data';
+      
+      const existingScript = document.getElementById('published-books-structured-data');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      document.head.appendChild(script);
+
+      return () => {
+        const scriptToRemove = document.getElementById('published-books-structured-data');
+        if (scriptToRemove) {
+          scriptToRemove.remove();
+        }
+      };
+    }
+  }, [publishedBookData, sectionTitle]);
+
   const renderBookContent = useCallback(
     (book) => {
       const currentIndex = currentImageIndex[book.id] || 0;
       const totalImages = book.images.length;
+      const currentImage = book.images[currentIndex];
 
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Main Image */}
           <div className="relative flex justify-center w-full h-full overflow-hidden rounded-2xl shadow-2xl">
             <img
-              src={book.images[currentIndex]}
-              alt={`${book.title} - Page ${currentIndex + 1}`}
+              src={currentImage?.image || currentImage}
+              alt={`${book.title} - Page ${currentIndex + 1} of ${totalImages}`}
               className="w-full h-full object-fill transition-opacity duration-300"
+              loading={currentIndex === 0 ? "eager" : "lazy"}
+              itemProp="image"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none rounded-2xl" />
           </div>
@@ -86,6 +142,7 @@ const PublishedBook = ({
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 rounded-full p-3 shadow-2xl border border-gray-200 pointer-events-auto"
                   whileHover={{ scale: 1.1, x: -2 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </motion.button>
@@ -95,6 +152,7 @@ const PublishedBook = ({
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 rounded-full p-3 shadow-2xl border border-gray-200 pointer-events-auto"
                   whileHover={{ scale: 1.1, x: 2 }}
                   whileTap={{ scale: 0.95 }}
+                  aria-label="Next page"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>
@@ -110,7 +168,7 @@ const PublishedBook = ({
           </div>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+          <nav className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-20" aria-label="Page navigation">
             {book.images.map((_, index) => (
               <button
                 key={index}
@@ -125,9 +183,11 @@ const PublishedBook = ({
                     ? "w-8 bg-white"
                     : "w-1.5 bg-white/50 hover:bg-white/70"
                 }`}
+                aria-label={`Go to page ${index + 1}`}
+                aria-current={index === currentIndex ? "true" : "false"}
               />
             ))}
-          </div>
+          </nav>
         </div>
       );
     },
@@ -136,21 +196,22 @@ const PublishedBook = ({
 
   if (loading) {
     return (
-      <div className="py-12 px-4 md:min-h-screen flex items-center justify-center relative">
-        <div className="absolute inset-0 overflow-hidden">
+      <div className="py-12 px-4 md:min-h-screen flex items-center justify-center relative" role="status" aria-live="polite">
+        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
           <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
         </div>
-        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" aria-label="Loading books"></div>
+        <span className="sr-only">Loading published books...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="py-12 px-4 min-h-screen flex items-center justify-center relative">
-        <div className="absolute inset-0 overflow-hidden">
+      <div className="py-12 px-4 min-h-screen flex items-center justify-center relative" role="alert">
+        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
           <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
@@ -163,12 +224,15 @@ const PublishedBook = ({
   }
 
   return (
-    <div
+    <section
       className="relative py-12 px-4 md:min-h-screen overflow-hidden"
       id="published"
+      itemScope
+      itemType="https://schema.org/ItemList"
+      aria-labelledby="published-books-heading"
     >
       {/* 🌈 Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-10 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
         <div className="absolute top-20 right-10 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700"></div>
         <div className="absolute bottom-0 left-20 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"></div>
@@ -178,7 +242,7 @@ const PublishedBook = ({
 
       {/* Content */}
       <div className="max-w-7xl mx-auto relative z-10">
-        <motion.div
+        <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -186,15 +250,19 @@ const PublishedBook = ({
         >
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
-              <h1 className="font-roboto text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                {sectionTitle?.sec2_title}
-              </h1>
+              <h2 
+                id="published-books-heading"
+                className="font-roboto text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                itemProp="name"
+              >
+                {sectionTitle?.sec2_title || "Published Books"}
+              </h2>
             </div>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              {sectionTitle?.sec2_para}
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto" itemProp="description">
+              {sectionTitle?.sec2_para || "Explore our collection of published books"}
             </p>
           </div>
-        </motion.div>
+        </motion.header>
 
         {publishedBookData.length > 0 ? (
           <Swiper
@@ -210,12 +278,13 @@ const PublishedBook = ({
             }}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
             loop
-            
             className="pb-20"
+            role="region"
+            aria-label="Published books carousel"
           >
-            {publishedBookData.map((book) => (
+            {publishedBookData.map((book, index) => (
               <SwiperSlide key={book.id}>
-                <motion.div
+                <motion.article
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
@@ -223,33 +292,59 @@ const PublishedBook = ({
                   onMouseEnter={() => handleMouseEnter(book.id)}
                   onMouseLeave={() => handleMouseLeave(book.id)}
                   whileHover={{ y: -5, transition: { duration: 0.3 } }}
+                  itemScope
+                  itemType="https://schema.org/Book"
+                  itemProp="itemListElement"
                 >
+                  <meta itemProp="position" content={index + 1} />
+                  
                   {/* Left Section - Content */}
                   <div className="lg:w-[50%] p-8 lg:p-12 flex flex-col justify-between">
                     <div>
                       {/* Book Status Badge */}
                       <div className="mb-6">
-                        <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
-                          book.is_free === "1" 
-                            ? "bg-green-100 text-green-700" 
-                            : "bg-purple-100 text-purple-700"
-                        }`}>
+                        <span 
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
+                            book.is_free === "1" 
+                              ? "bg-green-100 text-green-700" 
+                              : "bg-purple-100 text-purple-700"
+                          }`}
+                          itemProp="isAccessibleForFree"
+                          content={book.is_free === "1" ? "true" : "false"}
+                        >
                           {book.is_free === "1" ? "Free" : "Premium"}
                         </span>
-                        <span className="ml-3 text-sm text-gray-500 font-medium">
+                        <time 
+                          className="ml-3 text-sm text-gray-500 font-medium"
+                          dateTime={book.created_at}
+                          itemProp="datePublished"
+                        >
                           Published {new Date(book.created_at).toLocaleDateString()}
-                        </span>
+                        </time>
                       </div>
 
                       {/* Title */}
-                      <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+                      <h3 
+                        className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight"
+                        itemProp="name"
+                      >
                         {book.title}
-                      </h2>
+                      </h3>
 
                       {/* Description */}
-                      <p className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8" dangerouslySetInnerHTML={{__html:book.description}}>
-                        {/* {book.description || "Explore this amazing publication with rich content and beautiful visuals."} */}
-                      </p>
+                      <div 
+                        className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8"
+                        itemProp="description"
+                        dangerouslySetInnerHTML={{__html: book.description}}
+                      />
+                      
+                      {/* Hidden SEO content */}
+                      {book.description_seo && (
+                        <meta itemProp="description" content={book.description_seo} />
+                      )}
+                      <meta itemProp="inLanguage" content="en" />
+                      {book.category && <meta itemProp="genre" content={book.category} />}
+                      <meta itemProp="numberOfPages" content={book.images?.length || 0} />
                     </div>
 
                     {/* Action Button */}
@@ -262,9 +357,10 @@ const PublishedBook = ({
                         }}
                         onClick={() => handleRedirect(book.id)}
                         whileTap={{ scale: 0.98 }}
+                        aria-label={`Read ${book.title}`}
                       >
                         <span className="flex items-center justify-center gap-2">
-                          <BookOpen className="w-5 h-5" />
+                          <BookOpen className="w-5 h-5" aria-hidden="true" />
                           {sectionTitle?.sec2_button_name || "Read Book"}
                         </span>
                       </motion.button>
@@ -283,18 +379,18 @@ const PublishedBook = ({
                       {renderBookContent(book)}
                     </div>
                   </div>
-                </motion.div>
+                </motion.article>
               </SwiperSlide>
             ))}
           </Swiper>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12" role="status">
             <p className="text-gray-500 text-lg">No books published yet.</p>
           </div>
         )}
 
         {/* Custom Pagination */}
-        <div className="custom-pagination flex justify-center gap-2 mt-8"></div>
+        <nav className="custom-pagination flex justify-center gap-2 mt-8" aria-label="Carousel pagination"></nav>
       </div>
 
       {/* Custom CSS for pagination */}
@@ -314,7 +410,7 @@ const PublishedBook = ({
           border-radius: 8px;
         }
       `}</style>
-    </div>
+    </section>
   );
 };
 

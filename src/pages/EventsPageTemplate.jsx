@@ -48,10 +48,8 @@ const EventsPageTemplate = () => {
         },
       });
 
-      // console.log("event details --->:: ", response.data.data);
       if (response.data.status && response.data.data) {
         const eventData = response.data.data;
-        // console.log("event details :: ", eventData.guests);
 
         // Transform API data to match component structure
         const transformedEvent = {
@@ -71,7 +69,7 @@ const EventsPageTemplate = () => {
 
           organizer: {
             name: eventData.organizer_name,
-            logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=100&h=100&fit=crop", // Default organizer logo
+            logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=100&h=100&fit=crop",
             verified: true,
           },
           description: eventData.description,
@@ -79,6 +77,8 @@ const EventsPageTemplate = () => {
           social_links: eventData.social_links || {},
           start_time: eventData.start_time,
           end_time: eventData.end_time,
+          rawDate: eventData.date,
+          rawEndDate: eventData.end_date,
         };
 
         setEventDetails(transformedEvent);
@@ -114,11 +114,77 @@ const EventsPageTemplate = () => {
     return `${formattedHour}:${minutes} ${ampm}`;
   };
 
-  
+  // Generate JSON-LD structured data for SEO
+  const generateStructuredData = () => {
+    if (!eventDetails) return null;
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      "name": eventDetails.title,
+      "description": eventDetails.subtitle,
+      "image": eventDetails.image,
+      "startDate": eventDetails.rawDate ? `${eventDetails.rawDate}T${eventDetails.start_time}` : undefined,
+      "endDate": eventDetails.rawEndDate ? `${eventDetails.rawEndDate}T${eventDetails.end_time}` : undefined,
+      "eventStatus": "https://schema.org/EventScheduled",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "name": eventDetails.location,
+        "address": eventDetails.location
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": eventDetails.organizer.name,
+        "url": eventDetails.social_links?.website || window.location.origin
+      },
+      "performer": eventDetails.guests?.map(guest => ({
+        "@type": "Person",
+        "name": guest.guest_name,
+        "jobTitle": guest.guest_designation
+      }))
+    };
+
+    // Remove undefined values
+    Object.keys(structuredData).forEach(key => 
+      structuredData[key] === undefined && delete structuredData[key]
+    );
+
+    return structuredData;
+  };
 
   useEffect(() => {
     fetchEventData();
   }, [id]);
+
+  // Inject structured data when event details are loaded
+  useEffect(() => {
+    if (eventDetails) {
+      const structuredData = generateStructuredData();
+      if (structuredData) {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.text = JSON.stringify(structuredData);
+        script.id = 'event-structured-data';
+        
+        // Remove existing script if present
+        const existingScript = document.getElementById('event-structured-data');
+        if (existingScript) {
+          existingScript.remove();
+        }
+        
+        document.head.appendChild(script);
+
+        // Cleanup on unmount
+        return () => {
+          const scriptToRemove = document.getElementById('event-structured-data');
+          if (scriptToRemove) {
+            scriptToRemove.remove();
+          }
+        };
+      }
+    }
+  }, [eventDetails]);
 
   // Show loading state
   if (loading) {
@@ -130,7 +196,7 @@ const EventsPageTemplate = () => {
         </div>
       </div>
     );
-  } 
+  }
 
   // Show error state
   if (error || !eventDetails) {
@@ -156,13 +222,15 @@ const EventsPageTemplate = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <article className="min-h-screen bg-gradient-to-b from-gray-50 to-white" itemScope itemType="https://schema.org/Event">
       {/* Hero Section */}
-      <div className="relative h-96 overflow-hidden">
+      <header className="relative h-96 overflow-hidden">
         <img
           src={eventDetails.image}
-          alt={eventDetails.title}
+          alt={`${eventDetails?.image_alt} - Event cover image`}
           className="w-full h-full object-cover"
+          itemProp="image"
+          loading="eager"
           onError={(e) => {
             e.target.src =
               "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
@@ -173,68 +241,53 @@ const EventsPageTemplate = () => {
         {/* Hero Content */}
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 mb-3">
-              {/* <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="text-white font-semibold">
-                  {eventDetails.rating}
-                </span>
-                <span className="text-white/80 text-sm">
-                  ({eventDetails.reviews} reviews)
-                </span>
-              </div> */}
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+            <h3 className="text-4xl md:text-5xl font-bold text-white mb-2" itemProp="name" aria-label={eventDetails.title_meta || eventDetails.title}>
               {eventDetails.title}
-            </h1>
-            <p className="text-xl text-white/90 mb-6">
+            </h3>
+            <p className="text-xl text-white/90 mb-6" itemProp="description" aria-label={eventDetails.subtitle_meta || eventDetails.subtitle}>
               {eventDetails.subtitle}
             </p>
 
-            {/* Quick Info */}
+            {/* Quick Info with semantic markup */}
             <div className="flex flex-wrap gap-6 text-white">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span>
-                  {eventDetails.date}{" "}
-                  {eventDetails.endDate && `- ${eventDetails.endDate}`}
-                </span>
+              <div className="flex items-center gap-2" itemProp="startDate" content={eventDetails.rawDate}>
+                <Calendar className="w-5 h-5" aria-hidden="true" />
+                <time dateTime={eventDetails.rawDate}>
+                  {eventDetails.date}
+                  {eventDetails.endDate && ` - ${eventDetails.endDate}`}
+                </time>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
+                <Clock className="w-5 h-5" aria-hidden="true" />
                 <span>{eventDetails.time}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                <span>{eventDetails.location}</span>
+              <div className="flex items-center gap-2" itemProp="location" itemScope itemType="https://schema.org/Place">
+                <MapPin className="w-5 h-5" aria-hidden="true" />
+                <span itemProp="name">{eventDetails.location}</span>
               </div>
-              {/* <div className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                <span>{eventDetails.attendees}+ Attendees</span>
-              </div> */}
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Event Details */}
           <div className="lg:col-span-2 space-y-8">
             {/* About Section */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <section className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 About This Event
               </h2>
-              <div className="prose prose-lg text-gray-600 default-style" >
-                <p dangerouslySetInnerHTML={{__html:eventDetails.description}}></p>
+              <div className="prose prose-lg text-gray-600 default-style" itemProp="description" aria-label={eventDetails?.description_meta} >
+                <div dangerouslySetInnerHTML={{__html:eventDetails.description}}></div>
               </div>
-            </div>
+            </section>
 
             {/* Guests/Speakers Section */}
             {eventDetails.guests && eventDetails.guests.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-lg p-8">
+              <section className="bg-white rounded-2xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
                   Featured Guests
                 </h2>
@@ -243,15 +296,19 @@ const EventsPageTemplate = () => {
                     <div
                       key={index}
                       className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
+                      itemProp="performer"
+                      itemScope
+                      itemType="https://schema.org/Person"
                     >
                       <div className="flex-shrink-0">
                         {guest.guest_image ? (
                           <img
                             src={guest.guest_image}
-                            alt={guest.guest_name}
+                            alt={`${guest.guest_name} - ${guest.guest_designation}`}
                             className="w-16 h-16 rounded-full object-cover ring-4 ring-gray-100 group-hover:ring-blue-100 transition-all"
+                            itemProp="image"
+                            loading="lazy"
                             onError={(e) => {
-                              // Fallback to initial if image fails to load
                               e.target.style.display = "none";
                               e.target.nextSibling.style.display = "flex";
                             }}
@@ -261,6 +318,7 @@ const EventsPageTemplate = () => {
                           className={`w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center ring-4 ring-gray-100 group-hover:ring-blue-100 transition-all ${
                             guest.guest_image ? "hidden" : "flex"
                           }`}
+                          aria-hidden="true"
                         >
                           <span className="text-white font-bold text-lg">
                             {guest.guest_name.charAt(0)}
@@ -268,27 +326,27 @@ const EventsPageTemplate = () => {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate" itemProp="name">
                           {guest.guest_name}
                         </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
+                        <p className="text-sm text-gray-600 line-clamp-2" itemProp="jobTitle">
                           {guest.guest_designation}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            {/* Location Section - Smart Link */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            {/* Location Section */}
+            <section className="bg-white rounded-2xl shadow-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Event Location
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+                  <MapPin className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" aria-hidden="true" />
                   <div>
                     <p className="font-semibold text-gray-900 mb-2">
                       {eventDetails.location}
@@ -300,22 +358,21 @@ const EventsPageTemplate = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                          aria-label={`View ${eventDetails.location} location on map`}
                         >
-                          <Globe className="w-4 h-4" />
+                          <Globe className="w-4 h-4" aria-hidden="true" />
                           <span className="font-medium">View Location</span>
                         </a>
 
-                        {/* Optional: Direct Google Maps link if it's a Google URL */}
-                        {eventDetails.location_url.includes(
-                          "google.com/maps"
-                        ) && (
+                        {eventDetails.location_url.includes("google.com/maps") && (
                           <a
                             href={eventDetails.location_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                            aria-label={`Open ${eventDetails.location} in Google Maps`}
                           >
-                            <MapPin className="w-4 h-4" />
+                            <MapPin className="w-4 h-4" aria-hidden="true" />
                             <span className="font-medium">Open in Maps</span>
                           </a>
                         )}
@@ -324,39 +381,38 @@ const EventsPageTemplate = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Sidebar */}
+          <aside className="lg:col-span-1">
             <div className="sticky top-18 space-y-6">
               {/* Organizer Card */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
+              <section className="bg-white rounded-2xl shadow-lg p-6" itemProp="organizer" itemScope itemType="https://schema.org/Organization">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">
                   Organized By
                 </h3>
                 <div className="flex items-center gap-3 mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900" itemProp="name">
                         {eventDetails.organizer.name}
                       </p>
                       {eventDetails.organizer.verified && (
-                        <Check className="w-4 h-4 text-blue-600 fill-blue-100" />
+                        <Check className="w-4 h-4 text-blue-600 fill-blue-100" aria-label="Verified organizer" />
                       )}
                     </div>
                     <p className="text-sm text-gray-600">Verified Organizer</p>
                   </div>
                 </div>
-              </div>
+              </section>
 
               {/* Share Section */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
+              <section className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">
                   Share Event
                 </h3>
-                <div className="flex gap-2">
-                  {/* Social Links */}
+                <nav className="flex gap-2" aria-label="Social media links">
                   {eventDetails.social_links &&
                     Object.keys(eventDetails.social_links).length > 0 && (
                       <div className="mt-4">
@@ -369,26 +425,22 @@ const EventsPageTemplate = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                                title={
-                                  platform.charAt(0).toUpperCase() +
-                                  platform.slice(1)
-                                }
+                                aria-label={`Share on ${platform.charAt(0).toUpperCase() + platform.slice(1)}`}
                               >
-                                {/* {getSocialIcon(platform)} */}
-                                 <SocialIcons platform={platform} />
+                                <SocialIcons platform={platform} />
                               </a>
                             )
                           )}
                         </div>
                       </div>
                     )}
-                </div>
-              </div>
+                </nav>
+              </section>
             </div>
-          </div>
+          </aside>
         </div>
-      </div>
-    </div>
+      </main>
+    </article>
   );
 };
 

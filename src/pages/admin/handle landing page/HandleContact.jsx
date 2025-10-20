@@ -18,7 +18,9 @@ const HandleContact = () => {
         facebook: '',
         instagram: '',
         twitter: '',
-        linkedin: ''
+        linkedin: '',
+        meta_description: '',
+        image_alt: ''
     });
 
     // Fetch contact data
@@ -43,7 +45,9 @@ const HandleContact = () => {
                     facebook: response.data.data.facebook || '',
                     instagram: response.data.data.instagram || '',
                     twitter: response.data.data.twitter || '',
-                    linkedin: response.data.data.linkedin || ''
+                    linkedin: response.data.data.linkedin || '',
+                    meta_description: response.data.data.meta_description || '',
+                    image_alt: response.data.data.image_alt || ''
                 });
             }
         } catch (err) {
@@ -108,7 +112,7 @@ const HandleContact = () => {
                     disabled={loading}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50"
                 >
-                    {loading ? 'Loading...' : 'Get Contact Data'}
+                    {loading ? 'Loading...' : 'Refresh Contact Data'}
                 </button>
             </div>
 
@@ -189,69 +193,112 @@ const HandleContact = () => {
                             />
                         </div>
 
+                        {/* SEO Meta Information */}
+                        <div className="md:col-span-2 border-t pt-6 mt-4">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">SEO Meta Information</h3>
+                            
+                            {/* Meta Description */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Meta Description
+                                </label>
+                                <textarea
+                                    name="meta_description"
+                                    value={formData.meta_description}
+                                    onChange={handleInputChange}
+                                    rows="3"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter meta description for SEO"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Brief description for search engines (recommended: 150-160 characters)
+                                </p>
+                            </div>
+
+                            {/* Image Alt Text */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Image Alt Text
+                                </label>
+                                <input
+                                    type="text"
+                                    name="image_alt"
+                                    value={formData.image_alt}
+                                    onChange={handleInputChange}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter alt text for images"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Alternative text for accessibility and SEO
+                                </p>
+                            </div>
+                        </div>
+
                         {/* Social Media Links */}
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-2 border-t pt-6 mt-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Social Media Links</h3>
-                        </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Facebook */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Facebook URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="facebook"
+                                        value={formData.facebook}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://facebook.com/username"
+                                    />
+                                </div>
 
-                        {/* Facebook */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Facebook URL
-                            </label>
-                            <input
-                                type="url"
-                                name="facebook"
-                                value={formData.facebook}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="https://facebook.com/username"
-                            />
-                        </div>
+                                {/* Instagram */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Instagram URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        value={formData.instagram}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://instagram.com/username"
+                                    />
+                                </div>
 
-                        {/* Instagram */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Instagram URL
-                            </label>
-                            <input
-                                type="url"
-                                name="instagram"
-                                value={formData.instagram}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="https://instagram.com/username"
-                            />
-                        </div>
+                                {/* Twitter */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Twitter URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="twitter"
+                                        value={formData.twitter}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://twitter.com/username"
+                                    />
+                                </div>
 
-                        {/* Twitter */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Twitter URL
-                            </label>
-                            <input
-                                type="url"
-                                name="twitter"
-                                value={formData.twitter}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="https://twitter.com/username"
-                            />
-                        </div>
-
-                        {/* LinkedIn */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                LinkedIn URL
-                            </label>
-                            <input
-                                type="url"
-                                name="linkedin"
-                                value={formData.linkedin}
-                                onChange={handleInputChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="https://linkedin.com/in/username"
-                            />
+                                {/* LinkedIn */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        LinkedIn URL
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="linkedin"
+                                        value={formData.linkedin}
+                                        onChange={handleInputChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://linkedin.com/in/username"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -279,9 +326,22 @@ const HandleContact = () => {
             {/* No Data State */}
             {!loading && !contactData && !error && (
                 <div className="text-center py-8 text-gray-500">
-                    Click "Get Contact Data" to load the contact information
+                    Click "Refresh Contact Data" to load the contact information
                 </div>
             )}
+
+            {/* Form Tips */}
+            <div className="mt-6 bg-blue-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-blue-800 mb-2">Form Tips</h3>
+                <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• All fields are optional but recommended for complete contact information</li>
+                    <li>• Use full URLs including https:// for website and social media links</li>
+                    <li>• Meta description helps with SEO and search engine visibility</li>
+                    <li>• Image alt text improves accessibility for visually impaired users</li>
+                    <li>• Keep meta description concise (150-160 characters recommended)</li>
+                    <li>• Image alt text should describe the content or purpose of images</li>
+                </ul>
+            </div>
         </div>
     );
 };

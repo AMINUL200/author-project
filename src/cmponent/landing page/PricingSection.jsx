@@ -120,9 +120,9 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
     <section className="py-20 pt-10 bg-gray-50 m-4" id="pricing">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold  bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             {sectionTitle?.sec6_name}
-          </h1>
+          </h2>
           <p className="text-xl text-gray-600">{sectionTitle?.sec6_para}</p>
 
           {/* Show login prompt if not authenticated */}
@@ -146,6 +146,7 @@ const PricingSection = ({ sectionTitle = {}, plans, loading, error }) => {
               return (
                 <div
                   key={plan.id}
+                   aria-label={`Pricing plan ${plan.name}`}
                   className={`w-[400px] rounded-xl shadow-lg p-8 relative ${
                     isPopular
                       ? "bg-gradient-to-br from-purple-600 to-pink-600 text-white transform scale-105"

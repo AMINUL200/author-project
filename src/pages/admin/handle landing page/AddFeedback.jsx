@@ -24,6 +24,8 @@ const AddFeedback = () => {
     designation: "",
     rating: "5",
     feedback: "",
+    feedback_seo: "",
+    image_alt: "",
     image: null,
   });
 
@@ -61,6 +63,8 @@ const AddFeedback = () => {
           designation: data.designation || "",
           rating: data.rating || "5",
           feedback: data.feedback || "",
+          feedback_seo: data.feedback_seo || "",
+          image_alt: data.image_alt || "",
           image: data.image || null,
         });
         if (data.image) {
@@ -110,6 +114,8 @@ const AddFeedback = () => {
       formData.append("designation", feedbackData.designation);
       formData.append("rating", feedbackData.rating);
       formData.append("feedback", feedbackData.feedback);
+      formData.append("feedback_seo", feedbackData.feedback_seo);
+      formData.append("image_alt", feedbackData.image_alt);
 
       // Append image if it's a file (new upload)
       if (feedbackData.image instanceof File) {
@@ -265,6 +271,24 @@ const AddFeedback = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Image Alt Text */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image Alt Text
+                  </label>
+                  <input
+                    type="text"
+                    name="image_alt"
+                    value={feedbackData.image_alt}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter descriptive text for the profile image"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Optional: Descriptive text for accessibility and SEO
+                  </p>
+                </div>
               </div>
 
               {/* Right Column - Feedback & Image */}
@@ -283,6 +307,24 @@ const AddFeedback = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter customer feedback or testimonial"
                   />
+                </div>
+
+                {/* SEO Feedback */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    SEO Feedback
+                  </label>
+                  <textarea
+                    name="feedback_seo"
+                    value={feedbackData.feedback_seo}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter SEO-optimized version of the feedback"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Optional: A concise, SEO-friendly version of the feedback for search engines
+                  </p>
                 </div>
 
                 {/* Image Upload */}
@@ -393,6 +435,21 @@ const AddFeedback = () => {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Form Tips */}
+        <div className="mt-6 bg-blue-50 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-blue-800 mb-2">Form Tips</h3>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>• All fields marked with * are required</li>
+            <li>• Use high-quality profile images for better presentation</li>
+            <li>• Rating helps showcase customer satisfaction level</li>
+            <li>• Image Alt Text improves accessibility for screen readers</li>
+            <li>• SEO Feedback helps with search engine visibility</li>
+            {isUpdateMode && (
+              <li>• Leave image field empty to keep the current profile image</li>
+            )}
+          </ul>
         </div>
       </div>
     </div>

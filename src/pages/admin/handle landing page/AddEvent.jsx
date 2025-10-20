@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import CustomTextEditor from '../../../cmponent/common/TextEditor';
+import { image } from 'framer-motion/client';
 
 const AddEvent = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -25,7 +26,10 @@ const AddEvent = () => {
     image: null,
     organizer_name: '',
     guests: [],
-    social_links: {}
+    social_links: {},
+    title_meta: '',
+    description_meta: '',
+    image_alt: ''
   });
   const [imagePreview, setImagePreview] = useState('');
   const [newGuest, setNewGuest] = useState({ 
@@ -68,7 +72,10 @@ const AddEvent = () => {
           image: null,
           organizer_name: event.organizer_name || '',
           guests: event.guests || [],
-          social_links: event.social_links || {}
+          social_links: event.social_links || {},
+          title_meta: event.title_meta || '',
+          description_meta: event.description_meta || '',
+          image_alt: event.image_alt || ''
         });
         setImagePreview(event.image || '');
       }
@@ -292,6 +299,17 @@ const AddEvent = () => {
         submitData.append('image', formData.image);
       }
 
+      // Append meta fields
+      if (formData.title_meta) {
+        submitData.append('title_meta', formData.title_meta);
+      }
+      if (formData.description_meta) {
+        submitData.append('description_meta', formData.description_meta);
+      }
+      if (formData.image_alt) {
+        submitData.append('image_alt', formData.image_alt);
+      }
+
       // Append guests - handle both new images and existing image URLs
       formData.guests.forEach((guest, index) => {
         submitData.append(`guests[${index}][guest_name]`, guest.guest_name);
@@ -315,6 +333,9 @@ const AddEvent = () => {
       // Debug: Log what we're sending
       console.log('Submitting data:');
       console.log('Title:', formData.title);
+      console.log('Title Meta:', formData.title_meta);
+      console.log('Description Meta:', formData.description_meta);
+      console.log('Image Alt:', formData.image_alt);
       console.log('Guests:', formData.guests);
       console.log('Social Links:', formData.social_links);
 
@@ -449,27 +470,79 @@ const AddEvent = () => {
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
               </label>
-              {/* <textarea
-                id="description"
-                name="description"
-                rows={4}
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter event description"
-              /> */}
               <CustomTextEditor 
-              value={formData.description}
-              onChange={(newContent) =>
-                setFormData((prev) =>({
-                  ...prev,
-                  description:newContent
-                }))
-              }
-               placeholder="Enter event description"
-               height={60}
+                value={formData.description}
+                onChange={(newContent) =>
+                  setFormData((prev) =>({
+                    ...prev,
+                    description: newContent
+                  }))
+                }
+                placeholder="Enter event description"
+                height={60}
               />
+            </div>
+
+            {/* SEO Meta Fields */}
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">SEO Meta Information</h3>
+              
+              {/* Title Meta */}
+              <div className="mb-4">
+                <label htmlFor="title_meta" className="block text-sm font-medium text-gray-700 mb-2">
+                  Meta Title
+                </label>
+                <input
+                  type="text"
+                  id="title_meta"
+                  name="title_meta"
+                  value={formData.title_meta}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter meta title for SEO (optional)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This will be used as the page title for SEO purposes. If left empty, the event title will be used.
+                </p>
+              </div>
+
+              {/* Description Meta */}
+              <div className="mb-4">
+                <label htmlFor="description_meta" className="block text-sm font-medium text-gray-700 mb-2">
+                  Meta Description
+                </label>
+                <textarea
+                  id="description_meta"
+                  name="description_meta"
+                  rows={3}
+                  value={formData.description_meta}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter meta description for SEO (optional)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This will be used as the meta description for SEO. Should be concise and descriptive (150-160 characters recommended).
+                </p>
+              </div>
+
+              {/* Image Alt Text */}
+              <div>
+                <label htmlFor="image_alt" className="block text-sm font-medium text-gray-700 mb-2">
+                  Image Alt Text
+                </label>
+                <input
+                  type="text"
+                  id="image_alt"
+                  name="image_alt"
+                  value={formData.image_alt}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter alt text for the event image (optional)"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Descriptive text for the event image for accessibility and SEO.
+                </p>
+              </div>
             </div>
 
             {/* Date and Location Row */}
@@ -786,6 +859,8 @@ const AddEvent = () => {
             <li>• For social links, use platform names as keys (e.g., facebook, instagram, website)</li>
             <li>• You can add multiple guests to your event</li>
             <li>• Guest images must be JPEG, PNG, or GIF files under 10MB</li>
+            <li>• Meta title and description help with SEO and search engine visibility</li>
+            <li>• Image alt text improves accessibility and image SEO</li>
           </ul>
         </div>
       </div>
