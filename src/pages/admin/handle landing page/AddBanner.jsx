@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
@@ -19,7 +19,6 @@ const AddBanner = () => {
 
   const [loading, setLoading] = useState(true);
   const [handleLoading, setHandleLoading] = useState(false);
-  const [imagePreviews, setImagePreviews] = useState([]);
   const [bannerData, setBannerData] = useState({
     heading1: "",
     heading2: "",
@@ -27,8 +26,22 @@ const AddBanner = () => {
     button_name: "",
     image_title: "",
     image_subtitle: "",
-    images: [], // This will contain objects with image_url and image_alts
+    images: [], // Unified structure: { file?, image_url, image_alts, isNew? }
   });
+
+  // Cleanup function for blob URLs
+  const cleanupBlobUrls = useCallback(() => {
+    bannerData.images.forEach(img => {
+      if (img.isNew && img.image_url && img.image_url.startsWith('blob:')) {
+        URL.revokeObjectURL(img.image_url);
+      }
+    });
+  }, [bannerData.images]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanupBlobUrls;
+  }, [cleanupBlobUrls]);
 
   // Fetch banner data when in update mode
   useEffect(() => {
@@ -53,29 +66,24 @@ const AddBanner = () => {
         console.log("API Response:", data);
         console.log("Images data:", data.images);
 
-        // Transform the images data to match the required structure
-        let transformedImages = [];
-        if (data.images && Array.isArray(data.images)) {
-          transformedImages = data.images.map((img) => {
-            // Handle different possible image object structures
-            if (typeof img === "string") {
-              return {
-                image_url: img,
-                image_alts: "",
-              };
-            } else if (typeof img === "object") {
-              return {
-                image_url:
-                  img.image_url || img.url || img.path || img.src || "",
-                image_alts: img.image_alts || img.alt || img.caption || "",
-              };
-            }
+        // Normalize images data to unified structure
+        const normalizedImages = (data.images || []).map(img => {
+          if (typeof img === "string") {
             return {
-              image_url: "",
+              image_url: img,
               image_alts: "",
             };
-          });
-        }
+          } else if (typeof img === "object") {
+            return {
+              image_url: img.image || img.url || img.path || img.src || "",
+              image_alts: img.image_alts || img.alt || img.caption || "",
+            };
+          }
+          return {
+            image_url: "",
+            image_alts: "",
+          };
+        });
 
         setBannerData({
           heading1: data.heading1 || "",
@@ -84,19 +92,8 @@ const AddBanner = () => {
           button_name: data.button_name || "",
           image_title: data.image_title || "",
           image_subtitle: data.image_subtitle || "",
-          images: transformedImages,
+          images: normalizedImages,
         });
-
-        // Set image previews for existing images
-        if (transformedImages.length > 0) {
-          setImagePreviews(
-            transformedImages.map((img) => ({
-              preview: img.image_url,
-              alt: img.image_alts,
-              isExisting: true,
-            }))
-          );
-        }
       }
     } catch (error) {
       console.error("Error fetching banner:", error);
@@ -117,31 +114,37 @@ const AddBanner = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
 
-    if (files.length > 0) {
-      // Create preview URLs and image objects for new files
-      const newImageObjects = files.map((file) => ({
-        file: file,
-        image_url: URL.createObjectURL(file),
-        image_alts: "", // Empty alt text by default, user can fill later
-        isNew: true, // Mark as new image
-      }));
+    if (files.length === 0) return;
 
-      // Update previews state
-      setImagePreviews((prev) => [
-        ...prev,
-        ...newImageObjects.map((img) => ({
-          preview: img.image_url,
-          alt: img.image_alts,
-          isExisting: false,
-        })),
-      ]);
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const isValidType = file.type.startsWith('image/');
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+      
+      if (!isValidType) {
+        toast.error(`File ${file.name} is not a valid image type`);
+        return false;
+      }
+      if (!isValidSize) {
+        toast.error(`File ${file.name} exceeds 10MB size limit`);
+        return false;
+      }
+      return true;
+    });
 
-      // Update banner data with new image objects
-      setBannerData((prev) => ({
-        ...prev,
-        images: [...prev.images, ...newImageObjects],
-      }));
-    }
+    if (validFiles.length === 0) return;
+
+    const newImages = validFiles.map((file) => ({
+      file: file, // Store the actual File object
+      image_url: URL.createObjectURL(file), // For preview
+      image_alts: "", // Empty alt text by default
+      isNew: true, // Mark as new image for backend processing
+    }));
+
+    setBannerData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...newImages],
+    }));
 
     // Clear the file input to allow selecting the same file again
     e.target.value = "";
@@ -160,35 +163,15 @@ const AddBanner = () => {
         images: updatedImages,
       };
     });
-
-    // Also update previews for display
-    setImagePreviews((prev) => {
-      const updatedPreviews = [...prev];
-      updatedPreviews[index] = {
-        ...updatedPreviews[index],
-        alt: altText,
-      };
-      return updatedPreviews;
-    });
   };
 
   const removeImage = (index) => {
     const imageToRemove = bannerData.images[index];
 
     // Revoke object URL for new images to avoid memory leaks
-    if (
-      imageToRemove.image_url &&
-      imageToRemove.image_url.startsWith("blob:")
-    ) {
+    if (imageToRemove.isNew && imageToRemove.image_url && imageToRemove.image_url.startsWith("blob:")) {
       URL.revokeObjectURL(imageToRemove.image_url);
     }
-
-    // Remove from previews
-    setImagePreviews((prev) => {
-      const newPreviews = [...prev];
-      newPreviews.splice(index, 1);
-      return newPreviews;
-    });
 
     // Remove from banner data
     setBannerData((prev) => {
@@ -201,8 +184,52 @@ const AddBanner = () => {
     });
   };
 
+  const validateForm = () => {
+    if (!bannerData.heading1.trim()) {
+      toast.error("Heading 1 is required");
+      return false;
+    }
+    if (!bannerData.heading2.trim()) {
+      toast.error("Heading 2 is required");
+      return false;
+    }
+    if (!bannerData.description.trim()) {
+      toast.error("Description is required");
+      return false;
+    }
+    if (!bannerData.button_name.trim()) {
+      toast.error("Button text is required");
+      return false;
+    }
+    if (!bannerData.image_title.trim()) {
+      toast.error("Image title is required");
+      return false;
+    }
+    if (!bannerData.image_subtitle.trim()) {
+      toast.error("Image subtitle is required");
+      return false;
+    }
+    if (bannerData.images.length === 0) {
+      toast.error("At least one image is required");
+      return false;
+    }
+
+    // Validate alt texts (optional but recommended for SEO)
+    const imagesWithoutAlt = bannerData.images.filter(img => !img.image_alts.trim());
+    if (imagesWithoutAlt.length > 0) {
+      toast.warning("Some images are missing alt text. This affects SEO and accessibility.");
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setHandleLoading(true);
 
     try {
@@ -216,18 +243,24 @@ const AddBanner = () => {
       formData.append("image_title", bannerData.image_title);
       formData.append("image_subtitle", bannerData.image_subtitle);
 
-      // Append each image file directly to the images array
+      // Append images with clear structure
       bannerData.images.forEach((img, index) => {
-        if (img.file) {
-          // For new images, append the file directly
-          formData.append(`images[${index}][image_url]`, img.file);
-          formData.append(`images[${index}][image_alts]`, img.image_alts || "");
+        if (img.isNew && img.file) {
+          // For new images, append the file and mark as new
+          formData.append(`images[${index}][file]`, img.file);
+          formData.append(`images[${index}][alt]`, img.image_alts || "");
+          formData.append(`images[${index}][type]`, "new");
         } else {
           // For existing images, append URL and alt text
-          formData.append(`images[${index}][image_url]`, img.image_url);
-          formData.append(`images[${index}][image_alts]`, img.image_alts || "");
+          formData.append(`images[${index}][url]`, img.image_url);
+          formData.append(`images[${index}][alt]`, img.image_alts || "");
+          formData.append(`images[${index}][type]`, "existing");
         }
       });
+
+      // Add metadata for better backend processing
+      formData.append("total_images", bannerData.images.length.toString());
+      formData.append("is_update_mode", isUpdateMode.toString());
 
       console.log("FormData entries:");
       for (const pair of formData.entries()) {
@@ -246,9 +279,13 @@ const AddBanner = () => {
             },
           }
         );
-        console.log(response);
+        console.log("Update response:", response);
         
-        toast.success("Banner updated successfully!");
+        if (response.status === 200) {
+          toast.success("Banner updated successfully!");
+          cleanupBlobUrls();
+          navigate("/admin/landing-page/banners");
+        }
       } else {
         response = await axios.post(`${apiUrl}banner`, formData, {
           headers: {
@@ -256,13 +293,13 @@ const AddBanner = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log(response);
+        console.log("Create response:", response);
         
-        toast.success("Banner created successfully!");
-      }
-
-      if (response.status === 200 || response.status === 201) {
-        navigate("/admin/landing-page/banners");
+        if (response.status === 201 || response.status === 200) {
+          toast.success("Banner created successfully!");
+          cleanupBlobUrls();
+          navigate("/admin/landing-page/banners");
+        }
       }
     } catch (error) {
       console.error("Error saving banner:", error);
@@ -277,6 +314,8 @@ const AddBanner = () => {
         } else {
           toast.error(`Error: ${status} - ${data.message || "Unknown error"}`);
         }
+      } else if (error.request) {
+        toast.error("Network error - please check your connection.");
       } else {
         toast.error(`Failed to ${isUpdateMode ? "update" : "create"} banner`);
       }
@@ -286,25 +325,18 @@ const AddBanner = () => {
   };
 
   const handleCancel = () => {
-    // Clean up object URLs to avoid memory leaks
-    imagePreviews.forEach((preview) => {
-      if (preview.preview && preview.preview.startsWith("blob:")) {
-        URL.revokeObjectURL(preview.preview);
-      }
-    });
+    cleanupBlobUrls();
     navigate("/admin/landing-page/banners");
   };
 
-  // Clean up object URLs when component unmounts
-  useEffect(() => {
-    return () => {
-      imagePreviews.forEach((preview) => {
-        if (preview.preview && preview.preview.startsWith("blob:")) {
-          URL.revokeObjectURL(preview.preview);
-        }
-      });
-    };
-  }, [imagePreviews]);
+  // Calculate total size of new images
+  const getTotalNewImageSize = () => {
+    return bannerData.images
+      .filter(img => img.isNew && img.file)
+      .reduce((total, img) => total + img.file.size, 0);
+  };
+
+  const totalNewImageSizeMB = (getTotalNewImageSize() / (1024 * 1024)).toFixed(2);
 
   if (loading && isUpdateMode) {
     return <Loader />;
@@ -377,7 +409,7 @@ const AddBanner = () => {
                       }))
                     }
                     placeholder="Enter banner description"
-                    height={50}
+                    height={150}
                   />
                 </div>
 
@@ -438,67 +470,91 @@ const AddBanner = () => {
                     Banner Images *
                   </label>
 
-                  {/* Image Previews with Alt Text Input */}
-                  {imagePreviews.length > 0 && (
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Selected Images ({imagePreviews.length})
-                      </label>
-                      <div className="space-y-4">
-                        {imagePreviews.map((preview, index) => (
-                          <div
-                            key={index}
-                            className="border rounded-lg p-3 bg-gray-50"
-                          >
-                            <div className="flex space-x-3">
-                              {/* Image Preview */}
-                              <div className="relative flex-shrink-0">
-                                <img
-                                  src={preview.preview}
-                                  alt={`Preview ${index + 1}`}
-                                  className="w-20 h-20 object-cover rounded-md border"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-90 hover:opacity-100 transition-opacity duration-200"
-                                >
-                                  ×
-                                </button>
-                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                                  {preview.isExisting ? "Existing" : "New"}
-                                </div>
-                              </div>
-
-                              {/* Alt Text Input */}
-                              <div className="flex-grow">
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                  Alt Text for SEO (Image {index + 1})
-                                </label>
-                                <input
-                                  type="text"
-                                  value={
-                                    bannerData.images[index]?.image_alts || ""
-                                  }
-                                  onChange={(e) =>
-                                    handleAltTextChange(index, e.target.value)
-                                  }
-                                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                  placeholder="Enter descriptive alt text for SEO"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Describe this image for accessibility and SEO
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                  {/* Image Statistics */}
+                  {bannerData.images.length > 0 && (
+                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-blue-700 font-medium">
+                          {bannerData.images.length} image(s) selected
+                        </span>
+                        {totalNewImageSizeMB > 0 && (
+                          <span className="text-blue-600">
+                            New images: {totalNewImageSizeMB} MB
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 text-xs text-blue-600">
+                        {bannerData.images.filter(img => !img.image_alts.trim()).length > 0 && (
+                          <p>⚠️ Some images are missing alt text</p>
+                        )}
                       </div>
                     </div>
                   )}
 
+                  {/* Image Previews with Alt Text Input */}
+                  {bannerData.images.length > 0 && (
+                    <div className="mb-4 space-y-4">
+                      {bannerData.images.map((img, index) => (
+                        <div
+                          key={index}
+                          className="border rounded-lg p-3 bg-gray-50"
+                        >
+                          <div className="flex space-x-3">
+                            {/* Image Preview */}
+                            <div className="relative flex-shrink-0">
+                              {console.log(img)
+                              }
+                              <img
+                                src={img.image_url}
+                                alt={`Preview ${index + 1}`}
+                                className="w-20 h-20 object-cover rounded-md border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-90 hover:opacity-100 transition-opacity duration-200 shadow-md"
+                              >
+                                ×
+                              </button>
+                              <div className={`absolute bottom-0 left-0 right-0 text-white text-xs p-1 text-center ${img.isNew ? 'bg-green-600' : 'bg-blue-600'}`}>
+                                {img.isNew ? "New" : "Existing"}
+                              </div>
+                              {img.isNew && img.file && (
+                                <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-1 text-center">
+                                  {(img.file.size / (1024 * 1024)).toFixed(1)}MB
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Alt Text Input */}
+                            <div className="flex-grow">
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Alt Text for SEO (Image {index + 1})
+                                {!img.image_alts.trim() && (
+                                  <span className="text-red-500 ml-1">* Recommended</span>
+                                )}
+                              </label>
+                              <input
+                                type="text"
+                                value={img.image_alts}
+                                onChange={(e) =>
+                                  handleAltTextChange(index, e.target.value)
+                                }
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                placeholder="Describe this image for accessibility and SEO"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                Helps with SEO and accessibility for visually impaired users
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Upload Area */}
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors duration-200">
                     <div className="space-y-1 text-center">
                       <svg
                         className="mx-auto h-12 w-12 text-gray-400"
@@ -528,7 +584,7 @@ const AddBanner = () => {
                             accept="image/*"
                             multiple
                             required={
-                              !isUpdateMode && imagePreviews.length === 0
+                              !isUpdateMode && bannerData.images.length === 0
                             }
                           />
                         </label>
@@ -552,14 +608,14 @@ const AddBanner = () => {
                 type="button"
                 onClick={handleCancel}
                 disabled={handleLoading}
-                className="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={handleLoading}
-                className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {handleLoading ? (
                   <span className="flex items-center">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Upload,
@@ -38,7 +38,7 @@ const AddNewArticle = () => {
     description_seo: "",
     is_free: 1,
     pdf: null,
-    images: [], // This will contain objects with image_url and image_alts
+    images: [], // Unified structure: { file?, image_url, image_alts, isNew? }
     links: [],
   });
   const [existingPdf, setExistingPdf] = useState(null);
@@ -47,6 +47,20 @@ const AddNewArticle = () => {
   const [imageDragActive, setImageDragActive] = useState(false);
   const [errors, setErrors] = useState({});
   const [newLink, setNewLink] = useState({ platform: "", url: "" });
+
+  // Cleanup function for blob URLs
+  const cleanupBlobUrls = useCallback(() => {
+    formData.images.forEach(img => {
+      if (img.isNew && img.image_url && img.image_url.startsWith('blob:')) {
+        URL.revokeObjectURL(img.image_url);
+      }
+    });
+  }, [formData.images]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanupBlobUrls;
+  }, [cleanupBlobUrls]);
 
   // Fetch article data when in update mode
   useEffect(() => {
@@ -67,28 +81,24 @@ const AddNewArticle = () => {
       if (response.status === 200) {
         const data = response.data.data;
         
-        // Transform the images data to match the required structure (same as banner)
-        let transformedImages = [];
-        if (data.images && Array.isArray(data.images)) {
-          transformedImages = data.images.map((img, index) => {
-            // Handle different possible image object structures
-            if (typeof img === "string") {
-              return {
-                image_url: img,
-                image_alts: "",
-              };
-            } else if (typeof img === "object") {
-              return {
-                image_url: img.image_url || img.url || img.path || img.src || "",
-                image_alts: img.image_alts || img.alt || img.caption || "",
-              };
-            }
+        // Normalize images data to unified structure (same as banner)
+        const normalizedImages = (data.images || []).map(img => {
+          if (typeof img === "string") {
             return {
-              image_url: "",
+              image_url: img,
               image_alts: "",
             };
-          });
-        }
+          } else if (typeof img === "object") {
+            return {
+              image_url: img.image || img.url || img.path || img.src || "",
+              image_alts: img.image_alts || img.alt || img.caption || "",
+            };
+          }
+          return {
+            image_url: "",
+            image_alts: "",
+          };
+        });
 
         setFormData({
           title: data.title || "",
@@ -97,7 +107,7 @@ const AddNewArticle = () => {
           description_seo: data.description_seo || "",
           is_free: data.is_free === "0" ? 0 : 1,
           pdf: null,
-          images: transformedImages,
+          images: normalizedImages,
           links: data.links || [],
         });
 
@@ -198,7 +208,7 @@ const AddNewArticle = () => {
     });
 
     if (validFiles.length > 0) {
-      // Create image objects with the same structure as banner component
+      // Create image objects with unified structure (same as banner)
       const newImageObjects = validFiles.map((file) => ({
         file: file,
         image_url: URL.createObjectURL(file),
@@ -233,7 +243,7 @@ const AddNewArticle = () => {
     const imageToRemove = formData.images[index];
 
     // Revoke object URL for new images to avoid memory leaks (same as banner)
-    if (imageToRemove.image_url && imageToRemove.image_url.startsWith("blob:")) {
+    if (imageToRemove.isNew && imageToRemove.image_url && imageToRemove.image_url.startsWith("blob:")) {
       URL.revokeObjectURL(imageToRemove.image_url);
     }
 
@@ -328,16 +338,18 @@ const AddNewArticle = () => {
         throw new Error("PDF file is required");
       }
 
-      // Append images with the same structure as banner component
+      // Append images with improved structure (same as banner)
       formData.images.forEach((img, index) => {
-        if (img.file) {
-          // For new images, append the file directly
-          submissionData.append(`images[${index}][image_url]`, img.file);
-          submissionData.append(`images[${index}][image_alts]`, img.image_alts || "");
+        if (img.isNew && img.file) {
+          // For new images, append the file with clear structure
+          submissionData.append(`images[${index}][file]`, img.file);
+          submissionData.append(`images[${index}][alt]`, img.image_alts || "");
+          submissionData.append(`images[${index}][type]`, "new");
         } else {
           // For existing images, append URL and alt text
-          submissionData.append(`images[${index}][image_url]`, img.image_url);
-          submissionData.append(`images[${index}][image_alts]`, img.image_alts || "");
+          submissionData.append(`images[${index}][url]`, img.image_url);
+          submissionData.append(`images[${index}][alt]`, img.image_alts || "");
+          submissionData.append(`images[${index}][type]`, "existing");
         }
       });
 
@@ -346,6 +358,10 @@ const AddNewArticle = () => {
         submissionData.append(`links[${index}][platform]`, link.platform);
         submissionData.append(`links[${index}][url]`, link.url);
       });
+
+      // Add metadata for better backend processing
+      submissionData.append("total_images", formData.images.length.toString());
+      submissionData.append("is_update_mode", isUpdateMode.toString());
 
       // If there's an existing PDF and we're not uploading a new one, indicate we're keeping it
       if (isUpdateMode && existingPdf && !formData.pdf) {
@@ -380,14 +396,8 @@ const AddNewArticle = () => {
         toast.success("Article created successfully!");
       }
 
-      if (response.status === 200) {
-        // Clean up object URLs before navigating
-        formData.images.forEach((img) => {
-          if (img.image_url && img.image_url.startsWith("blob:")) {
-            URL.revokeObjectURL(img.image_url);
-          }
-        });
-
+      if (response.status === 200 || response.status === 201) {
+        cleanupBlobUrls(); // Cleanup before navigation
         navigate("/admin/landing-page/published-book");
       }
     } catch (error) {
@@ -417,25 +427,18 @@ const AddNewArticle = () => {
   };
 
   const handleCancel = () => {
-    // Clean up object URLs to avoid memory leaks (same as banner)
-    formData.images.forEach((img) => {
-      if (img.image_url && img.image_url.startsWith("blob:")) {
-        URL.revokeObjectURL(img.image_url);
-      }
-    });
+    cleanupBlobUrls();
     navigate("/admin/landing-page/published-book");
   };
 
-  // Clean up object URLs when component unmounts (same as banner)
-  useEffect(() => {
-    return () => {
-      formData.images.forEach((img) => {
-        if (img.image_url && img.image_url.startsWith("blob:")) {
-          URL.revokeObjectURL(img.image_url);
-        }
-      });
-    };
-  }, [formData.images]);
+  // Calculate total size of new images
+  const getTotalNewImageSize = () => {
+    return formData.images
+      .filter(img => img.isNew && img.file)
+      .reduce((total, img) => total + img.file.size, 0);
+  };
+
+  const totalNewImageSizeMB = (getTotalNewImageSize() / (1024 * 1024)).toFixed(2);
 
   if (loading) {
     return (
@@ -729,12 +732,33 @@ const AddNewArticle = () => {
             )}
           </div>
 
-          {/* Multiple Images Upload Section - Updated */}
+          {/* Multiple Images Upload Section - Updated with banner-style improvements */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <label className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
               <Image className="w-5 h-5 text-blue-600" />
               Book Images ({formData.images.length} selected)
             </label>
+
+            {/* Image Statistics */}
+            {formData.images.length > 0 && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-blue-700 font-medium">
+                    {formData.images.length} image(s) selected
+                  </span>
+                  {totalNewImageSizeMB > 0 && (
+                    <span className="text-blue-600">
+                      New images: {totalNewImageSizeMB} MB
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 text-xs text-blue-600">
+                  {formData.images.filter(img => !img.image_alts.trim()).length > 0 && (
+                    <p>⚠️ Some images are missing alt text</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Images Display */}
             {formData.images.length === 0 ? (
@@ -806,58 +830,61 @@ const AddNewArticle = () => {
                 </div>
 
                 {/* Image Previews with Alt Text Input - Updated like banner */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
-                    Selected Images ({formData.images.length})
-                  </h4>
-                  <div className="space-y-4">
-                    {formData.images.map((image, index) => (
-                      <div
-                        key={index}
-                        className="border rounded-lg p-3 bg-gray-50"
-                      >
-                        <div className="flex space-x-3">
-                          {/* Image Preview */}
-                          <div className="relative flex-shrink-0">
-                            <img
-                              src={image.image_url}
-                              alt={`Preview ${index + 1}`}
-                              className="w-20 h-20 object-cover rounded-md border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-90 hover:opacity-100 transition-opacity duration-200"
-                            >
-                              ×
-                            </button>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                              {image.isNew ? "New" : "Existing"}
+                <div className="space-y-4">
+                  {formData.images.map((image, index) => (
+                    <div
+                      key={index}
+                      className="border rounded-lg p-3 bg-gray-50"
+                    >
+                      <div className="flex space-x-3">
+                        {/* Image Preview */}
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={image.image_url}
+                            alt={`Preview ${index + 1}`}
+                            className="w-20 h-20 object-cover rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors shadow-md"
+                          >
+                            ×
+                          </button>
+                          <div className={`absolute bottom-0 left-0 right-0 text-white text-xs p-1 text-center ${image.isNew ? 'bg-green-600' : 'bg-blue-600'}`}>
+                            {image.isNew ? "New" : "Existing"}
+                          </div>
+                          {image.isNew && image.file && (
+                            <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-70 text-white text-xs p-1 text-center">
+                              {(image.file.size / (1024 * 1024)).toFixed(1)}MB
                             </div>
-                          </div>
+                          )}
+                        </div>
 
-                          {/* Alt Text Input */}
-                          <div className="flex-grow">
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Alt Text for SEO (Image {index + 1})
-                            </label>
-                            <input
-                              type="text"
-                              value={image.image_alts || ""}
-                              onChange={(e) =>
-                                handleImageAltChange(index, e.target.value)
-                              }
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              placeholder="Enter descriptive alt text for SEO"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                              Describe this image for accessibility and SEO
-                            </p>
-                          </div>
+                        {/* Alt Text Input */}
+                        <div className="flex-grow">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Alt Text for SEO (Image {index + 1})
+                            {!image.image_alts.trim() && (
+                              <span className="text-red-500 ml-1">* Recommended</span>
+                            )}
+                          </label>
+                          <input
+                            type="text"
+                            value={image.image_alts || ""}
+                            onChange={(e) =>
+                              handleImageAltChange(index, e.target.value)
+                            }
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Describe this image for accessibility and SEO"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Helps with SEO and accessibility for visually impaired users
+                          </p>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

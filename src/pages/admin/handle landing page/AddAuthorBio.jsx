@@ -387,6 +387,7 @@ const AddAuthorBio = () => {
                       onChange={(e) => handleImageChange(e, "image1")}
                       required={!isUpdateMode}
                       label="Upload primary image"
+                      inputId="image1-upload"
                     />
                     {/* Image 1 Alt Text */}
                     <div className="mt-3">
@@ -417,6 +418,7 @@ const AddAuthorBio = () => {
                       onChange={(e) => handleImageChange(e, "image2")}
                       required={false}
                       label="Upload secondary image"
+                      inputId="image2-upload"
                     />
                     {/* Image 2 Alt Text */}
                     <div className="mt-3">
@@ -636,7 +638,7 @@ const AddAuthorBio = () => {
 };
 
 // Separate Image Upload Component
-const ImageUpload = ({ preview, onChange, required, label }) => {
+const ImageUpload = ({ preview, onChange, required, label, inputId }) => {
   return (
     <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
       <div className="space-y-1 text-center">
@@ -666,12 +668,12 @@ const ImageUpload = ({ preview, onChange, required, label }) => {
         )}
         <div className="flex text-sm text-gray-600 justify-center">
           <label
-            htmlFor="image-upload"
+            htmlFor={inputId}
             className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
           >
             <span>{preview ? "Change Image" : label}</span>
             <input
-              id="image-upload"
+              id={inputId}
               type="file"
               className="sr-only"
               onChange={onChange}

@@ -195,7 +195,7 @@ const HandlePublishedBook = () => {
                 <div className="relative h-48 bg-gray-200">
                   {article.images && article.images.length > 0 ? (
                     <img
-                      src={article.images[0]}
+                      src={article.images[0].image || article.images[0]}
                       alt={article.title}
                       className="w-full h-full object-cover"
                     />
