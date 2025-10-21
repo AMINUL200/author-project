@@ -57,8 +57,8 @@ const BioProfile = () => {
           <div className="sticky top-20"> {/* Added sticky here */}
             <div className="absolute top-3 left-3 w-[340px] h-[480px] bg-gradient-to-br from-blue-400 to-blue-200 blur-3xl rounded-[35px] -z-10 rotate-[-5deg] hidden md:block"></div>
             <img
-              src={bio?.image1}
-              alt={bio?.name}
+              src={bio?.image2}
+              alt={bio?.image2_alts || "Author Image"}
               className="w-[340px] h-[480px] object-cover rounded-[30px] border-4 border-white shadow-[0_25px_60px_rgba(0,0,0,0.25),0_0_60px_rgba(100,149,237,0.3)] transform hover:scale-105 transition-transform duration-500"
             />
           </div>
