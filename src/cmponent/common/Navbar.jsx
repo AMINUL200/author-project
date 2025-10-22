@@ -65,7 +65,7 @@ const Navbar = ({ data, loading, error }) => {
                   {/* <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     Maaz Anwar
                   </span> */}
-                  <img src="/public/logo.png" alt="" />
+                  <img src="/logo.png" alt="" />
                 </div>
               </Link>
             </div>
