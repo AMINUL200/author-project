@@ -62,9 +62,10 @@ const Navbar = ({ data, loading, error }) => {
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center group">
                 <div className="ml-3">
-                  <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  {/* <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     Maaz Anwar
-                  </span>
+                  </span> */}
+                  <img src="/public/logo.png" alt="" />
                 </div>
               </Link>
             </div>
