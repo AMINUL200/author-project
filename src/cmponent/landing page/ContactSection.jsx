@@ -166,7 +166,7 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
 
       {/* Footer */}
       <footer className="w-full text-center border-t border-gray-700 py-4 text-sm text-gray-400">
-        © 2025 Demo. All rights reserved.
+        © 2025 inkwithme. All rights reserved.
       </footer>
     </section>
   );
