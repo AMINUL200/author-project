@@ -61,46 +61,55 @@ const PublishedBook = ({
       const structuredData = {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": sectionTitle?.sec2_title || "Published Books",
-        "description": sectionTitle?.sec2_para,
-        "itemListElement": publishedBookData.map((book, index) => ({
+        name: sectionTitle?.sec2_title || "Published Books",
+        description: sectionTitle?.sec2_para,
+        itemListElement: publishedBookData.map((book, index) => ({
           "@type": "ListItem",
-          "position": index + 1,
-          "item": {
+          position: index + 1,
+          item: {
             "@type": "Book",
             "@id": `${window.location.origin}/articles/${book.id}`,
-            "name": book.title,
-            "description": book.description_seo || book.description?.replace(/<[^>]*>/g, '').substring(0, 200),
-            "image": book.images?.[0]?.image || book.images?.[0],
-            "datePublished": book.created_at,
-            "inLanguage": "en",
-            "isAccessibleForFree": book.is_free === "1",
-            "numberOfPages": book.images?.length || 0,
-            "genre": book.category || "General",
-            "offers": book.is_free === "1" ? {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD",
-              "availability": "https://schema.org/InStock"
-            } : undefined
-          }
-        }))
+            name: book.title,
+            description:
+              book.description_seo ||
+              book.description?.replace(/<[^>]*>/g, "").substring(0, 200),
+            image: book.images?.[0]?.image || book.images?.[0],
+            datePublished: book.created_at,
+            inLanguage: "en",
+            isAccessibleForFree: book.is_free === "1",
+            numberOfPages: book.images?.length || 0,
+            genre: book.category || "General",
+            offers:
+              book.is_free === "1"
+                ? {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "USD",
+                    availability: "https://schema.org/InStock",
+                  }
+                : undefined,
+          },
+        })),
       };
 
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
       script.text = JSON.stringify(structuredData);
-      script.id = 'published-books-structured-data';
-      
-      const existingScript = document.getElementById('published-books-structured-data');
+      script.id = "published-books-structured-data";
+
+      const existingScript = document.getElementById(
+        "published-books-structured-data"
+      );
       if (existingScript) {
         existingScript.remove();
       }
-      
+
       document.head.appendChild(script);
 
       return () => {
-        const scriptToRemove = document.getElementById('published-books-structured-data');
+        const scriptToRemove = document.getElementById(
+          "published-books-structured-data"
+        );
         if (scriptToRemove) {
           scriptToRemove.remove();
         }
@@ -117,7 +126,13 @@ const PublishedBook = ({
       return (
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Main Image */}
-          <div className="relative flex justify-center w-full h-full overflow-hidden rounded-2xl shadow-2xl">
+          <div
+            className="relative flex justify-center w-full h-full overflow-hidden rounded-2xl shadow-2xl"
+            style={{
+              width: "min(90vw, 400px)",
+              height: "min(120vw, 550px)",
+            }}
+          >
             <img
               src={currentImage?.image || currentImage}
               alt={`${book.title} - Page ${currentIndex + 1} of ${totalImages}`}
@@ -168,7 +183,10 @@ const PublishedBook = ({
           </div>
 
           {/* Dots Indicator */}
-          <nav className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-20" aria-label="Page navigation">
+          <nav
+            className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-20"
+            aria-label="Page navigation"
+          >
             {book.images.map((_, index) => (
               <button
                 key={index}
@@ -196,13 +214,20 @@ const PublishedBook = ({
 
   if (loading) {
     return (
-      <div className="py-12 px-4 md:min-h-screen flex items-center justify-center relative" role="status" aria-live="polite">
+      <div
+        className="py-12 px-4 md:min-h-screen flex items-center justify-center relative"
+        role="status"
+        aria-live="polite"
+      >
         <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
           <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
         </div>
-        <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" aria-label="Loading books"></div>
+        <div
+          className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"
+          aria-label="Loading books"
+        ></div>
         <span className="sr-only">Loading published books...</span>
       </div>
     );
@@ -210,7 +235,10 @@ const PublishedBook = ({
 
   if (error) {
     return (
-      <div className="py-12 px-4 min-h-screen flex items-center justify-center relative" role="alert">
+      <div
+        className="py-12 px-4 min-h-screen flex items-center justify-center relative"
+        role="alert"
+      >
         <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           <div className="absolute top-40 right-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-700"></div>
@@ -250,7 +278,7 @@ const PublishedBook = ({
         >
           <div className="mb-12 text-center">
             <div className="flex items-center justify-center mb-4">
-              <h2 
+              <h2
                 id="published-books-heading"
                 className="font-roboto text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
                 itemProp="name"
@@ -258,8 +286,12 @@ const PublishedBook = ({
                 {sectionTitle?.sec2_title || "Published Books"}
               </h2>
             </div>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto" itemProp="description">
-              {sectionTitle?.sec2_para || "Explore our collection of published books"}
+            <p
+              className="text-gray-600 text-lg max-w-2xl mx-auto"
+              itemProp="description"
+            >
+              {sectionTitle?.sec2_para ||
+                "Explore our collection of published books"}
             </p>
           </div>
         </motion.header>
@@ -270,11 +302,11 @@ const PublishedBook = ({
             modules={[Navigation, Pagination, Autoplay]}
             spaceBetween={40}
             slidesPerView={1}
-            pagination={{ 
+            pagination={{
               clickable: true,
-              el: '.custom-pagination',
-              bulletClass: 'custom-bullet',
-              bulletActiveClass: 'custom-bullet-active'
+              el: ".custom-pagination",
+              bulletClass: "custom-bullet",
+              bulletActiveClass: "custom-bullet-active",
             }}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
             loop
@@ -297,16 +329,16 @@ const PublishedBook = ({
                   itemProp="itemListElement"
                 >
                   <meta itemProp="position" content={index + 1} />
-                  
+
                   {/* Left Section - Content */}
                   <div className="lg:w-[50%] p-8 lg:p-12 flex flex-col justify-between">
                     <div>
                       {/* Book Status Badge */}
                       <div className="mb-6">
-                        <span 
+                        <span
                           className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
-                            book.is_free === "1" 
-                              ? "bg-green-100 text-green-700" 
+                            book.is_free === "1"
+                              ? "bg-green-100 text-green-700"
                               : "bg-purple-100 text-purple-700"
                           }`}
                           itemProp="isAccessibleForFree"
@@ -314,17 +346,18 @@ const PublishedBook = ({
                         >
                           {book.is_free === "1" ? "Free" : "Premium"}
                         </span>
-                        <time 
+                        <time
                           className="ml-3 text-sm text-gray-500 font-medium"
                           dateTime={book.created_at}
                           itemProp="datePublished"
                         >
-                          Published {new Date(book.created_at).toLocaleDateString()}
+                          Published{" "}
+                          {new Date(book.created_at).toLocaleDateString()}
                         </time>
                       </div>
 
                       {/* Title */}
-                      <h3 
+                      <h3
                         className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight"
                         itemProp="name"
                       >
@@ -332,19 +365,27 @@ const PublishedBook = ({
                       </h3>
 
                       {/* Description */}
-                      <div 
+                      <div
                         className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8"
                         itemProp="description"
-                        dangerouslySetInnerHTML={{__html: book.description}}
+                        dangerouslySetInnerHTML={{ __html: book.description }}
                       />
-                      
+
                       {/* Hidden SEO content */}
                       {book.description_seo && (
-                        <meta itemProp="description" content={book.description_seo} />
+                        <meta
+                          itemProp="description"
+                          content={book.description_seo}
+                        />
                       )}
                       <meta itemProp="inLanguage" content="en" />
-                      {book.category && <meta itemProp="genre" content={book.category} />}
-                      <meta itemProp="numberOfPages" content={book.images?.length || 0} />
+                      {book.category && (
+                        <meta itemProp="genre" content={book.category} />
+                      )}
+                      <meta
+                        itemProp="numberOfPages"
+                        content={book.images?.length || 0}
+                      />
                     </div>
 
                     {/* Action Button */}
@@ -353,7 +394,8 @@ const PublishedBook = ({
                         className="w-[50%] bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         whileHover={{
                           scale: 1.02,
-                          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                          boxShadow:
+                            "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                         }}
                         onClick={() => handleRedirect(book.id)}
                         whileTap={{ scale: 0.98 }}
@@ -364,7 +406,7 @@ const PublishedBook = ({
                           {sectionTitle?.sec2_button_name || "Read Book"}
                         </span>
                       </motion.button>
-                      
+
                       {/* Additional Info */}
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>{book.images?.length || 0} Pages</span>
@@ -390,7 +432,10 @@ const PublishedBook = ({
         )}
 
         {/* Custom Pagination */}
-        <nav className="custom-pagination flex justify-center gap-2 mt-8" aria-label="Carousel pagination"></nav>
+        <nav
+          className="custom-pagination flex justify-center gap-2 mt-8"
+          aria-label="Carousel pagination"
+        ></nav>
       </div>
 
       {/* Custom CSS for pagination */}

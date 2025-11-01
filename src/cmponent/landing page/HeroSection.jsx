@@ -46,12 +46,12 @@ const HeroSection = ({ sectionTitle, data, loading = false, error = null }) => {
         <div className="grid md:grid-cols-2 gap-12 items-top">
           {/* 📝 Left Column - Text Content */}
           <div className="text-left space-y-8 animate-fade-in-up">
-            <h1 className="text-5xl md:text-5xl font-extrabold leading-tight">
-              <span className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-5xl font-extrabold leading-tight space-y-0">
+              <span className="block bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 bg-clip-text text-transparent">
                 {headingText}
               </span>
-              <br />
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+
+              <span className="block bg-gradient-to-r text-4xl leading-[1] from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {data.heading2}
               </span>
             </h1>
