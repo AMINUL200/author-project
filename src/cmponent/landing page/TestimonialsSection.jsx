@@ -154,7 +154,7 @@ const TestimonialsSection = ({
                           <img
                             src={t.image}
                             alt={t.image_alt || `${t.name} profile picture`}
-                            className="w-12 h-12 rounded-full mr-4"
+                            className="w-12 h-12 object-cover rounded-full mr-4"
                             loading="lazy"
                           />
                           <div>

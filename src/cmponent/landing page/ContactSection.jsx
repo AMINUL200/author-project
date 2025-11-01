@@ -67,7 +67,7 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
 
   return (
     <section
-      className="bg-gradient-to-b from-[#0a0a0a] to-[#1a1a1a] text-white flex flex-col min-h-screen font-[Poppins]"
+      className="bg-gradient-to-b from-[#0a0a0a] to-[#1a1a1a] text-white flex flex-col min-h-[470px] font-[Poppins]"
       aria-labelledby="contact-heading"
     >
       {/* Main Section */}

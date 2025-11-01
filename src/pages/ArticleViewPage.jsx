@@ -75,6 +75,8 @@ const ArticleViewPage = () => {
 
       if (response.status === 200) {
         const article = response.data.data;
+        console.log(article);
+        
         setArticleData(article);
 
         // Check if user has PDF access (pdf_path exists and is not null/empty)
@@ -339,7 +341,7 @@ const ArticleViewPage = () => {
                       className="relative w-full h-96 md:h-[500px] flex items-center justify-center bg-slate-50"
                     >
                       <img
-                        src={articleData.images[currentImageIndex]}
+                        src={articleData.images[currentImageIndex].image}
                         alt={`${articleData.title} - Image ${
                           currentImageIndex + 1
                         }`}
@@ -411,7 +413,7 @@ const ArticleViewPage = () => {
                       }`}
                     >
                       <img
-                        src={image}
+                        src={image.image}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
