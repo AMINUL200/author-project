@@ -228,9 +228,9 @@ const EventsPageTemplate = () => {
         <img
           src={eventDetails.image}
           alt={`${eventDetails?.image_alt} - Event cover image`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-fill"
           itemProp="image"
-          loading="eager"
+          loading="lazy"
           onError={(e) => {
             e.target.src =
               "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
@@ -244,8 +244,8 @@ const EventsPageTemplate = () => {
             <h3 className="text-4xl md:text-5xl font-bold text-white mb-2" itemProp="name" aria-label={eventDetails.title_meta || eventDetails.title}>
               {eventDetails.title}
             </h3>
-            <p className="text-xl text-white/90 mb-6" itemProp="description" aria-label={eventDetails.subtitle_meta || eventDetails.subtitle}>
-              {eventDetails.subtitle}
+            <p className="text-xl text-white/90 mb-6" itemProp="description" aria-label={eventDetails.subtitle_meta || eventDetails.subtitle} dangerouslySetInnerHTML={{__html:eventDetails.subtitle}} >
+              {/* {eventDetails.subtitle} */}
             </p>
 
             {/* Quick Info with semantic markup */}

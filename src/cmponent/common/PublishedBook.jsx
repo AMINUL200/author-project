@@ -320,7 +320,7 @@ const PublishedBook = ({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
-                  className="bg-white rounded-3xl shadow-2xl overflow-hidden h-[600px] flex flex-col lg:flex-row"
+                  className="bg-white rounded-3xl shadow-2xl overflow-hidden h-auto lg:h-[600px] flex flex-col lg:flex-row"
                   onMouseEnter={() => handleMouseEnter(book.id)}
                   onMouseLeave={() => handleMouseLeave(book.id)}
                   whileHover={{ y: -5, transition: { duration: 0.3 } }}
@@ -331,10 +331,10 @@ const PublishedBook = ({
                   <meta itemProp="position" content={index + 1} />
 
                   {/* Left Section - Content */}
-                  <div className="lg:w-[50%] p-8 lg:p-12 flex flex-col justify-between">
+                  <div className="lg:w-[50%] p-6 md:p-8 lg:p-12 flex flex-col justify-between">
                     <div>
                       {/* Book Status Badge */}
-                      <div className="mb-6">
+                      <div className="mb-4 md:mb-6">
                         <span
                           className={`text-xs font-semibold px-3 py-1.5 rounded-full ${
                             book.is_free === "1"
@@ -358,7 +358,7 @@ const PublishedBook = ({
 
                       {/* Title */}
                       <h3
-                        className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6 leading-tight"
+                        className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight"
                         itemProp="name"
                       >
                         {book.title}
@@ -366,7 +366,7 @@ const PublishedBook = ({
 
                       {/* Description */}
                       <div
-                        className="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-2 md:line-clamp-8"
+                        className="text-gray-600 text-base md:text-lg leading-relaxed mb-6 md:mb-8 line-clamp-3 md:line-clamp-6"
                         itemProp="description"
                         dangerouslySetInnerHTML={{ __html: book.description }}
                       />
@@ -391,7 +391,7 @@ const PublishedBook = ({
                     {/* Action Button */}
                     <div className="space-y-4">
                       <motion.button
-                        className="w-[50%] bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        className="w-full lg:w-[50%] bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 md:py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         whileHover={{
                           scale: 1.02,
                           boxShadow:
@@ -415,8 +415,8 @@ const PublishedBook = ({
                     </div>
                   </div>
 
-                  {/* Right Section - Image Carousel */}
-                  <div className="lg:w-[50%] h-full relative bg-white p-6">
+                  {/* Right Section - Image Carousel - Hidden on small and medium screens */}
+                  <div className="hidden lg:block lg:w-[50%] h-full relative bg-white p-6">
                     <div className="h-full w-full rounded-2xl overflow-hidden">
                       {renderBookContent(book)}
                     </div>
