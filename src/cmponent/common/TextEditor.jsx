@@ -11,23 +11,26 @@ const CustomTextEditor = ({
 }) => {
   const editor = useRef(null);
 
-  // Configuration without image insertion
+  // Enhanced Configuration to allow pasting from external sources
   const config = {
     readonly: disabled,
-    placeholder: placeholder,
-    height: height,
+    placeholder,
+    height,
     toolbarButtonSize: 'medium',
+
+    // ✅ Allow paste from AI, Google Docs, Word, etc.
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: 'insert_html',
+    processPasteHTML: (html) => html, // Do not strip formatting
+    processPaste: (html) => html,
+    allowPaste: true,
+    pasteHTMLActionList: ['insert_as_html', 'insert_clear_html', 'insert_only_text'],
+
+    // Toolbar customization
     removeButtons: [
-      'image', // Remove image button
-      'file', // Remove file upload
-      'video', // Remove video
-      'media', // Remove media
-      'source', // Remove source code editor
-      'about', // Remove about
-      'print', // Remove print
-      'symbols', // Remove symbols
-      'table', // Remove table (optional)
-      'hr', // Remove horizontal line (optional)
+      'image', 'file', 'video', 'media', 'source',
+      'about', 'print', 'symbols', 'table', 'hr',
     ],
     buttons: [
       'bold', 'italic', 'underline', 'strikethrough',
@@ -37,10 +40,12 @@ const CustomTextEditor = ({
       '|', 'link', 'unlink',
       '|', 'fullsize', 'preview'
     ],
+
+    // UI settings
     showXPathInStatusbar: false,
     showCharsCounter: false,
     showWordsCounter: false,
-    toolbarAdaptive: false
+    toolbarAdaptive: false,
   };
 
   return (
@@ -50,7 +55,7 @@ const CustomTextEditor = ({
         value={value}
         config={config}
         tabIndex={1}
-        onBlur={onChange} // Better for performance
+        onBlur={onChange} // Better performance
       />
     </div>
   );
