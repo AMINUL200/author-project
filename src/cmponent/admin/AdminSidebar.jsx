@@ -83,21 +83,24 @@ const AdminSidebar = ({
       label: "Manage Meta Tags",
       path: "/admin/handle-meta-tags",
     },
-    // {
-    //   icon: ShoppingCart,
-    //   label: "Manage Articles",
-    //   path: "/admin/articles",
-    //   submenu: [
-    //     { label: "All Articles", path: "/admin/articles" },
-    //     { label: "Add Article Categories", path: "/admin/articles/categories" },
-    //     { label: "Add New Article", path: "/admin/articles/new" },
-    //   ],
-    // },
+    
     {
       icon: SubscriptIcon,
       label: "Subscriptions",
       path: "/admin/subscriptions",
     },
+    {
+      icon : ShoppingCart,
+      label : "Mange Policy",
+      path:"/handle-policy",
+      submenu :[
+        {
+          label:"Policy",
+          path:'/admin/handle-policy'
+        },
+        
+      ]
+    }
   ];
 
   const [openSubmenu, setOpenSubmenu] = useState(null);

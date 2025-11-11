@@ -8,9 +8,9 @@ import {
   Twitter,
   Linkedin,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ContactSection = ({ contact, loading = false, error = null }) => {
-
   // Structured Data for SEO
   useEffect(() => {
     if (contact) {
@@ -75,7 +75,10 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
         <div className="w-full max-w-6xl flex flex-col md:flex-row items-center justify-between gap-10">
           {/* Left Side */}
           <div className="flex flex-col space-y-6 w-full md:w-1/2">
-            <h2 id="contact-heading" className="text-3xl md:text-4xl font-bold mb-2">
+            <h2
+              id="contact-heading"
+              className="text-3xl md:text-4xl font-bold mb-2"
+            >
               {contact.title}
             </h2>
 
@@ -91,7 +94,10 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
               </div>
 
               <div className="flex items-center gap-3">
-                <LinkIcon className="w-6 h-6 text-gray-400" aria-hidden="true" />
+                <LinkIcon
+                  className="w-6 h-6 text-gray-400"
+                  aria-hidden="true"
+                />
                 <a
                   href={contact.website}
                   target="_blank"
@@ -167,6 +173,20 @@ const ContactSection = ({ contact, loading = false, error = null }) => {
       {/* Footer */}
       <footer className="w-full text-center border-t border-gray-700 py-4 text-sm text-gray-400">
         © 2025 inkwithme. All rights reserved.
+        <div className="flex justify-center gap-6 mt-2">
+          <Link
+           to="policy/terms-condition"
+            className="hover:text-white transition-colors duration-200"
+          >
+            Terms & Conditions
+          </Link>
+          <Link
+           to="policy/privacy-policy"
+            className="hover:text-white transition-colors duration-200"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </footer>
     </section>
   );

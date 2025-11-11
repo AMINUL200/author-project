@@ -41,6 +41,9 @@ import HandleContact from "./pages/admin/handle landing page/HandleContact";
 import BioProfile from "./pages/BioProfile";
 import HandleMetaData from "./pages/admin/HandleMetaData";
 import MetaData from "./cmponent/common/MetaData";
+import HandlePolicy from "./pages/admin/policy/HandlePolicy";
+import EditPolicy from "./pages/admin/policy/EditPolicy";
+import PolicyPage from "./pages/PolicyPage";
 
 function App() {
 
@@ -99,6 +102,7 @@ function App() {
             path="subscription-details"
             element={<SubscriptionDetails />}
           />
+          <Route path="policy/:id" element={<PolicyPage />} />
         </Route>
 
         {/* Admin route */}
@@ -136,6 +140,11 @@ function App() {
           <Route path="articles/categories" element={<ArticleCategories />} />
           <Route path="articles" element={<AdminViewArticles />} />
           <Route path="articles/new" element={<AddNewArticle />} />
+
+          <Route path="handle-policy" element={<HandlePolicy/>}/>
+          <Route path="policies/edit/:id" element={<EditPolicy/>}/>
+
+
         </Route>
       </Routes>
     </Router>

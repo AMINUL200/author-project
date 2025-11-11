@@ -4,112 +4,113 @@
 
 /* @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap'); */
 
-@theme{
-  --font-roboto:  "Roboto", sans-serif;
+@theme {
+  --font-roboto: "Roboto", sans-serif;
   --font-great: "Great Vibes", cursive;
 }
 
- /* Modern Pagination Styles */
-        .swiper-pagination {
-          position: relative;
-          margin-top: 2rem;
-        }
-        
-        .swiper-pagination-bullet {
-          width: 12px;
-          height: 12px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          opacity: 0.3;
-          border-radius: 10px;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          margin: 0 6px !important;
-        }
-        
-        .swiper-pagination-bullet::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) scale(0);
-          width: 24px;
-          height: 24px;
-          border: 2px solid #667eea;
-          border-radius: 12px;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          opacity: 0;
-        }
-        
-        .swiper-pagination-bullet-active {
-          width: 32px;
-          opacity: 1;
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .swiper-pagination-bullet-active::before {
-          transform: translate(-50%, -50%) scale(1);
-          opacity: 0.3;
-        }
-        
-        .swiper-pagination-bullet:hover {
-          opacity: 0.6;
-          transform: scale(1.2);
-        }
-        
-        .swiper-pagination-bullet-active:hover {
-          opacity: 1;
-        }
+/* Modern Pagination Styles */
+.swiper-pagination {
+  position: relative;
+  margin-top: 2rem;
+}
 
-        /* Book card hover effects */
-        .book-card {
-          transition: all 0.3s ease;
-        }
-        
-        .book-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .book-cover {
-          transition: transform 0.5s ease;
-          position: relative;
-        }
-        
-        .book-card:hover .book-cover {
-          transform: scale(1.05);
-        }
-        
-        .book-cover::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 100%);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        
-        .book-card:hover .book-cover::after {
-          opacity: 1;
-        }
+.swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.3;
+  border-radius: 10px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  margin: 0 6px !important;
+}
 
-        .category-badge {
-          animation: fadeInUp 0.5s ease;
-        }
+.swiper-pagination-bullet::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 24px;
+  height: 24px;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+}
 
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+.swiper-pagination-bullet-active {
+  width: 32px;
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.swiper-pagination-bullet-active::before {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.3;
+}
+
+.swiper-pagination-bullet:hover {
+  opacity: 0.6;
+  transform: scale(1.2);
+}
+
+.swiper-pagination-bullet-active:hover {
+  opacity: 1;
+}
+
+/* Book card hover effects */
+.book-card {
+  transition: all 0.3s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.book-cover {
+  transition: transform 0.5s ease;
+  position: relative;
+}
+
+.book-card:hover .book-cover {
+  transform: scale(1.05);
+}
+
+.book-cover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.book-card:hover .book-cover::after {
+  opacity: 1;
+}
+
+.category-badge {
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 
 
@@ -142,9 +143,19 @@
 
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  33% { transform: translateY(-20px) translateX(10px); }
-  66% { transform: translateY(10px) translateX(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+
+  33% {
+    transform: translateY(-20px) translateX(10px);
+  }
+
+  66% {
+    transform: translateY(10px) translateX(-10px);
+  }
 }
 
 .animate-float-slow {
@@ -212,4 +223,71 @@
 .default-style th,
 .default-style td {
   @apply border border-gray-300 px-3 py-2;
+}
+
+
+
+/* Enhanced prose styling for policy content */
+.prose {
+  color: #374151;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: #111827;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.prose h1 {
+  font-size: 2.25em;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.5em;
+}
+
+.prose h2 {
+  font-size: 1.875em;
+}
+
+.prose h3 {
+  font-size: 1.5em;
+}
+
+.prose p {
+  margin-bottom: 1.25em;
+  line-height: 1.75;
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: #111827;
+}
+
+.prose a {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #3730a3;
+}
+
+.prose blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1.5em;
+  font-style: italic;
+  color: #6b7280;
 }
