@@ -89,7 +89,7 @@ const PreviousPublication = ({
 
   return (
     <section
-      className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-screen"
+      className="py-12 px-4 bg-gradient-to-b from-gray-50 to-white md:min-h-fit"
       id="feature"
       aria-label="Featured Publications Section"
     >
