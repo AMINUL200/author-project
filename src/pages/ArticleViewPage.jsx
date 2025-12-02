@@ -71,12 +71,15 @@ const ArticleViewPage = () => {
         headers: {
           Authorization: `Bearer ${token} `,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200) {
         const article = response.data.data;
         console.log(article);
-        
+
         setArticleData(article);
 
         // Check if user has PDF access (pdf_path exists and is not null/empty)
@@ -98,11 +101,13 @@ const ArticleViewPage = () => {
         headers: {
           Authorization: `Bearer ${token} `,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
-      if(response.data.status){
-        console.log("Article Title:: ",response.data.data);
-        setSectionInfo(response.data.data)
-        
+      if (response.data.status) {
+        console.log("Article Title:: ", response.data.data);
+        setSectionInfo(response.data.data);
       }
     } catch (error) {
       console.log(error);
@@ -114,6 +119,9 @@ const ArticleViewPage = () => {
     try {
       const response = await axios.get(`${apiUrl}all-subscription`, {
         withCredentials: true,
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
       if (response.status === 200) {
         setSubscriptionInfo(response.data.data);
@@ -641,7 +649,10 @@ const ArticleViewPage = () => {
                 {/* Unlock Full Book Document */}
                 {sectionInfo?.heading}
               </h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto" dangerouslySetInnerHTML={{__html:sectionInfo?.description}}>
+              <p
+                className="text-gray-600 text-lg max-w-2xl mx-auto"
+                dangerouslySetInnerHTML={{ __html: sectionInfo?.description }}
+              >
                 {/* Subscribe to access the complete research PDF, resources, and
                 exclusive insights from industry experts. */}
                 {/* {sectionInfo?.description} */}

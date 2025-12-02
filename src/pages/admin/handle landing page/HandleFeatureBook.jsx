@@ -17,10 +17,15 @@ const HandleFeatureBook = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200) {
         setFeatureBooks(response.data.data);
+        console.log(response.data.data);
+        
       }
     } catch (error) {
       console.log(error.message);

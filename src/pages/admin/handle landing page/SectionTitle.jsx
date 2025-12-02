@@ -47,6 +47,9 @@ const SectionTitle = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.data.status) {

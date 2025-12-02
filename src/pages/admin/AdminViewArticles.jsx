@@ -33,6 +33,9 @@ const AdminViewArticles = () => {
     try {
       const response = await axios.get(`${apiUrl}author-all-article`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200 && response.data.status) {

@@ -27,6 +27,9 @@ const HandleBanner = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       // const data = await response.json();

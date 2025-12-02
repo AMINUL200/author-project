@@ -46,6 +46,9 @@ const EventsPageTemplate = () => {
           Authorization: token ? `Bearer ${token}` : "",
           "Content-Type": "application/json",
         },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.data.status && response.data.data) {

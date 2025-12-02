@@ -18,6 +18,9 @@ const HandleFeedBack = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200) {

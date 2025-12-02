@@ -70,6 +70,9 @@ const LandingPage = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          params: {
+            t: Date.now(), // prevent caching
+          },
         });
         if (response.data.status) {
           // console.log("section title:: ", response.data.data);
@@ -87,15 +90,51 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchAll = async () => {
       const requests = {
-        hero: axios.get(`${apiUrl}show-banner`),
-        pricing: axios.get(`${apiUrl}all-subscription`),
-        testimonials: axios.get(`${apiUrl}all-feedback`),
-        author: axios.get(`${apiUrl}all-bio`),
-        publishedBook: axios.get(`${apiUrl}article-list`),
-        featurebook: axios.get(`${apiUrl}all-feature-update`),
-        event: axios.get(`${apiUrl}all-event`),
-        review: axios.get(`${apiUrl}reviews`),
-        contact: axios.get(`${apiUrl}contacts`),
+        hero: axios.get(`${apiUrl}show-banner`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        pricing: axios.get(`${apiUrl}all-subscription`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        testimonials: axios.get(`${apiUrl}all-feedback`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        author: axios.get(`${apiUrl}all-bio`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        publishedBook: axios.get(`${apiUrl}article-list`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        featurebook: axios.get(`${apiUrl}all-feature-update`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        event: axios.get(`${apiUrl}all-event`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        review: axios.get(`${apiUrl}reviews`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
+        contact: axios.get(`${apiUrl}contacts`, {
+          params: {
+            t: Date.now(), // prevent caching
+          },
+        }),
       };
 
       Object.entries(requests).forEach(async ([key, req]) => {

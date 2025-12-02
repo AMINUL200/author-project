@@ -9,7 +9,11 @@ const MetaData = () => {
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const res = await axios.get(`${API_URL}meta-tags`);
+        const res = await axios.get(`${API_URL}meta-tags`, {
+           params: {
+          t: Date.now(), // prevent caching
+        },
+        });
         setMeta(res.data);
       } catch (err) {
         console.error("Failed to fetch meta data:", err);

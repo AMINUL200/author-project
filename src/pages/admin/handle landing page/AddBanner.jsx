@@ -31,8 +31,8 @@ const AddBanner = () => {
 
   // Cleanup function for blob URLs
   const cleanupBlobUrls = useCallback(() => {
-    bannerData.images.forEach(img => {
-      if (img.isNew && img.image_url && img.image_url.startsWith('blob:')) {
+    bannerData.images.forEach((img) => {
+      if (img.isNew && img.image_url && img.image_url.startsWith("blob:")) {
         URL.revokeObjectURL(img.image_url);
       }
     });
@@ -58,16 +58,20 @@ const AddBanner = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
+      console.log("API Response:", response);
       if (response.status === 200) {
-        const data = response.data;
+        const data = response.data.data;
 
-        console.log("API Response:", data);
-        console.log("Images data:", data.images);
+        // console.log("API Response:", data);
+        // console.log("Images data:", data.images);
 
         // Normalize images data to unified structure
-        const normalizedImages = (data.images || []).map(img => {
+        const normalizedImages = (data.images || []).map((img) => {
           if (typeof img === "string") {
             return {
               image_url: img,
@@ -117,10 +121,10 @@ const AddBanner = () => {
     if (files.length === 0) return;
 
     // Validate file types and sizes
-    const validFiles = files.filter(file => {
-      const isValidType = file.type.startsWith('image/');
+    const validFiles = files.filter((file) => {
+      const isValidType = file.type.startsWith("image/");
       const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
-      
+
       if (!isValidType) {
         toast.error(`File ${file.name} is not a valid image type`);
         return false;
@@ -169,7 +173,11 @@ const AddBanner = () => {
     const imageToRemove = bannerData.images[index];
 
     // Revoke object URL for new images to avoid memory leaks
-    if (imageToRemove.isNew && imageToRemove.image_url && imageToRemove.image_url.startsWith("blob:")) {
+    if (
+      imageToRemove.isNew &&
+      imageToRemove.image_url &&
+      imageToRemove.image_url.startsWith("blob:")
+    ) {
       URL.revokeObjectURL(imageToRemove.image_url);
     }
 
@@ -215,9 +223,13 @@ const AddBanner = () => {
     }
 
     // Validate alt texts (optional but recommended for SEO)
-    const imagesWithoutAlt = bannerData.images.filter(img => !img.image_alts.trim());
+    const imagesWithoutAlt = bannerData.images.filter(
+      (img) => !img.image_alts.trim()
+    );
     if (imagesWithoutAlt.length > 0) {
-      toast.warning("Some images are missing alt text. This affects SEO and accessibility.");
+      toast.warning(
+        "Some images are missing alt text. This affects SEO and accessibility."
+      );
     }
 
     return true;
@@ -225,7 +237,7 @@ const AddBanner = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -280,7 +292,7 @@ const AddBanner = () => {
           }
         );
         console.log("Update response:", response);
-        
+
         if (response.status === 200) {
           toast.success("Banner updated successfully!");
           cleanupBlobUrls();
@@ -294,7 +306,7 @@ const AddBanner = () => {
           },
         });
         console.log("Create response:", response);
-        
+
         if (response.status === 201 || response.status === 200) {
           toast.success("Banner created successfully!");
           cleanupBlobUrls();
@@ -332,11 +344,13 @@ const AddBanner = () => {
   // Calculate total size of new images
   const getTotalNewImageSize = () => {
     return bannerData.images
-      .filter(img => img.isNew && img.file)
+      .filter((img) => img.isNew && img.file)
       .reduce((total, img) => total + img.file.size, 0);
   };
 
-  const totalNewImageSizeMB = (getTotalNewImageSize() / (1024 * 1024)).toFixed(2);
+  const totalNewImageSizeMB = (getTotalNewImageSize() / (1024 * 1024)).toFixed(
+    2
+  );
 
   if (loading && isUpdateMode) {
     return <Loader />;
@@ -484,7 +498,9 @@ const AddBanner = () => {
                         )}
                       </div>
                       <div className="mt-2 text-xs text-blue-600">
-                        {bannerData.images.filter(img => !img.image_alts.trim()).length > 0 && (
+                        {bannerData.images.filter(
+                          (img) => !img.image_alts.trim()
+                        ).length > 0 && (
                           <p>⚠️ Some images are missing alt text</p>
                         )}
                       </div>
@@ -502,8 +518,6 @@ const AddBanner = () => {
                           <div className="flex space-x-3">
                             {/* Image Preview */}
                             <div className="relative flex-shrink-0">
-                              {console.log(img)
-                              }
                               <img
                                 src={img.image_url}
                                 alt={`Preview ${index + 1}`}
@@ -516,7 +530,11 @@ const AddBanner = () => {
                               >
                                 ×
                               </button>
-                              <div className={`absolute bottom-0 left-0 right-0 text-white text-xs p-1 text-center ${img.isNew ? 'bg-green-600' : 'bg-blue-600'}`}>
+                              <div
+                                className={`absolute bottom-0 left-0 right-0 text-white text-xs p-1 text-center ${
+                                  img.isNew ? "bg-green-600" : "bg-blue-600"
+                                }`}
+                              >
                                 {img.isNew ? "New" : "Existing"}
                               </div>
                               {img.isNew && img.file && (
@@ -531,7 +549,9 @@ const AddBanner = () => {
                               <label className="block text-xs font-medium text-gray-600 mb-1">
                                 Alt Text for SEO (Image {index + 1})
                                 {!img.image_alts.trim() && (
-                                  <span className="text-red-500 ml-1">* Recommended</span>
+                                  <span className="text-red-500 ml-1">
+                                    * Recommended
+                                  </span>
                                 )}
                               </label>
                               <input
@@ -544,7 +564,8 @@ const AddBanner = () => {
                                 placeholder="Describe this image for accessibility and SEO"
                               />
                               <p className="text-xs text-gray-500 mt-1">
-                                Helps with SEO and accessibility for visually impaired users
+                                Helps with SEO and accessibility for visually
+                                impaired users
                               </p>
                             </div>
                           </div>

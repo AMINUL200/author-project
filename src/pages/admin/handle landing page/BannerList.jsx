@@ -18,10 +18,15 @@ const BannerList = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200) {
-        setBanners(response.data);
+        console.log(response.data.data);
+        
+        setBanners(response.data.data);
       }
     } catch (error) {
       console.log(error.message);

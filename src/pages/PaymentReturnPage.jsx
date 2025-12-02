@@ -16,7 +16,12 @@ const PaymentReturnPage = () => {
     const verifyPayment = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}paypal/return?token=${token}&PayerID=${payerId}`
+          `${apiUrl}paypal/return?token=${token}&PayerID=${payerId}`,
+          {
+            params: {
+              t: Date.now(), // prevent caching
+            },
+          }
         );
 
         if (res.data.success) {
@@ -28,7 +33,7 @@ const PaymentReturnPage = () => {
           };
 
           // console.log("orderInfo:: ",orderInfo);
-          
+
           // now capture order
           const captureRes = await axios.post(
             `${import.meta.env.VITE_API_URL}paypal/capture-order`,

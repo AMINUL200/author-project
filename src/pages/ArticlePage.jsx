@@ -29,34 +29,39 @@ const ArticlePage = () => {
 
   const fetchArticles = async () => {
     try {
-      const response = await axios.get(`${apiUrl}article-list`);
-      
-      if(response.status === 200 && response.data.status) {
-        
+      const response = await axios.get(`${apiUrl}article-list`, {
+        params: {
+          t: Date.now(), // prevent caching
+        },
+      });
+
+      if (response.status === 200 && response.data.status) {
         // Set articles from API response
         const fetchedArticles = response.data.data || [];
         setArticles(fetchedArticles);
-        
+
         // Extract unique categories from the fetched articles
-        const uniqueCategories = [...new Set(
-          fetchedArticles
-            .filter(article => article.category && article.category.name)
-            .map(article => article.category.name)
-        )];
-        
+        const uniqueCategories = [
+          ...new Set(
+            fetchedArticles
+              .filter((article) => article.category && article.category.name)
+              .map((article) => article.category.name)
+          ),
+        ];
+
         setCategories(uniqueCategories);
-        
+
         // Set all categories as selected by default
         setSelectedCategories(uniqueCategories);
-        
       } else {
         toast.error(response.data.message || "Failed to fetch articles");
       }
-      
     } catch (error) {
       console.log("Error fetching articles:", error);
-      toast.error("Error fetching articles: " + (error.response?.data?.message || error.message));
-      
+      toast.error(
+        "Error fetching articles: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
     }
@@ -71,12 +76,16 @@ const ArticlePage = () => {
     return articles.filter((article) => {
       const matchesSearch =
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (article.category?.name && article.category.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+        (article.category?.name &&
+          article.category.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()));
+
       const matchesCategory =
         selectedCategories.length === 0 ||
-        (article.category?.name && selectedCategories.includes(article.category.name));
-      
+        (article.category?.name &&
+          selectedCategories.includes(article.category.name));
+
       return matchesSearch && matchesCategory;
     });
   }, [articles, searchTerm, selectedCategories]);
@@ -156,9 +165,8 @@ const ArticlePage = () => {
 
   // Get category counts
   const getCategoryCount = (category) => {
-    return articles.filter((article) => 
-      article.category?.name === category
-    ).length;
+    return articles.filter((article) => article.category?.name === category)
+      .length;
   };
 
   // Format date helper
@@ -181,15 +189,17 @@ const ArticlePage = () => {
     }
     // Fallback to a default image based on category
     const categoryImages = {
-      "Math": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop",
-      "Biology": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
-      "Default": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop"
+      Math: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop",
+      Biology:
+        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
+      Default:
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
     };
-    
+
     return categoryImages[article.category?.name] || categoryImages["Default"];
   };
 
-  if(loading) {
+  if (loading) {
     return <Loader />;
   }
 
@@ -203,7 +213,8 @@ const ArticlePage = () => {
               All Articles
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Explore our comprehensive collection of articles covering various academic topics
+              Explore our comprehensive collection of articles covering various
+              academic topics
             </p>
           </div>
 
@@ -268,7 +279,9 @@ const ArticlePage = () => {
                     <label className="flex items-center cursor-pointer group">
                       <input
                         type="checkbox"
-                        checked={selectedCategories.length === categories.length}
+                        checked={
+                          selectedCategories.length === categories.length
+                        }
                         onChange={handleSelectAllCategories}
                         className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
                       />
@@ -330,10 +343,9 @@ const ArticlePage = () => {
             {filteredArticles.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">
-                  {articles.length === 0 
+                  {articles.length === 0
                     ? "No articles available."
-                    : "No articles found matching your search criteria."
-                  }
+                    : "No articles found matching your search criteria."}
                 </p>
               </div>
             ) : (
@@ -385,7 +397,8 @@ const ArticlePage = () => {
                           alt={article.title}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
-                            e.target.src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop";
+                            e.target.src =
+                              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop";
                           }}
                         />
                         <div className="absolute top-4 left-4">
@@ -413,18 +426,23 @@ const ArticlePage = () => {
                         </h3>
                         <div className="flex items-center justify-between text-sm text-gray-500">
                           <span>{formatDate(article.created_at)}</span>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            article.is_free === "1" 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${
+                              article.is_free === "1"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
                             {article.is_free === "1" ? "Free" : "Premium"}
                           </span>
                         </div>
                       </div>
 
                       <div className="px-6 pb-6">
-                        <Link to={`/articles/${article.id}`} className="group/btn w-full text-purple-600 hover:text-purple-700 font-semibold text-sm flex items-center justify-center py-2 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer">
+                        <Link
+                          to={`/articles/${article.id}`}
+                          className="group/btn w-full text-purple-600 hover:text-purple-700 font-semibold text-sm flex items-center justify-center py-2 rounded-lg hover:bg-purple-50 transition-colors cursor-pointer"
+                        >
                           Read More
                           <ArrowRight
                             size={14}

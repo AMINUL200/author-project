@@ -15,7 +15,11 @@ const BioProfile = () => {
 
   const fetchBio = async () => {
     try {
-        const response = await axios.get(`${apiUrl}all-bio`);
+        const response = await axios.get(`${apiUrl}all-bio`, {
+           params: {
+          t: Date.now(), // prevent caching
+        },
+        });
 
         if(response.data.success){
             console.log("Bio info;; ",response.data.data);

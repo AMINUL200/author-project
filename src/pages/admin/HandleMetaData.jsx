@@ -7,7 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 const HandleMetaData = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const { token } = useAuth();
-  
+
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -16,7 +16,7 @@ const HandleMetaData = () => {
     meta_title: "",
     meta_description: "",
     meta_keywords: "",
-    canonical_tag: ""
+    canonical_tag: "",
   });
 
   // Fetch metadata function
@@ -27,17 +27,20 @@ const HandleMetaData = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
-      
+
       setMetadata(response.data);
       setFormData({
         site_title: response.data.site_title || "",
         meta_title: response.data.meta_title || "",
         meta_description: response.data.meta_description || "",
         meta_keywords: response.data.meta_keywords || "",
-        canonical_tag: response.data.canonical_tag || ""
+        canonical_tag: response.data.canonical_tag || "",
       });
-      
+
       toast.success("Metadata loaded successfully!");
     } catch (error) {
       console.error("Error fetching metadata:", error);
@@ -52,17 +55,13 @@ const HandleMetaData = () => {
     e.preventDefault();
     try {
       setSaving(true);
-      const response = await axios.put(
-        `${apiUrl}meta-tags`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      
+      const response = await axios.put(`${apiUrl}meta-tags`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       setMetadata(response.data);
       toast.success("Metadata updated successfully!");
     } catch (error) {
@@ -76,9 +75,9 @@ const HandleMetaData = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -98,12 +97,12 @@ const HandleMetaData = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
           Manage Site Metadata
         </h1>
-        
+
         {metadata && (
           <div className="bg-white shadow-lg rounded-lg overflow-hidden">
             <div className="px-6 py-4 bg-gray-50 border-b">
@@ -111,14 +110,18 @@ const HandleMetaData = () => {
                 Edit SEO Metadata
               </h2>
               <p className="text-gray-600 text-sm mt-1">
-                Last updated: {new Date(metadata.updated_at).toLocaleDateString()}
+                Last updated:{" "}
+                {new Date(metadata.updated_at).toLocaleDateString()}
               </p>
             </div>
-            
+
             <form onSubmit={updateMetadata} className="p-6 space-y-6">
               {/* Site Title */}
               <div>
-                <label htmlFor="site_title" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="site_title"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Site Title *
                 </label>
                 <input
@@ -134,7 +137,10 @@ const HandleMetaData = () => {
 
               {/* Meta Title */}
               <div>
-                <label htmlFor="meta_title" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="meta_title"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Meta Title *
                 </label>
                 <input
@@ -153,7 +159,10 @@ const HandleMetaData = () => {
 
               {/* Meta Description */}
               <div>
-                <label htmlFor="meta_description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="meta_description"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Meta Description *
                 </label>
                 <textarea
@@ -172,7 +181,10 @@ const HandleMetaData = () => {
 
               {/* Meta Keywords */}
               <div>
-                <label htmlFor="meta_keywords" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="meta_keywords"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Meta Keywords
                 </label>
                 <textarea
@@ -191,7 +203,10 @@ const HandleMetaData = () => {
 
               {/* Canonical Tag */}
               <div>
-                <label htmlFor="canonical_tag" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="canonical_tag"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Canonical URL *
                 </label>
                 <input
@@ -226,8 +241,6 @@ const HandleMetaData = () => {
             </form>
           </div>
         )}
-
-       
       </div>
     </div>
   );

@@ -56,6 +56,9 @@ const AddAuthorBio = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          t: Date.now(), // prevent caching
+        },
       });
 
       if (response.status === 200) {
@@ -473,8 +476,9 @@ const AddAuthorBio = () => {
                   placeholder="Enter SEO-optimized description for search engines"
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Optional: A concise, SEO-friendly description that appears in search results. 
-                  Keep it between 150-160 characters for optimal display.
+                  Optional: A concise, SEO-friendly description that appears in
+                  search results. Keep it between 150-160 characters for optimal
+                  display.
                 </p>
               </div>
 

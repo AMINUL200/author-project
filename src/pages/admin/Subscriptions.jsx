@@ -43,6 +43,9 @@ const Subscriptions = () => {
       setLoading(true);
       const res = await axios.get(`${apiUrl}subscription-plans`, {
         headers: { Authorization: `Bearer ${token}` },
+         params: {
+          t: Date.now(), // prevent caching
+        },
       });
       setSubscriptions(res.data.data || []);
     } catch (err) {
