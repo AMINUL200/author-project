@@ -217,7 +217,7 @@ const RegisterPage = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl blur opacity-50"></div>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Join AuthorSpace
+            Inkwithme
           </h1>
           <p className="text-gray-300">
             Create your account to access premium manuscripts
