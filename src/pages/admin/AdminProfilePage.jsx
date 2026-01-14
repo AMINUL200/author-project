@@ -258,12 +258,12 @@ const AdminProfilePage = () => {
       // Option 1: Send as array of objects directly (if backend accepts FormData with arrays)
       const socialLinksArray = prepareSocialLinksArray();
       
-      // Try different formats based on what your backend expects:
+      // Try different formats based on what your backend expects
       
       // Format 1: JSON string (most common)
       // formData.append('social_links', JSON.stringify(socialLinksArray));
       
-      // Format 2: If backend expects array format directly
+      // Format 2: If backend expects array format directly 
       socialLinksArray.forEach((link, index) => {
         formData.append(`social_links[${index}][platform]`, link.platform);
         formData.append(`social_links[${index}][url]`, link.url);
