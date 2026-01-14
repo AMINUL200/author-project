@@ -27,8 +27,8 @@ const AdminProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const [selectedImageFile, setSelectedImageFile] = useState(null); // Store actual file
-  const [imagePreview, setImagePreview] = useState(""); // For preview only
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   
   const [profile, setProfile] = useState({
     first_name: "",
@@ -40,13 +40,15 @@ const AdminProfilePage = () => {
     country: "",
     description: "",
     image: "",
-    social_links: {
-      twitter: "",
-      fb: "",
-      linkedin: "",
-      instagram: "",
-    },
+    social_links: [],
     status: "",
+  });
+
+  const [socialLinks, setSocialLinks] = useState({
+    twitter: "",
+    fb: "",
+    linkedin: "",
+    instagram: "",
   });
 
   const fetchProfile = async () => {
@@ -55,28 +57,41 @@ const AdminProfilePage = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-         params: {
-          t: Date.now(), // prevent caching
+        params: {
+          t: Date.now(),
         },
       });
 
       if(response.status === 200){
         const profileData = response.data.data[0];
         
-        // Ensure social_links has all required properties with fallback values
-        const socialLinks = profileData.social_links || {};
-        const completeSocialLinks = {
-          twitter: socialLinks.twitter || "",
-          fb: socialLinks.fb || "",
-          linkedin: socialLinks.linkedin || "",
-          instagram: socialLinks.instagram || "",
+        // Initialize social links from array to object format for easier handling
+        let socialLinksObj = {
+          twitter: "",
+          fb: "",
+          linkedin: "",
+          instagram: "",
         };
         
-        setProfile({
-          ...profileData,
-          social_links: completeSocialLinks
-        });
-        console.log("Profile Data:", response.data.data[0]);
+        // If social_links is an array, convert it to object format
+        if (Array.isArray(profileData.social_links)) {
+          // Assuming the array contains objects with platform and url properties
+          profileData.social_links.forEach(link => {
+            if (link.platform && link.url) {
+              socialLinksObj[link.platform] = link.url;
+            }
+          });
+        } else if (typeof profileData.social_links === 'object') {
+          // If it's already an object, use it directly
+          socialLinksObj = {
+            ...socialLinksObj,
+            ...profileData.social_links
+          };
+        }
+        
+        setProfile(profileData);
+        setSocialLinks(socialLinksObj);
+        console.log("Profile Data:", profileData);
       }
 
     } catch (error) {
@@ -89,25 +104,37 @@ const AdminProfilePage = () => {
 
   useEffect(() => {
     fetchProfile();
-  },[])
+  }, [])
 
   const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setProfile((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (name.startsWith("social_")) {
-      const key = name.replace("social_", "");
-      setProfile((prev) => ({
-        ...prev,
-        social_links: { 
-          ...prev.social_links, 
-          [key]: value 
-        },
-      }));
-    } else {
-      setProfile((prev) => ({ ...prev, [name]: value }));
-    }
+  const handleSocialLinkChange = (platform, value) => {
+    setSocialLinks(prev => ({
+      ...prev,
+      [platform]: value
+    }));
+  };
+
+  // Convert social links object to array format for backend
+  const prepareSocialLinksArray = () => {
+    const linksArray = [];
+    
+    // Add only non-empty links to the array
+    Object.entries(socialLinks).forEach(([platform, url]) => {
+      if (url && url.trim() !== "") {
+        linksArray.push({
+          platform: platform,
+          url: url.trim()
+        });
+      }
+    });
+    
+    return linksArray;
   };
 
   // Handle image file selection
@@ -115,13 +142,11 @@ const AdminProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please select a valid image file.');
       return;
     }
 
-    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB.');
       return;
@@ -129,14 +154,9 @@ const AdminProfilePage = () => {
 
     try {
       setImageUploading(true);
-      
-      // Store the actual file for upload
       setSelectedImageFile(file);
-      
-      // Create preview URL for display
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      
       toast.success('Image selected! Save your profile to update.');
     } catch (error) {
       console.error('Error processing image:', error);
@@ -146,7 +166,6 @@ const AdminProfilePage = () => {
     }
   };
 
-  // Trigger file input click
   const handleImageClick = () => {
     if (isEditing) {
       fileInputRef.current?.click();
@@ -157,7 +176,6 @@ const AdminProfilePage = () => {
     try {
       setLoading(true);
       
-      // Use FormData for file upload
       const formData = new FormData();
       
       // Append all profile fields
@@ -170,20 +188,18 @@ const AdminProfilePage = () => {
       formData.append('country', profile.country || '');
       formData.append('description', profile.description || '');
       
-      // Append social links - check if backend expects them as separate fields or JSON
-      // If separate fields:
-      formData.append('social_twitter', profile.social_links.twitter || '');
-      formData.append('social_fb', profile.social_links.fb || '');
-      formData.append('social_linkedin', profile.social_links.linkedin || '');
-      formData.append('social_instagram', profile.social_links.instagram || '');
-      
-      // If backend expects JSON string, use this instead:
-      // formData.append('social_links', JSON.stringify(profile.social_links));
+      // Prepare social links as array and convert to JSON string
+      const socialLinksArray = prepareSocialLinksArray();
+      formData.append('social_links', JSON.stringify(socialLinksArray));
       
       // Append image file if selected
       if (selectedImageFile) {
         formData.append('image', selectedImageFile);
       }
+
+      // Debug: log what we're sending
+      console.log("Social links array:", socialLinksArray);
+      console.log("Social links JSON:", JSON.stringify(socialLinksArray));
       
       const response = await axios.post(
         `${apiUrl}authors/${profile.id}`, 
@@ -191,7 +207,7 @@ const AdminProfilePage = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data', // Important for file upload
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
@@ -201,13 +217,12 @@ const AdminProfilePage = () => {
         setIsEditing(false);
         setSelectedImageFile(null);
         setImagePreview("");
-        // Refresh the profile data
         fetchProfile();
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       
-      // Better error handling for validation errors
+      // Better error handling
       if (error?.response?.status === 422 && error?.response?.data?.errors) {
         const errors = error.response.data.errors;
         Object.keys(errors).forEach(field => {
@@ -223,6 +238,74 @@ const AdminProfilePage = () => {
     }
   };
 
+  // Alternative: If backend expects different format for social_links
+  const handleSaveAlternative = async () => {
+    try {
+      setLoading(true);
+      
+      const formData = new FormData();
+      
+      // Append profile fields
+      const fields = [
+        'first_name', 'last_name', 'email', 'phone', 
+        'address', 'affiliation', 'country', 'description'
+      ];
+      
+      fields.forEach(field => {
+        formData.append(field, profile[field] || '');
+      });
+      
+      // Option 1: Send as array of objects directly (if backend accepts FormData with arrays)
+      const socialLinksArray = prepareSocialLinksArray();
+      
+      // Try different formats based on what your backend expects:
+      
+      // Format 1: JSON string (most common)
+      // formData.append('social_links', JSON.stringify(socialLinksArray));
+      
+      // Format 2: If backend expects array format directly
+      socialLinksArray.forEach((link, index) => {
+        formData.append(`social_links[${index}][platform]`, link.platform);
+        formData.append(`social_links[${index}][url]`, link.url);
+      });
+      
+      // Format 3: Simple key-value pairs
+      // socialLinksArray.forEach((link, index) => {
+      //   formData.append(`social_links[${index}]`, `${link.platform}:${link.url}`);
+      // });
+      
+      if (selectedImageFile) {
+        formData.append('image', selectedImageFile);
+      }
+
+      // Log for debugging
+      console.log("Sending social_links as:", JSON.stringify(socialLinksArray));
+      
+      const response = await axios({
+        method: 'POST',
+        url: `${apiUrl}authors/${profile.id}`,
+        data: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      if(response.status === 200){
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+        setSelectedImageFile(null);
+        setImagePreview("");
+        fetchProfile();
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(error?.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getSocialIcon = (platform) => {
     const icons = {
       twitter: Twitter,
@@ -233,7 +316,6 @@ const AdminProfilePage = () => {
     return icons[platform] || Globe;
   };
 
-  // Define the social platforms we want to display
   const socialPlatforms = [
     { key: 'twitter', label: 'Twitter' },
     { key: 'fb', label: 'Facebook' },
@@ -241,7 +323,6 @@ const AdminProfilePage = () => {
     { key: 'instagram', label: 'Instagram' }
   ];
 
-  // Clean up preview URL when component unmounts or image changes
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith('blob:')) {
@@ -254,7 +335,6 @@ const AdminProfilePage = () => {
     return <Loader/>
   }
 
-  // Determine which image to show
   const displayImage = imagePreview || profile?.image;
 
   return (
@@ -279,7 +359,6 @@ const AdminProfilePage = () => {
                     )}
                   </div>
                   
-                  {/* Image upload overlay - only show when editing */}
                   {isEditing && (
                     <div 
                       onClick={handleImageClick}
@@ -293,10 +372,8 @@ const AdminProfilePage = () => {
                     </div>
                   )}
                   
-                  {/* Status indicator */}
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
                   
-                  {/* Hidden file input */}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -319,7 +396,6 @@ const AdminProfilePage = () => {
                       {profile.status}
                     </span>
                   </div>
-                  {/* Image upload hint when editing */}
                   {isEditing && (
                     <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                       <Upload className="w-3 h-3" />
@@ -342,7 +418,7 @@ const AdminProfilePage = () => {
               ) : (
                 <div className="flex gap-3">
                   <button
-                    onClick={handleSave}
+                    onClick={handleSaveAlternative} // Using alternative method
                     disabled={loading || imageUploading}
                     className="group px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -356,7 +432,6 @@ const AdminProfilePage = () => {
                       setIsEditing(false);
                       setSelectedImageFile(null);
                       setImagePreview("");
-                      // Reset profile to original state if user cancels
                       fetchProfile();
                     }}
                     disabled={loading || imageUploading}
@@ -514,9 +589,8 @@ const AdminProfilePage = () => {
                         </div>
                         <input
                           type="url"
-                          name={`social_${platform.key}`}
-                          value={profile.social_links[platform.key] || ""}
-                          onChange={handleChange}
+                          value={socialLinks[platform.key] || ""}
+                          onChange={(e) => handleSocialLinkChange(platform.key, e.target.value)}
                           readOnly={!isEditing}
                           className={`w-full border rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none transition-all duration-300 ${
                             isEditing
