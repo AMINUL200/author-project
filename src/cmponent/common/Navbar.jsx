@@ -107,6 +107,13 @@ const Navbar = ({ data, loading, error }) => {
                 <span className="relative z-10">Feature Books</span>
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </button>
+              <button
+                onClick={() => navigate("/blogs")}
+                className="relative px-4 py-2 text-gray-700 font-medium rounded-lg hover:text-indigo-600 transition-all duration-300 hover:bg-gray-50 group"
+              >
+                <span className="relative z-10">Blogs</span>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              </button>
 
               <div className="h-6 w-px bg-gray-200 mx-2"></div>
 

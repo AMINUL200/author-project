@@ -44,6 +44,8 @@ import MetaData from "./cmponent/common/MetaData";
 import HandlePolicy from "./pages/admin/policy/HandlePolicy";
 import EditPolicy from "./pages/admin/policy/EditPolicy";
 import PolicyPage from "./pages/PolicyPage";
+import BlogPage from "./pages/BlogPage";
+import BlogDetailsPage from "./pages/auth/BlogDetailsPage";
 
 function App() {
 
@@ -94,6 +96,8 @@ function App() {
           <Route index element={<LandingPage />} />
           <Route path="bio-details" element={<BioProfile />} />
           <Route path="events/:id" element={<EventsPageTemplate />} />
+          <Route path="blogs" element={<BlogPage/>}/>
+          <Route path="blogs/:id" element={<BlogDetailsPage/>}/>
           <Route path="articles" element={<ArticlePage />} />
           <Route path="articles/:id" element={<ArticleViewPage />} />
           <Route path="paypal/return" element={<PaymentReturnPage />} />
