@@ -14,7 +14,9 @@ const HandleEventGallery = () => {
   const [selectedEvent, setSelectedEvent] = useState('');
   const [loadingEvents, setLoadingEvents] = useState(true);
 
-  // State for gallery items
+  // State for all gallery items (from API)
+  const [allGalleryItems, setAllGalleryItems] = useState([]);
+  // State for filtered gallery items (based on selected event)
   const [galleryItems, setGalleryItems] = useState([]);
   const [loadingGallery, setLoadingGallery] = useState(false);
 
@@ -63,13 +65,8 @@ const HandleEventGallery = () => {
     }
   };
 
-  // Fetch gallery items for selected event
-  const fetchGalleryItems = async (eventId) => {
-    if (!eventId) {
-      setGalleryItems([]);
-      return;
-    }
-
+  // Fetch all gallery items (without event_id filter)
+  const fetchAllGalleryItems = async () => {
     setLoadingGallery(true);
     try {
       const response = await axios.get(`${apiUrl}event-gallery`, {
@@ -77,13 +74,18 @@ const HandleEventGallery = () => {
           Authorization: `Bearer ${token}`,
         },
         params: {
-          event_id: eventId,
           t: Date.now(),
         },
       });
 
       if (response.status === 200) {
-        setGalleryItems(response.data.data);
+        setAllGalleryItems(response.data.data);
+        // If an event is selected, filter the items
+        if (selectedEvent) {
+          filterGalleryItemsByEvent(response.data.data, selectedEvent);
+        } else {
+          setGalleryItems([]);
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -93,12 +95,24 @@ const HandleEventGallery = () => {
     }
   };
 
+  // Filter gallery items by event ID (frontend filtering)
+  const filterGalleryItemsByEvent = (items, eventId) => {
+    const filtered = items.filter(item => {
+      // Check if item has event_id or event.id
+      const itemEventId = item.event_id || item.event?.id;
+      return String(itemEventId) === String(eventId);
+    });
+    setGalleryItems(filtered);
+  };
+
   // Handle event selection change
   const handleEventChange = (e) => {
     const eventId = e.target.value;
     setSelectedEvent(eventId);
+    
     if (eventId) {
-      fetchGalleryItems(eventId);
+      // Filter from existing allGalleryItems
+      filterGalleryItemsByEvent(allGalleryItems, eventId);
     } else {
       setGalleryItems([]);
     }
@@ -253,12 +267,6 @@ const HandleEventGallery = () => {
         }
       }
 
-      // Log FormData contents for debugging
-      console.log('FormData entries:');
-      for (let pair of formDataPayload.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
       const response = await axios.post(url, formDataPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -270,8 +278,8 @@ const HandleEventGallery = () => {
         toast.success(isEditing ? 'Gallery item updated successfully' : 'Gallery item added successfully');
         setIsModalOpen(false);
         setSelectedFile(null);
-        // Refresh gallery items
-        fetchGalleryItems(selectedEvent);
+        // Refresh all gallery items and re-filter
+        await fetchAllGalleryItems();
       }
     } catch (error) {
       console.error('Error:', error);
@@ -297,7 +305,13 @@ const HandleEventGallery = () => {
 
       if (response.status === 200) {
         toast.success('Gallery item deleted successfully');
-        setGalleryItems(galleryItems.filter(item => item.id !== itemId));
+        // Remove from allGalleryItems
+        const updatedAllItems = allGalleryItems.filter(item => item.id !== itemId);
+        setAllGalleryItems(updatedAllItems);
+        // Update filtered items
+        if (selectedEvent) {
+          filterGalleryItemsByEvent(updatedAllItems, selectedEvent);
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -381,6 +395,13 @@ const HandleEventGallery = () => {
     fetchEvents();
   }, []);
 
+  // Fetch all gallery items when component mounts
+  useEffect(() => {
+    if (token) {
+      fetchAllGalleryItems();
+    }
+  }, [token]);
+
   if (loadingEvents) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -419,6 +440,11 @@ const HandleEventGallery = () => {
                   </option>
                 ))}
               </select>
+              {selectedEvent && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Showing {galleryItems.length} items for this event
+                </p>
+              )}
             </div>
             {selectedEvent && (
               <button
