@@ -44,90 +44,6 @@ const EventsPageTemplate = () => {
 
   const ITEMS_PER_PAGE = 6; // 2 rows x 3 columns
 
-  // Sample gallery data - In real app, this would come from API
-  const galleryData = [
-    {
-      id: 1,
-      type: "image",
-      url: "/gallary/event_1.jpeg",
-      title: "Event Opening Ceremony",
-    },
-    {
-      id: 2,
-      type: "image",
-      url: "/gallary/event_2.jpeg",
-      title: "Keynote Speaker Session",
-    },
-    {
-      id: 3,
-      type: "image",
-      url: "/gallary/event_3.jpeg",
-      title: "Networking Session",
-    },
-    {
-      id: 4,
-      type: "video",
-      url: "/gallary/event_4.jpeg",
-      title: "Event Highlights Video",
-    },
-    {
-      id: 5,
-      type: "image",
-      url: "/gallary/event_5.jpeg",
-      title: "Panel Discussion",
-    },
-    {
-      id: 6,
-      type: "image",
-      url: "/gallary/event_6.jpeg",
-      title: "Award Ceremony",
-    },
-    {
-      id: 7,
-      type: "youtube",
-      url: "/gallary/event_7.jpeg",
-      title: "Full Event Recording",
-    },
-    {
-      id: 8,
-      type: "image",
-      url: "/gallary/event_8.jpeg",
-      title: "Workshop Session",
-    },
-    {
-      id: 9,
-      type: "image",
-      url: "/gallary/event_9.jpeg",
-      title: "Dinner Reception",
-    },
-    {
-      id: 10,
-      type: "video",
-      url: "/gallary/event_10.jpeg",
-      title: "Speaker Interview",
-    },
-    {
-      id: 11,
-      type: "image",
-      url: "/gallary/event_11.jpeg",
-      title: "Exhibition Area",
-    },
-    {
-      id: 12,
-      type: "image",
-      url: "/gallary/event_12.mp4",
-      title: "Closing Ceremony",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-    },
-    {
-      id: 12,
-      type: "image",
-      url: "/gallary/event_13.mp4",
-      title: "Closing Ceremony",
-      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-    },
-  ];
-
   // Fetch event data function
   const fetchEventData = async () => {
     try {
@@ -143,9 +59,14 @@ const EventsPageTemplate = () => {
           t: Date.now(),
         },
       });
-
+      console.log("Event API response:", response.data);
       if (response.data.status && response.data.data) {
         const eventData = response.data.data;
+
+        // Filter active galleries only (is_active === true)
+        const activeGalleries = eventData.galleries?.filter(
+          gallery => gallery.is_active === true
+        ) || [];
 
         const transformedEvent = {
           id: eventData.id,
@@ -173,6 +94,7 @@ const EventsPageTemplate = () => {
           end_time: eventData.end_time,
           rawDate: eventData.date,
           rawEndDate: eventData.end_date,
+          galleries: activeGalleries, // Store active galleries only
         };
 
         setEventDetails(transformedEvent);
@@ -208,7 +130,31 @@ const EventsPageTemplate = () => {
     return `${formattedHour}:${minutes} ${ampm}`;
   };
 
+  // Get YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Check if URL is a YouTube URL
+  const isYouTubeUrl = (url) => {
+    if (!url) return false;
+    return url.includes('youtube.com') || url.includes('youtu.be');
+  };
+
+  // Get embed URL for YouTube
+  const getYouTubeEmbedUrl = (url) => {
+    const videoId = getYouTubeVideoId(url);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    return url;
+  };
+
   // Pagination logic
+  const galleryData = eventDetails?.galleries || [];
   const totalPages = Math.ceil(galleryData.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -308,8 +254,23 @@ const EventsPageTemplate = () => {
 
   // Render media item based on type
   const renderMediaItem = (item) => {
-    const isVideo = item.type === "video" || item.type === "youtube";
-    const thumbnail = item.thumbnail || item.url;
+    const isVideo = item.type === "video";
+    const isUrl = item.type === "url";
+    const isImage = item.type === "image";
+    
+    // For URL type, check if it's a YouTube URL
+    const isYouTube = isUrl && isYouTubeUrl(item.file);
+    const embedUrl = isYouTube ? getYouTubeEmbedUrl(item.file) : null;
+
+    let thumbnail = item.file;
+    let mediaType = item.type;
+
+    // For YouTube URLs, we can use a thumbnail
+    if (isYouTube) {
+      const videoId = getYouTubeVideoId(item.file);
+      thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : item.file;
+      mediaType = 'youtube';
+    }
 
     return (
       <div
@@ -317,33 +278,105 @@ const EventsPageTemplate = () => {
         className="relative group cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
         onClick={() => openModal(item)}
       >
-        <img
-          src={thumbnail}
-          alt={item.title}
-          className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        {isVideo && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Play className="w-8 h-8 text-blue-600 ml-1" fill="blue" />
+        {isImage ? (
+          <img
+            src={item.file}
+            alt={item.title || item.image_alt || 'Gallery item'}
+            className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (isVideo || isYouTube) ? (
+          <div className="relative w-full h-56 bg-gray-900">
+            <img
+              src={thumbnail}
+              alt={item.title || 'Video thumbnail'}
+              className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+              <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Play className="w-8 h-8 text-blue-600 ml-1" fill="blue" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Default for URL type
+          <div className="w-full h-56 bg-gray-100 flex items-center justify-center">
+            <div className="text-center">
+              <Globe className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500 truncate px-4">{item.file}</p>
             </div>
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
           <p className="text-white text-sm font-medium truncate">
-            {item.title}
+            {item.title || item.image_alt || 'Untitled'}
           </p>
           <span className="text-white/70 text-xs flex items-center gap-1">
-            {item.type === "image" ? (
+            {isImage ? (
               <Image size={12} />
-            ) : (
+            ) : (isVideo || isYouTube) ? (
               <Youtube size={12} />
+            ) : (
+              <Globe size={12} />
             )}
-            {item.type === "image" ? "Image" : "Video"}
+            {isImage ? "Image" : isVideo ? "Video" : isYouTube ? "YouTube" : "Link"}
           </span>
         </div>
       </div>
     );
+  };
+
+  // Render media modal content
+  const renderModalContent = (item) => {
+    const isImage = item.type === "image";
+    const isVideo = item.type === "video";
+    const isUrl = item.type === "url";
+    const isYouTube = isUrl && isYouTubeUrl(item.file);
+    const embedUrl = isYouTube ? getYouTubeEmbedUrl(item.file) : null;
+
+    if (isImage) {
+      return (
+        <img
+          src={item.file}
+          alt={item.title || item.image_alt || 'Gallery item'}
+          className="w-full h-auto max-h-[80vh] object-contain"
+        />
+      );
+    } else if (isVideo) {
+      return (
+        <video className="w-full h-auto max-h-[80vh] object-contain" controls autoPlay>
+          <source src={item.file} />
+          Your browser does not support the video tag.
+        </video>
+      );
+    } else if (isYouTube && embedUrl) {
+      return (
+        <div className="aspect-video">
+          <iframe
+            src={embedUrl}
+            title={item.title || 'YouTube video'}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      );
+    } else if (isUrl) {
+      return (
+        <div className="p-8 text-center">
+          <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-700 mb-2">External Link</p>
+          <a
+            href={item.file}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline break-all"
+          >
+            {item.file}
+          </a>
+        </div>
+      );
+    }
+    return null;
   };
 
   if (loading) {
@@ -586,60 +619,63 @@ const EventsPageTemplate = () => {
             </div>
           </aside>
         </div>
-        {/* Event Gallery Section */}
-        <section
-          id="gallery-section"
-          className="bg-white rounded-2xl shadow-lg p-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Event Gallery</h2>
-            <span className="text-sm text-gray-500">
-              {galleryData.length} items
-            </span>
-          </div>
 
-          {/* Gallery Grid - 2 rows */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentItems.map((item) => renderMediaItem(item))}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "border border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
-
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={20} />
-              </button>
+        {/* Event Gallery Section - Only show if there are active galleries */}
+        {galleryData.length > 0 && (
+          <section
+            id="gallery-section"
+            className="bg-white rounded-2xl shadow-lg p-8 mt-8"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Event Gallery</h2>
+              <span className="text-sm text-gray-500">
+                {galleryData.length} items
+              </span>
             </div>
-          )}
-        </section>
+
+            {/* Gallery Grid - 2 rows */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentItems.map((item) => renderMediaItem(item))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "border border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </section>
+        )}
       </main>
 
       {/* Modal for viewing media */}
@@ -659,31 +695,17 @@ const EventsPageTemplate = () => {
               <X size={24} />
             </button>
 
-            {selectedMedia.type === "image" ? (
-              <img
-                src={selectedMedia.url}
-                alt={selectedMedia.title}
-                className="w-full h-auto max-h-[80vh] object-contain"
-              />
-            ) : (
-              <div className="aspect-video">
-                <iframe
-                  src={selectedMedia.url}
-                  title={selectedMedia.title}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            )}
+            {renderModalContent(selectedMedia)}
 
             <div className="p-4">
               <h3 className="text-lg font-bold text-gray-900">
-                {selectedMedia.title}
+                {selectedMedia.title || selectedMedia.image_alt || 'Untitled'}
               </h3>
               <p className="text-sm text-gray-500">
-                {selectedMedia.type === "image" ? "Image" : "Video"} • Click
-                outside to close
+                {selectedMedia.type === "image" ? "Image" : 
+                 selectedMedia.type === "video" ? "Video" : 
+                 isYouTubeUrl(selectedMedia.file) ? "YouTube Video" : "Link"}
+                {" • "}Click outside to close
               </p>
             </div>
           </div>

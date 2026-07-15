@@ -48,7 +48,10 @@ const AdminSidebar = ({
       icon: ShoppingCart,
       label: "Manage Events",
       path: "/admin/landing-page",
-      submenu: [{ label: "Events", path: "/admin/landing-page/event-list" }],
+      submenu: [
+        { label: "Events", path: "/admin/landing-page/event-list" },
+        { label: "Event Gallery", path: "/admin/landing-page/event-gallery" },
+      ],
     },
     {
       icon: User,
@@ -83,24 +86,23 @@ const AdminSidebar = ({
       label: "Manage Meta Tags",
       path: "/admin/handle-meta-tags",
     },
-    
+
     {
       icon: SubscriptIcon,
       label: "Subscriptions",
       path: "/admin/subscriptions",
     },
     {
-      icon : ShoppingCart,
-      label : "Mange Policy",
-      path:"/handle-policy",
-      submenu :[
+      icon: ShoppingCart,
+      label: "Mange Policy",
+      path: "/handle-policy",
+      submenu: [
         {
-          label:"Policy",
-          path:'/admin/handle-policy'
+          label: "Policy",
+          path: "/admin/handle-policy",
         },
-        
-      ]
-    }
+      ],
+    },
   ];
 
   const [openSubmenu, setOpenSubmenu] = useState(null);

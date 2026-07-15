@@ -46,6 +46,7 @@ import EditPolicy from "./pages/admin/policy/EditPolicy";
 import PolicyPage from "./pages/PolicyPage";
 import BlogPage from "./pages/BlogPage";
 import BlogDetailsPage from "./pages/auth/BlogDetailsPage";
+import HandleEventGallery from "./pages/admin/handle landing page/HandleEventGallery";
 
 function App() {
 
@@ -130,6 +131,7 @@ function App() {
           <Route path="landing-page/published-book" element={<HandlePublishedBook/>}/>
           <Route path="landing-page/add-published-book" element={<AddNewArticle/>}/>
           <Route path="landing-page/event-list" element={<HandleEvent/>}/>
+          <Route path="landing-page/event-gallery" element={<HandleEventGallery/>}/>
           <Route path="landing-page/add-event" element={<AddEvent/>}/>
           <Route path="landing-page/feature-book" element={<HandleFeatureBook/>}/>
           <Route path="landing-page/add-feature-book" element={<AddFeatureBook/>}/>
