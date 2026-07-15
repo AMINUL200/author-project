@@ -855,13 +855,14 @@ const AddEvent = () => {
           <h3 className="text-sm font-medium text-blue-800 mb-2">Form Tips</h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• All fields marked with * are required</li>
+            <li>• Recommended image size: 1920 × 700 px (Landscape)</li>
             <li>• Use 24-hour format for times (e.g., 14:30 for 2:30 PM)</li>
             <li>• Use high-quality images for better presentation</li>
             <li>• Provide clear and concise event descriptions</li>
             <li>• Double-check dates and times before submitting</li>
             <li>• For social links, use platform names as keys (e.g., facebook, instagram, website)</li>
             <li>• You can add multiple guests to your event</li>
-            <li>• Guest images must be JPEG, PNG, or GIF files under 10MB</li>
+            <li>• Guest images must be JPEG, PNG, or GIF files under 2MB</li>
             <li>• Meta title and description help with SEO and search engine visibility</li>
             <li>• Image alt text improves accessibility and image SEO</li>
           </ul>

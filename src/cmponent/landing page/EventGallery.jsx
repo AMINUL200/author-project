@@ -204,7 +204,7 @@ const EventGallery = ({
                   </div>
 
                   <Link
-                    to={`/events/${event.id}`}
+                    to={`/events/${event.slug || event.id}`}
                     itemProp="url"
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center group shadow-md hover:shadow-xl"
                   >

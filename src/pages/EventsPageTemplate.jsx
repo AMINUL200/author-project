@@ -18,11 +18,15 @@ import {
   Check,
   Instagram,
   Globe as WebsiteIcon,
+  Play,
+  Image,
+  Youtube,
+  ChevronLeft,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { img } from "framer-motion/client";
 import { useParams } from "react-router-dom";
 import SocialIcons from "../cmponent/common/SocialIcons";
 
@@ -30,10 +34,99 @@ const EventsPageTemplate = () => {
   const [eventDetails, setEventDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
   const { token } = useAuth();
   const { id } = useParams();
+
+  const ITEMS_PER_PAGE = 6; // 2 rows x 3 columns
+
+  // Sample gallery data - In real app, this would come from API
+  const galleryData = [
+    {
+      id: 1,
+      type: "image",
+      url: "/gallary/event_1.jpeg",
+      title: "Event Opening Ceremony",
+    },
+    {
+      id: 2,
+      type: "image",
+      url: "/gallary/event_2.jpeg",
+      title: "Keynote Speaker Session",
+    },
+    {
+      id: 3,
+      type: "image",
+      url: "/gallary/event_3.jpeg",
+      title: "Networking Session",
+    },
+    {
+      id: 4,
+      type: "video",
+      url: "/gallary/event_4.jpeg",
+      title: "Event Highlights Video",
+    },
+    {
+      id: 5,
+      type: "image",
+      url: "/gallary/event_5.jpeg",
+      title: "Panel Discussion",
+    },
+    {
+      id: 6,
+      type: "image",
+      url: "/gallary/event_6.jpeg",
+      title: "Award Ceremony",
+    },
+    {
+      id: 7,
+      type: "youtube",
+      url: "/gallary/event_7.jpeg",
+      title: "Full Event Recording",
+    },
+    {
+      id: 8,
+      type: "image",
+      url: "/gallary/event_8.jpeg",
+      title: "Workshop Session",
+    },
+    {
+      id: 9,
+      type: "image",
+      url: "/gallary/event_9.jpeg",
+      title: "Dinner Reception",
+    },
+    {
+      id: 10,
+      type: "video",
+      url: "/gallary/event_10.jpeg",
+      title: "Speaker Interview",
+    },
+    {
+      id: 11,
+      type: "image",
+      url: "/gallary/event_11.jpeg",
+      title: "Exhibition Area",
+    },
+    {
+      id: 12,
+      type: "image",
+      url: "/gallary/event_12.mp4",
+      title: "Closing Ceremony",
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    },
+    {
+      id: 12,
+      type: "image",
+      url: "/gallary/event_13.mp4",
+      title: "Closing Ceremony",
+      thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    },
+  ];
 
   // Fetch event data function
   const fetchEventData = async () => {
@@ -46,15 +139,14 @@ const EventsPageTemplate = () => {
           Authorization: token ? `Bearer ${token}` : "",
           "Content-Type": "application/json",
         },
-         params: {
-          t: Date.now(), // prevent caching
+        params: {
+          t: Date.now(),
         },
       });
 
       if (response.data.status && response.data.data) {
         const eventData = response.data.data;
 
-        // Transform API data to match component structure
         const transformedEvent = {
           id: eventData.id,
           title: eventData.title,
@@ -65,11 +157,10 @@ const EventsPageTemplate = () => {
             ? formatDate(eventData.end_date)
             : formatDate(eventData.date),
           time: `${formatTime(eventData.start_time)} - ${formatTime(
-            eventData.end_time
+            eventData.end_time,
           )}`,
           location: eventData.location,
           location_url: eventData.location_url,
-
           organizer: {
             name: eventData.organizer_name,
             logo: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=100&h=100&fit=crop",
@@ -117,6 +208,30 @@ const EventsPageTemplate = () => {
     return `${formattedHour}:${minutes} ${ampm}`;
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(galleryData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = galleryData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({
+      top: document.getElementById("gallery-section").offsetTop - 100,
+      behavior: "smooth",
+    });
+  };
+
+  const openModal = (item) => {
+    setSelectedMedia(item);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMedia(null);
+  };
+
   // Generate JSON-LD structured data for SEO
   const generateStructuredData = () => {
     if (!eventDetails) return null;
@@ -124,33 +239,36 @@ const EventsPageTemplate = () => {
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "Event",
-      "name": eventDetails.title,
-      "description": eventDetails.subtitle,
-      "image": eventDetails.image,
-      "startDate": eventDetails.rawDate ? `${eventDetails.rawDate}T${eventDetails.start_time}` : undefined,
-      "endDate": eventDetails.rawEndDate ? `${eventDetails.rawEndDate}T${eventDetails.end_time}` : undefined,
-      "eventStatus": "https://schema.org/EventScheduled",
-      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-      "location": {
+      name: eventDetails.title,
+      description: eventDetails.subtitle,
+      image: eventDetails.image,
+      startDate: eventDetails.rawDate
+        ? `${eventDetails.rawDate}T${eventDetails.start_time}`
+        : undefined,
+      endDate: eventDetails.rawEndDate
+        ? `${eventDetails.rawEndDate}T${eventDetails.end_time}`
+        : undefined,
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: {
         "@type": "Place",
-        "name": eventDetails.location,
-        "address": eventDetails.location
+        name: eventDetails.location,
+        address: eventDetails.location,
       },
-      "organizer": {
+      organizer: {
         "@type": "Organization",
-        "name": eventDetails.organizer.name,
-        "url": eventDetails.social_links?.website || window.location.origin
+        name: eventDetails.organizer.name,
+        url: eventDetails.social_links?.website || window.location.origin,
       },
-      "performer": eventDetails.guests?.map(guest => ({
+      performer: eventDetails.guests?.map((guest) => ({
         "@type": "Person",
-        "name": guest.guest_name,
-        "jobTitle": guest.guest_designation
-      }))
+        name: guest.guest_name,
+        jobTitle: guest.guest_designation,
+      })),
     };
 
-    // Remove undefined values
-    Object.keys(structuredData).forEach(key => 
-      structuredData[key] === undefined && delete structuredData[key]
+    Object.keys(structuredData).forEach(
+      (key) => structuredData[key] === undefined && delete structuredData[key],
     );
 
     return structuredData;
@@ -160,27 +278,26 @@ const EventsPageTemplate = () => {
     fetchEventData();
   }, [id]);
 
-  // Inject structured data when event details are loaded
   useEffect(() => {
     if (eventDetails) {
       const structuredData = generateStructuredData();
       if (structuredData) {
-        const script = document.createElement('script');
-        script.type = 'application/ld+json';
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
         script.text = JSON.stringify(structuredData);
-        script.id = 'event-structured-data';
-        
-        // Remove existing script if present
-        const existingScript = document.getElementById('event-structured-data');
+        script.id = "event-structured-data";
+
+        const existingScript = document.getElementById("event-structured-data");
         if (existingScript) {
           existingScript.remove();
         }
-        
+
         document.head.appendChild(script);
 
-        // Cleanup on unmount
         return () => {
-          const scriptToRemove = document.getElementById('event-structured-data');
+          const scriptToRemove = document.getElementById(
+            "event-structured-data",
+          );
           if (scriptToRemove) {
             scriptToRemove.remove();
           }
@@ -189,7 +306,46 @@ const EventsPageTemplate = () => {
     }
   }, [eventDetails]);
 
-  // Show loading state
+  // Render media item based on type
+  const renderMediaItem = (item) => {
+    const isVideo = item.type === "video" || item.type === "youtube";
+    const thumbnail = item.thumbnail || item.url;
+
+    return (
+      <div
+        key={item.id}
+        className="relative group cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+        onClick={() => openModal(item)}
+      >
+        <img
+          src={thumbnail}
+          alt={item.title}
+          className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {isVideo && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Play className="w-8 h-8 text-blue-600 ml-1" fill="blue" />
+            </div>
+          </div>
+        )}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+          <p className="text-white text-sm font-medium truncate">
+            {item.title}
+          </p>
+          <span className="text-white/70 text-xs flex items-center gap-1">
+            {item.type === "image" ? (
+              <Image size={12} />
+            ) : (
+              <Youtube size={12} />
+            )}
+            {item.type === "image" ? "Image" : "Video"}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
@@ -201,7 +357,6 @@ const EventsPageTemplate = () => {
     );
   }
 
-  // Show error state
   if (error || !eventDetails) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
@@ -225,56 +380,70 @@ const EventsPageTemplate = () => {
   }
 
   return (
-    <article className="min-h-screen bg-gradient-to-b from-gray-50 to-white" itemScope itemType="https://schema.org/Event">
+    <article
+      className="min-h-screen bg-gradient-to-b from-gray-50 to-white"
+      itemScope
+      itemType="https://schema.org/Event"
+    >
       {/* Hero Section */}
-      <header className="relative h-96 overflow-hidden">
+      <header
+        className="relative h-[50vh] min-h-[400px] max-h-[650px] w-full overflow-hidden bg-gray-100"
+        role="banner"
+        aria-label="Event cover image"
+      >
         <img
           src={eventDetails.image}
-          alt={`${eventDetails?.image_alt} - Event cover image`}
-          className="w-full h-full object-fill"
-          itemProp="image"
-          loading="lazy"
-          onError={(e) => {
-            e.target.src =
-              "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop";
-          }}
+          alt={eventDetails.title || "Event cover image"}
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="eager"
+          fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-        {/* Hero Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-8">
-          <div className="max-w-7xl mx-auto">
-            <h3 className="text-4xl md:text-5xl font-bold text-white mb-2" itemProp="name" aria-label={eventDetails.title_meta || eventDetails.title}>
-              {eventDetails.title}
-            </h3>
-            <p className="text-xl text-white/90 mb-6" itemProp="description" aria-label={eventDetails.subtitle_meta || eventDetails.subtitle} dangerouslySetInnerHTML={{__html:eventDetails.subtitle}} >
-              {/* {eventDetails.subtitle} */}
-            </p>
-
-            {/* Quick Info with semantic markup */}
-            <div className="flex flex-wrap gap-6 text-white">
-              <div className="flex items-center gap-2" itemProp="startDate" content={eventDetails.rawDate}>
-                <Calendar className="w-5 h-5" aria-hidden="true" />
-                <time dateTime={eventDetails.rawDate}>
-                  {eventDetails.date}
-                  {eventDetails.endDate && ` - ${eventDetails.endDate}`}
-                </time>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" aria-hidden="true" />
-                <span>{eventDetails.time}</span>
-              </div>
-              <div className="flex items-center gap-2" itemProp="location" itemScope itemType="https://schema.org/Place">
-                <MapPin className="w-5 h-5" aria-hidden="true" />
-                <span itemProp="name">{eventDetails.location}</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-12">
+        {/* Event Title and Details */}
+        <div className="mb-10">
+          <h1
+            className="text-4xl md:text-5xl font-bold text-gray-900 mb-3"
+            itemProp="name"
+          >
+            {eventDetails.title}
+          </h1>
+          <p
+            className="text-xl text-gray-700 mb-6"
+            itemProp="description"
+            dangerouslySetInnerHTML={{ __html: eventDetails.subtitle }}
+          />
+
+          <div className="flex flex-wrap gap-6 text-gray-700">
+            <div
+              className="flex items-center gap-2"
+              itemProp="startDate"
+              content={eventDetails.rawDate}
+            >
+              <Calendar className="w-5 h-5 text-blue-600" aria-hidden="true" />
+              <time dateTime={eventDetails.rawDate}>
+                {eventDetails.date}
+                {eventDetails.endDate && ` - ${eventDetails.endDate}`}
+              </time>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-600" aria-hidden="true" />
+              <span>{eventDetails.time}</span>
+            </div>
+            <div
+              className="flex items-center gap-2"
+              itemProp="location"
+              itemScope
+              itemType="https://schema.org/Place"
+            >
+              <MapPin className="w-5 h-5 text-blue-600" aria-hidden="true" />
+              <span itemProp="name">{eventDetails.location}</span>
+            </div>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Event Details */}
           <div className="lg:col-span-2 space-y-8">
@@ -283,9 +452,11 @@ const EventsPageTemplate = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 About This Event
               </h2>
-              <div className="prose prose-lg text-gray-600 default-style" itemProp="description" aria-label={eventDetails?.description_meta} >
-                <div dangerouslySetInnerHTML={{__html:eventDetails.description}}></div>
-              </div>
+              <div
+                className="prose prose-lg text-gray-600 default-style"
+                itemProp="description"
+                dangerouslySetInnerHTML={{ __html: eventDetails.description }}
+              />
             </section>
 
             {/* Guests/Speakers Section */}
@@ -329,10 +500,16 @@ const EventsPageTemplate = () => {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate" itemProp="name">
+                        <h3
+                          className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate"
+                          itemProp="name"
+                        >
                           {guest.guest_name}
                         </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2" itemProp="jobTitle">
+                        <p
+                          className="text-sm text-gray-600 line-clamp-2"
+                          itemProp="jobTitle"
+                        >
                           {guest.guest_designation}
                         </p>
                       </div>
@@ -341,68 +518,35 @@ const EventsPageTemplate = () => {
                 </div>
               </section>
             )}
-
-            {/* Location Section */}
-            <section className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Event Location
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="font-semibold text-gray-900 mb-2">
-                      {eventDetails.location}
-                    </p>
-                    {eventDetails.location_url && (
-                      <div className="flex flex-wrap gap-3">
-                        <a
-                          href={eventDetails.location_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
-                          aria-label={`View ${eventDetails.location} location on map`}
-                        >
-                          <Globe className="w-4 h-4" aria-hidden="true" />
-                          <span className="font-medium">View Location</span>
-                        </a>
-
-                        {eventDetails.location_url.includes("google.com/maps") && (
-                          <a
-                            href={eventDetails.location_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-                            aria-label={`Open ${eventDetails.location} in Google Maps`}
-                          >
-                            <MapPin className="w-4 h-4" aria-hidden="true" />
-                            <span className="font-medium">Open in Maps</span>
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
           </div>
 
           {/* Right Column - Sidebar */}
           <aside className="lg:col-span-1">
             <div className="sticky top-18 space-y-6">
               {/* Organizer Card */}
-              <section className="bg-white rounded-2xl shadow-lg p-6" itemProp="organizer" itemScope itemType="https://schema.org/Organization">
+              <section
+                className="bg-white rounded-2xl shadow-lg p-6"
+                itemProp="organizer"
+                itemScope
+                itemType="https://schema.org/Organization"
+              >
                 <h3 className="text-lg font-bold text-gray-900 mb-4">
                   Organized By
                 </h3>
                 <div className="flex items-center gap-3 mb-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-900" itemProp="name">
+                      <p
+                        className="font-semibold text-gray-900"
+                        itemProp="name"
+                      >
                         {eventDetails.organizer.name}
                       </p>
                       {eventDetails.organizer.verified && (
-                        <Check className="w-4 h-4 text-blue-600 fill-blue-100" aria-label="Verified organizer" />
+                        <Check
+                          className="w-4 h-4 text-blue-600 fill-blue-100"
+                          aria-label="Verified organizer"
+                        />
                       )}
                     </div>
                     <p className="text-sm text-gray-600">Verified Organizer</p>
@@ -432,7 +576,7 @@ const EventsPageTemplate = () => {
                               >
                                 <SocialIcons platform={platform} />
                               </a>
-                            )
+                            ),
                           )}
                         </div>
                       </div>
@@ -442,7 +586,109 @@ const EventsPageTemplate = () => {
             </div>
           </aside>
         </div>
+        {/* Event Gallery Section */}
+        <section
+          id="gallery-section"
+          className="bg-white rounded-2xl shadow-lg p-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Event Gallery</h2>
+            <span className="text-sm text-gray-500">
+              {galleryData.length} items
+            </span>
+          </div>
+
+          {/* Gallery Grid - 2 rows */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentItems.map((item) => renderMediaItem(item))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                      currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
+        </section>
       </main>
+
+      {/* Modal for viewing media */}
+      {isModalOpen && selectedMedia && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={closeModal}
+        >
+          <div
+            className="relative max-w-4xl w-full bg-white rounded-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            {selectedMedia.type === "image" ? (
+              <img
+                src={selectedMedia.url}
+                alt={selectedMedia.title}
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            ) : (
+              <div className="aspect-video">
+                <iframe
+                  src={selectedMedia.url}
+                  title={selectedMedia.title}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            <div className="p-4">
+              <h3 className="text-lg font-bold text-gray-900">
+                {selectedMedia.title}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {selectedMedia.type === "image" ? "Image" : "Video"} • Click
+                outside to close
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 };
